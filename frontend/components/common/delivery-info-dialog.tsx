@@ -4,7 +4,7 @@ import type React from "react";
 
 import {useState} from "react";
 
-import {Textarea} from "./ui/textarea";
+import {Textarea} from "../ui/textarea";
 
 import {
   Dialog,

@@ -26,6 +26,7 @@ import apiRequest from "@/lib/apiRequest";
 import {selectSelectedInstitution} from "@/store/auth/selectors";
 import {extractRequiredPermissions, hasAnyRequiredPermissions} from "@/lib/helpers";
 import {loginWithEmailAndPassword, setTemporaryPermissionsWithTimeout} from "@/utils/authUtils";
+import { IPaginatedResponse } from "@/app/types/api.types";
 
 interface UserProfile {
   id: number;
@@ -99,7 +100,7 @@ export default function UnlockDialog({
       setError("");
 
       const response = await apiRequest.get(`institution/profile/${selectedInstitution.id}/`);
-      const data = response.data;
+      const data = response.data as IPaginatedResponse<UserProfile>;
 
       if (data.results && data.count !== undefined) {
         setUserProfiles(data.results);

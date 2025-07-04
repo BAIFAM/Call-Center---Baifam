@@ -4,7 +4,7 @@ import {useState} from "react";
 import {useRouter} from "next/navigation";
 import {Unlock} from "lucide-react";
 
-import {Button} from "./ui/button";
+import {Button} from "../ui/button";
 import UnlockDialog from "./UnlockProtectedPageDialog";
 
 // Update the interface to accept required permission codes

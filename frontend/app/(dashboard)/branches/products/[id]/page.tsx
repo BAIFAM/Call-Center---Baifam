@@ -1,6 +1,6 @@
 "use client";
 import type React from "react";
-import type {IBranchStoreProduct} from "@/app/types";
+import type {IBranchStoreProduct} from "@/app/types/api.types";
 
 import {useState, useEffect} from "react";
 import {useRouter, useParams} from "next/navigation";
@@ -253,7 +253,7 @@ export default function BranchProductDetailsPage() {
           <div className="flex flex-col gap-1 text-sm">
             {value > 0 ? (
               <>
-                <p className="text-emerald-600 font-semibold">UGX {formatCurrency(value)}</p>
+                <p className="text-primary font-semibold">UGX {formatCurrency(value)}</p>
                 <p className="text-gray-600">
                   Quantity: {quantity} {quantity === 1 ? "unit" : "units"}
                 </p>

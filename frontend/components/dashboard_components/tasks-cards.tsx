@@ -1,6 +1,6 @@
 "use client";
 
-import type {ApiTask} from "../task-notification";
+import type {ApiTask} from "../common/task-notification";
 
 import {useEffect, useState} from "react";
 import {ArrowRight} from "lucide-react";

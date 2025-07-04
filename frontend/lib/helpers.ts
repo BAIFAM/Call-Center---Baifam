@@ -4,7 +4,7 @@ import {format} from "date-fns";
 
 import apiRequest from "./apiRequest";
 
-import {IMarketPlaceOrder, IPermission, IUser, Role} from "@/app/types";
+import {IMarketPlaceOrder, IPaginatedResponse, IPermission, IUser, Role} from "@/app/types/api.types";
 import {store} from "@/store";
 
 export function cn(...inputs: ClassValue[]) {
@@ -84,40 +84,7 @@ export async function fetchProductsFromApi(isApproved?: boolean) {
   }
 }
 
-export async function fetchProductsForSpecificBranchFromApi() {
-  try {
-    const branchId = getCurrentBranchId();
 
-    if (!branchId) {
-      throw new Error("Branch ID not found in local storage");
-    }
-    const response = await apiRequest.get(`/product/branch-product-store/by-branch/${branchId}/`);
-
-    return response;
-  } catch (error) {
-    console.error("Error fetching products for specific branch:", error);
-    throw error;
-  }
-}
-
-export async function fetchAndUpdateProducts(setProducts: (data: any) => void) {
-  try {
-    const branchId = getCurrentBranchId();
-
-    if (!branchId) {
-      throw new Error("Branch ID not found in local storage");
-    }
-
-    // Fetch updated product data from API
-    const response = await apiRequest.get(`/product/branch-product-store/by-branch/${branchId}/`);
-
-    // Update the frontend state with the new product data
-    setProducts(response.data.results);
-  } catch (error) {
-    console.error("Error fetching updated products for the branch:", error);
-    throw error;
-  }
-}
 
 export async function fetchUnitOfMeasuresFromApi() {
   try {

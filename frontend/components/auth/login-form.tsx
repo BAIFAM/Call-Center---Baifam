@@ -41,12 +41,6 @@ export function LoginForm() {
     }
   }, [currentUser]);
 
-  useEffect(() => {
-    handleClearAuthError();
-    return () => {
-      handleClearAuthError();
-    };
-  }, []);
 
   useEffect(() => {
     setLoadingState((prev) => ({...prev, auth: authLoading}));
@@ -71,10 +65,14 @@ export function LoginForm() {
       errorMessage = "You need to verify your email to login";
     } else if (authError.customCode === CUSTOM_CODES.INVALID_CREDENTIALS) {
       errorMessage = "Invalid Credentials";
-    } else {
-      errorMessage = "Something went wrong !";
+    } else{
+      errorMessage = "An error occurred during login";
     }
-    showErrorToast(errorMessage);
+    errorMessage && showErrorToast(errorMessage);
+
+    return () => {
+      dispatch(clearAuthError());
+    }
   }, [authError]);
 
   useEffect(() => {
@@ -87,11 +85,6 @@ export function LoginForm() {
     }
   }, [OTPSentMessage]);
 
-  const handleClearAuthError = () => {
-    if (authError) {
-      dispatch(clearAuthError());
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -204,7 +197,7 @@ export function LoginForm() {
 
         <div className="text-right">
           <Link
-            href="#"
+            href="/forgot-password"
             className="text-sm text-primary hover:text-primary-700 hover:underline hover:underline-offset-2"
           >
             Forgot password?

@@ -1,5 +1,5 @@
 "use client";
-import type {ApprovalStep} from "@/app/types";
+import type {ApprovalStep} from "@/app/types/api.types";
 
 import {
   Search,
@@ -30,8 +30,8 @@ import {Input} from "@/components/ui/input";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
 import apiRequest from "@/lib/apiRequest";
 import {capitalizeEachWord, getDefaultInstitutionId} from "@/lib/helpers";
-import {DeleteConfirmationDialog} from "@/components/delete-confirmation-dialog";
-import ProtectedComponent from "@/components/ProtectedComponent";
+import {DeleteConfirmationDialog} from "@/components/common/delete-confirmation-dialog";
+import ProtectedComponent from "@/components/common/ProtectedComponent";
 import {PERMISSION_CODES} from "@/app/types/types.utils";
 import {handleApiError} from "@/lib/apiErrorHandler";
 

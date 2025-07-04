@@ -1,7 +1,7 @@
 import {AuthAction} from "./actions";
 import {AUTH_ACTION_TYPES} from "./types";
 
-import {Branch, IPermission, ITill, IUser, IUserInstitution, StoredColorData} from "@/app/types";
+import {Branch, IPermission, ITill, IUser, IUserInstitution, StoredColorData} from "@/app/types/api.types";
 import {CUSTOM_CODES} from "@/app/types/types.utils";
 
 export type AuthError = {

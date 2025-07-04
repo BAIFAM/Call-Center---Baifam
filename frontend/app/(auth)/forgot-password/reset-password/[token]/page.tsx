@@ -3,7 +3,7 @@
 import type React from "react";
 
 import {useState, useEffect} from "react";
-import {useRouter} from "next/navigation";
+import {useParams, useRouter} from "next/navigation";
 import {Eye, EyeOff} from "lucide-react";
 import {toast} from "sonner";
 
@@ -13,8 +13,9 @@ import {Label} from "@/components/ui/label";
 import {resetPassword, verifyResetToken, validatePasswordStrength} from "@/lib/utils";
 import {handleApiError} from "@/lib/apiErrorHandler";
 
-export default function ChangePassword({params}: {params: {token: string}}) {
+export default function ChangePassword() {
   const [password, setPassword] = useState("");
+  const params = useParams<{token: string}>()
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -97,7 +98,7 @@ export default function ChangePassword({params}: {params: {token: string}}) {
             This password reset link is invalid or has expired. Please request a new one.
           </p>
           <Button
-            className="mt-6 bg-emerald-500 hover:bg-emerald-600"
+            className="mt-6 bg-primary hover:bg-primary"
             onClick={() => router.push("/forgot-password")}
           >
             Request New Link
@@ -125,6 +126,7 @@ export default function ChangePassword({params}: {params: {token: string}}) {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={handlePasswordChange}
+                className="pr-10 h-12 rounded-2xl"
               />
               <Button
                 className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2"
@@ -155,6 +157,7 @@ export default function ChangePassword({params}: {params: {token: string}}) {
                 type={showConfirmPassword ? "text" : "password"}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                className="pr-10 h-12 rounded-2xl"
               />
               <Button
                 className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2"
@@ -175,7 +178,7 @@ export default function ChangePassword({params}: {params: {token: string}}) {
           </div>
 
           <Button
-            className="w-full bg-emerald-500 hover:bg-emerald-600"
+            className="w-full pr-10 h-12 rounded-full"
             disabled={isLoading || passwordErrors.length > 0 || password !== confirmPassword}
             type="submit"
           >

@@ -1,6 +1,6 @@
 "use client";
 
-import type {Branch} from "@/app/types";
+import type {Branch} from "@/app/types/api.types";
 
 import {useEffect, useState} from "react";
 import {Edit, MapPin, Plus, Search, Trash, Loader2, Eye} from "lucide-react";
@@ -29,8 +29,8 @@ import {
   fetchInstitutionBranchesFromAPI,
   getDefaultInstitutionId,
 } from "@/lib/helpers";
-import ProtectedComponent from "@/components/ProtectedComponent";
-import {LocationAutocomplete} from "@/components/location-autocomplete";
+import ProtectedComponent from "@/components/common/ProtectedComponent";
+import {LocationAutocomplete} from "@/components/common/location-autocomplete";
 import {PERMISSION_CODES} from "@/app/types/types.utils";
 import {fetchUpToDateInstitution} from "@/store/auth/actions";
 import {useRouter} from "next/navigation";

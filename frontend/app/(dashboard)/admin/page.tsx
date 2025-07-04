@@ -3,7 +3,7 @@
 import Link from "next/link";
 import {fetchAndSetData, fetchInstitutionBranchesFromAPI} from "@/lib/helpers";
 import {useEffect, useState} from "react";
-import type {Branch} from "@/app/types";
+import type {Branch} from "@/app/types/api.types";
 
 import {
   Users,
@@ -19,8 +19,8 @@ import {
   GitBranch,
 } from "lucide-react";
 import {Separator} from "@/components/ui/separator";
-import ProtectedComponent from "@/components/ProtectedComponent";
-import ProtectedPage from "@/components/ProtectedPage";
+import ProtectedComponent from "@/components/common/ProtectedComponent";
+import ProtectedPage from "@/components/common/ProtectedPage";
 import {PERMISSION_CODES} from "@/app/types/types.utils";
 
 export default function AdminPage() {

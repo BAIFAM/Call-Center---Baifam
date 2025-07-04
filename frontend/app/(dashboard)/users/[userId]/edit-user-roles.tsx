@@ -1,6 +1,6 @@
 "use client";
 
-import type {Role, IUser} from "@/app/types";
+import type {Role, IUser, IPaginatedResponse} from "@/app/types/api.types";
 
 import {useState, useEffect} from "react";
 import {PencilLine} from "lucide-react";
@@ -19,7 +19,7 @@ import {Alert, AlertDescription} from "@/components/ui/alert";
 import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
 import {Label} from "@/components/ui/label";
 import apiRequest, {apiPatch} from "@/lib/apiRequest";
-import {getDefaultInstitutionId} from "@/lib/helpers";
+import {fetchInstitutionRoles, getDefaultInstitutionId} from "@/lib/helpers";
 
 interface EditUserRolesProps {
   user: IUser;
@@ -36,9 +36,9 @@ export function EditUserRoles({user}: EditUserRolesProps) {
   // Fetch all roles
   const fetchRoles = async () => {
     try {
-      const response = await apiRequest.get(`user/role/?Institution_id=${getDefaultInstitutionId()}`);
+      const response = await fetchInstitutionRoles()
 
-      setRoles(response.data.results);
+      setRoles((response.data as IPaginatedResponse<Role>).results);
     } catch (error: any) {
       setError(error.message || "Failed to fetch roles");
     }

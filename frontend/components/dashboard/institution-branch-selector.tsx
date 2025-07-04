@@ -10,7 +10,7 @@ import {
   selectSelectedInstitution,
 } from "@/store/auth/selectors";
 import {setSelectedBranch, setSelectedInstitution} from "@/store/auth/actions";
-import {Branch, IUserInstitution} from "@/app/types";
+import {Branch, IUserInstitution} from "@/app/types/api.types";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "../ui/select";
 
 export function InstitutionBranchSelector() {

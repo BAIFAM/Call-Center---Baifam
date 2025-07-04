@@ -1,6 +1,6 @@
 "use client";
 import type React from "react";
-import type {ApprovalStep, Role, UserProfile, WorkflowAction} from "@/app/types";
+import type {ApprovalStep, Role, UserProfile, WorkflowAction} from "@/app/types/api.types";
 
 import {useParams, useRouter} from "next/navigation";
 import {useEffect, useState} from "react";
@@ -8,7 +8,7 @@ import {useEffect, useState} from "react";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {Input} from "@/components/ui/input";
-import {SearchableSelect, type SearchableSelectItem} from "@/components/searchable-select";
+import {SearchableSelect, type SearchableSelectItem} from "@/components/common/searchable-select";
 import apiRequest from "@/lib/apiRequest";
 import {fetchInstitutionRoles, getDefaultInstitutionId} from "@/lib/helpers";
 import {handleApiError} from "@/lib/apiErrorHandler";

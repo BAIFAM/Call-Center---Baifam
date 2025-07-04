@@ -8,8 +8,8 @@ import {Toaster} from "sonner";
 
 import {Providers} from "./providers";
 
-import {ThemeProvider} from "@/components/theme-provider";
-import AppLoaderWrapper from "@/components/app-loader-wrapper";
+import {ThemeProvider} from "@/components/common/theme-provider";
+import AppLoaderWrapper from "@/components/common/app-loader-wrapper";
 import {WebSocketProvider} from "@/lib/WebSocketProvider";
 import {cn} from "@/lib/utils";
 

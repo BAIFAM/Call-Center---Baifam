@@ -18,7 +18,7 @@ import {useSelector} from "react-redux";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
 import {selectAccessToken} from "@/store/auth/selectors";
-import FixedLoader from "@/components/fixed-loader";
+import FixedLoader from "@/components/common/fixed-loader";
 
 export default function LandingPage() {
   const router = useRouter();
