@@ -1,6 +1,6 @@
 "use client";
 
-import type {Role, UserProfile} from "@/app/types";
+import type {Role, UserProfile} from "@/app/types/api.types";
 
 import {useState, useEffect} from "react";
 import {Pencil} from "lucide-react";

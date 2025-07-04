@@ -7,7 +7,7 @@ import {useState, useEffect} from "react";
 import {useSelector} from "react-redux";
 import {useDispatch} from "react-redux";
 
-import PermissionDenied from "@/components/PermissionDenied";
+import PermissionDenied from "@/components/common/PermissionDenied";
 import {selectTemporaryPermissions} from "@/store/auth/selectors";
 import {hasPermission} from "@/lib/helpers";
 import {clearTemporaryPermissions} from "@/store/auth/actions";

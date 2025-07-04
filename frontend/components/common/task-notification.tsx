@@ -21,7 +21,7 @@ import {
 import {Badge} from "@/components/ui/badge";
 import {useWebSocket} from "@/lib/WebSocketProvider";
 import {selectUser} from "@/store/auth/selectors";
-import {ApprovalStep} from "@/app/types";
+import {ApprovalStep} from "@/app/types/api.types";
 
 export interface ApiTask {
   id: number;

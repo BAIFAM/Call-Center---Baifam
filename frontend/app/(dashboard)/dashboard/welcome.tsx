@@ -75,7 +75,7 @@ export default function WelcomePage() {
               </p>
 
               <Button
-                className="mt-6 bg-emerald-500 hover:bg-emerald-600 text-white"
+                className="mt-6 bg-primary hover:bg-primary text-white"
                 size="lg"
                 onClick={() => router.push("/create-organisation")}
               >

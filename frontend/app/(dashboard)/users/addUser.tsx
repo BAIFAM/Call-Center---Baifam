@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import type {Role, Branch} from "@/app/types";
+import type {Role, Branch, IPaginatedResponse} from "@/app/types/api.types";
 
 import {useEffect, useState} from "react";
 import {Plus} from "lucide-react";
@@ -21,7 +21,7 @@ import {Input} from "@/components/ui/input";
 import {Textarea} from "@/components/ui/textarea";
 import {Label} from "@/components/ui/label";
 import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
-import {fetchInstitutionBranchesFromAPI, getDefaultInstitutionId} from "@/lib/helpers";
+import {fetchInstitutionBranchesFromAPI, fetchInstitutionRoles, getDefaultInstitutionId} from "@/lib/helpers";
 import {Checkbox} from "@/components/ui/checkbox";
 
 interface AddUserFormProps {
@@ -45,11 +45,8 @@ export function AddUserForm({onAddSuccess}: AddUserFormProps) {
 
   const fetchRoles = async () => {
     try {
-      const response = await apiRequest.get(
-        `user/role/?Institution_id=${getDefaultInstitutionId()}`,
-      );
-
-      setRoles(response.data.results);
+      const response = await fetchInstitutionRoles()
+      setRoles((response.data as IPaginatedResponse<Role>).results);
     } catch (error) {
       setErrorMessage("Failed to fetch roles");
       console.error("Error fetching roles:", error);

@@ -1,6 +1,6 @@
 "use client";
 
-import FixedLoader from "@/components/fixed-loader";
+import FixedLoader from "@/components/common/fixed-loader";
 
 // app/loading.tsx
 export default function Loading() {

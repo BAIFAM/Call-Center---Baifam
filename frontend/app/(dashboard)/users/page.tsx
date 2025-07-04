@@ -1,6 +1,6 @@
 "use client";
 
-import type {UserProfile} from "@/app/types";
+import type {IPaginatedResponse, UserProfile} from "@/app/types/api.types";
 
 import {useEffect, useState} from "react";
 import {Search, ChevronDown, Eye, Trash2, ArrowLeft, Plus} from "lucide-react";
@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {PaginationControls} from "@/components/ui/pagination-controls";
 import {PageSizeSelector} from "@/components/ui/page-size-selector";
-import ProtectedComponent from "@/components/ProtectedComponent";
+import ProtectedComponent from "@/components/common/ProtectedComponent";
 import {PERMISSION_CODES} from "@/app/types/types.utils";
 import {handleApiError} from "@/lib/apiErrorHandler";
 
@@ -36,7 +36,7 @@ export default function StaffPage() {
   const [selectedStatus, setSelectedStatus] = useState("All status");
   const [pageSize, setPageSize] = useState(10);
   const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState({
+  const [pagination, setPagination] = useState<{next:string|null, previous:string|null, count:number}>({
     next: null,
     previous: null,
     count: 0,
@@ -52,7 +52,7 @@ export default function StaffPage() {
         `institution/profile/${InstitutionId}/?page_size=${pageSize}`,
       );
 
-      const data = response.data;
+      const data = response.data as IPaginatedResponse<UserProfile>;
 
       // Check if the response is paginated
       if (data.results && data.count !== undefined) {
@@ -64,11 +64,11 @@ export default function StaffPage() {
         });
       } else {
         // Handle non-paginated response
-        setUserProfiles(data);
+        setUserProfiles(data.results);
         setPagination({
           next: null,
           previous: null,
-          count: data.length,
+          count: data.results.length,
         });
       }
       setLoading(false);

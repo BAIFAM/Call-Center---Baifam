@@ -1,6 +1,6 @@
 "use client";
 import type React from "react";
-import type {Role, UserProfile, WorkflowAction} from "@/app/types";
+import type {IPaginatedResponse, IResponse, Role, UserProfile, WorkflowAction} from "@/app/types/api.types";
 
 import {useRouter} from "next/navigation";
 import {useEffect, useState} from "react";
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import apiRequest from "@/lib/apiRequest";
 import {fetchInstitutionRoles, getDefaultInstitutionId} from "@/lib/helpers";
-import ProtectedPage from "@/components/ProtectedPage";
+import ProtectedPage from "@/components/common/ProtectedPage";
 import {PERMISSION_CODES} from "@/app/types/types.utils";
 import {handleApiError} from "@/lib/apiErrorHandler";
 
@@ -44,8 +44,8 @@ export default function CreateApprovalStep() {
           apiRequest.get("workflow/workflow-action/"),
         ]);
 
-        setRoles(rolesResponse.data.results);
-        setActions(actionsResponse.data);
+        setRoles((rolesResponse.data as IPaginatedResponse<Role>).results);
+        setActions((actionsResponse as IResponse<WorkflowAction[]>).data);
       } catch (err: any) {
         setError("Failed to load required data for approval step");
         handleApiError(err);

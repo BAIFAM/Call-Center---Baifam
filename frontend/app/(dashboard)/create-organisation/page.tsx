@@ -41,7 +41,7 @@ import {
 import {toast} from "sonner";
 import type {LoginResponse} from "@/utils/authUtils";
 import axios from "axios";
-import {LocationAutocomplete} from "@/components/location-autocomplete";
+import {LocationAutocomplete} from "@/components/common/location-autocomplete";
 import {Textarea} from "@/components/ui/textarea";
 import {Progress} from "@radix-ui/react-progress";
 

@@ -58,12 +58,13 @@ export default function EmailRequest() {
               placeholder="name@example.com"
               type="email"
               value={email}
+              className="h-12 pr-10 rounded-2xl"
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
 
           <Button
-            className="w-full bg-emerald-500 hover:bg-emerald-600"
+            className="w-full h-12 rounded-full"
             disabled={isLoading}
             type="submit"
           >
@@ -72,7 +73,7 @@ export default function EmailRequest() {
 
           <div className="text-center">
             <span>Remember your password? </span>
-            <Link className="text-emerald-500 hover:underline" href="/login">
+            <Link className="text-primary hover:underline" href="/login">
               Login
             </Link>
           </div>

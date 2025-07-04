@@ -6,7 +6,7 @@ import {Provider} from "react-redux";
 import {PersistGate} from "redux-persist/integration/react";
 
 import {persistor, store} from "@/store";
-import FixedLoader from "@/components/fixed-loader";
+import FixedLoader from "@/components/common/fixed-loader";
 
 export function Providers({children}: {children: React.ReactNode}) {
   // This will give us a _new_ store per request in SSR, but on the client it reuses the store.
