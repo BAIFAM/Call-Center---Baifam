@@ -54,7 +54,7 @@ urlpatterns = [
     path("products/<int:institution_id>/", ProductListCreateView.as_view(), name="product-list-create"),
     path("products/detail/<uuid:uuid>/", ProductDetailView.as_view(), name="product-detail"),
     path(
-        "client-company-products/<uuid:client_company_id>/",
+        "client-company-products/<int:institution_id>/",
         ClientCompanyProductListCreateView.as_view(),
         name="clientcompanyproduct-list-create"
     ),

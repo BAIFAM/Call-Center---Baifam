@@ -459,28 +459,28 @@ def delete_user_branch_by_ids(request, user_id, branch_id):
 class ClientCompanyListCreateView(APIView):
 
     @extend_schema(
-        summary="List all product links for a specific client company",
+        summary="List client companies for an institution",
         parameters=[
-            OpenApiParameter(name="client_company_id", required=True, type=str, location=OpenApiParameter.PATH),
+            OpenApiParameter(name="institution_id", required=True, type=int, location=OpenApiParameter.PATH),
         ],
-        responses={200: ClientCompanyProductSerializer(many=True)}
+        responses={200: ClientCompanySerializer(many=True)}
     )
-    def get(self, request, client_company_id):
-        client_company = get_object_or_404(ClientCompany, uuid=client_company_id)
-        links = ClientCompanyProduct.objects.filter(client_company=client_company)
-        serializer = ClientCompanyProductSerializer(links, many=True)
-        return Response(serializer.data)
+    def get(self, request, institution_id):
+        institution = get_object_or_404(Institution, id=institution_id)
+        companies = ClientCompany.objects.filter(institution=institution)
+        serializer = ClientCompanySerializer(companies, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(
-        summary="Create a new product link for a client company",
-        request=ClientCompanyProductSerializer,
-        responses={201: ClientCompanyProductSerializer}
+        summary="Create a client company under a specific institution",
+        request=ClientCompanySerializer,
+        responses={201: ClientCompanySerializer}
     )
-    def post(self, request, client_company_id):
-        client_company = get_object_or_404(ClientCompany, uuid=client_company_id)
+    def post(self, request, institution_id):
+        institution = get_object_or_404(Institution, id=institution_id)
         data = request.data.copy()
-        data['client_company'] = str(client_company.uuid)
-        serializer = ClientCompanyProductSerializer(data=data)
+        data['institution'] = institution.id
+        serializer = ClientCompanySerializer(data=data)
         if serializer.is_valid():
             serializer.save(created_by=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -503,7 +503,7 @@ class ClientCompanyDetailView(APIView):
         return Response(serializer.data)
 
     @extend_schema(
-        summary="Update a client company by UUID (partial)",
+        summary="Partially update a client company by UUID",
         request=ClientCompanySerializer,
         responses={200: ClientCompanySerializer}
     )
@@ -511,7 +511,7 @@ class ClientCompanyDetailView(APIView):
         company = self.get_object(uuid)
         serializer = ClientCompanySerializer(company, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save()  
+            serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -602,32 +602,36 @@ class ProductDetailView(APIView):
 class ClientCompanyProductListCreateView(APIView):
 
     @extend_schema(
-        summary="List all product links for a specific client company",
+        summary="List all product links for a specific institution's client companies",
         parameters=[
-            OpenApiParameter(name="client_company_id", required=True, type=int, location=OpenApiParameter.PATH),
+            OpenApiParameter(name="institution_id", required=True, type=int, location=OpenApiParameter.PATH),
         ],
         responses={200: ClientCompanyProductSerializer(many=True)}
     )
-    def get(self, request, client_company_id):
-        client_company = get_object_or_404(ClientCompany, uuid=client_company_id)
-        links = ClientCompanyProduct.objects.filter(client_company=client_company)
+    def get(self, request, institution_id):
+        institution = get_object_or_404(Institution, id=institution_id)
+        links = ClientCompanyProduct.objects.filter(client_company__institution=institution)
         serializer = ClientCompanyProductSerializer(links, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(
-        summary="Create a new product link for a client company",
+        summary="Create a new product link for a client company within an institution",
         request=ClientCompanyProductSerializer,
         responses={201: ClientCompanyProductSerializer}
     )
-    def post(self, request, client_company_id):
-        client_company = get_object_or_404(ClientCompany, uuid=client_company_id)
+    def post(self, request, institution_id):
+        institution = get_object_or_404(Institution, id=institution_id)
         data = request.data.copy()
-        data['client_company'] = str(client_company.uuid)
+
+        client_company_uuid = data.get('client_company')
+        client_company = get_object_or_404(ClientCompany, uuid=client_company_uuid, institution=institution)
+
         serializer = ClientCompanyProductSerializer(data=data)
         if serializer.is_valid():
             serializer.save(created_by=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 @extend_schema(tags=["ClientCompanyProduct"])

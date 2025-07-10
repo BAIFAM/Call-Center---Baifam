@@ -190,7 +190,7 @@ class ClientCompanySerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep['institution'] = instance.institution.institution_name
+        rep['institution'] = InstitutionSerializer(instance.institution).data
         return rep
     
 class ProductSerializer(serializers.ModelSerializer):
@@ -203,7 +203,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep['institution'] = instance.institution.institution_name
+        rep['institution'] = InstitutionSerializer(instance.institution).data
         return rep    
     
     def validate_feedback_fields(self, value):
@@ -241,7 +241,7 @@ class ClientCompanyProductSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep['client_company'] = instance.client_company.company_name
-        rep['product'] = instance.product.name
+        rep['client_company'] = ClientCompanySerializer(instance.client_company).data
+        rep['product'] = ProductSerializer(instance.product).data
         return rep    
         
