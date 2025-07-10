@@ -609,7 +609,7 @@ class ClientCompanyProductListCreateView(APIView):
         responses={200: ClientCompanyProductSerializer(many=True)}
     )
     def get(self, request, client_company_id):
-        client_company = get_object_or_404(ClientCompany, id=client_company_id)
+        client_company = get_object_or_404(ClientCompany, uuid=client_company_id)
         links = ClientCompanyProduct.objects.filter(client_company=client_company)
         serializer = ClientCompanyProductSerializer(links, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -620,9 +620,9 @@ class ClientCompanyProductListCreateView(APIView):
         responses={201: ClientCompanyProductSerializer}
     )
     def post(self, request, client_company_id):
-        client_company = get_object_or_404(ClientCompany, id=client_company_id)
+        client_company = get_object_or_404(ClientCompany, uuid=client_company_id)
         data = request.data.copy()
-        data['client_company'] = str(client_company.id)
+        data['client_company'] = str(client_company.uuid)
         serializer = ClientCompanyProductSerializer(data=data)
         if serializer.is_valid():
             serializer.save(created_by=request.user)
