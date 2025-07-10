@@ -1,7 +1,6 @@
 from django.db import models
 from datetime import time
-# from django.contrib.gis.db import models as gis_models
-
+import uuid
 
 class Institution(models.Model):
     APPROVAL_STATUS_CHOICES = [
@@ -11,7 +10,7 @@ class Institution(models.Model):
         ('under_review', 'Under Review'),
     ]
     institution_owner = models.ForeignKey(
-        "users.CustomUser", related_name="institutions_owned", on_delete=models.CASCADE
+        "users.CustomUser", related_name="institutions_owned", on_delete=models.PROTECT
     )
     institution_email = models.EmailField(max_length=255, blank=True, null=True)
     institution_name = models.CharField(max_length=255)
@@ -51,7 +50,7 @@ class Institution(models.Model):
     created_by = models.ForeignKey(
         "users.CustomUser",
         related_name="created_institutions",
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         null=True,
         blank=True,
     )
@@ -74,7 +73,7 @@ class Institution(models.Model):
 
 
 class InstitutionDocument(models.Model):
-    institution = models.ForeignKey(Institution, related_name="documents", on_delete=models.CASCADE)
+    institution = models.ForeignKey(Institution, related_name="documents", on_delete=models.PROTECT)
     document_title = models.CharField(max_length=255)
     document_file = models.FileField(upload_to="institutions/documents/")
     document_type = models.CharField(max_length=10, blank=True, null=True)
@@ -86,8 +85,8 @@ class InstitutionDocument(models.Model):
         return f"{self.document_title} - {self.institution.institution_name}"
 
     class Meta:
-        verbose_name = "Shop Document"
-        verbose_name_plural = "Shop Documents"
+        verbose_name = "Institution Document"
+        verbose_name_plural = "Institution Documents"
 
     def save(self, *args, **kwargs):
         if self.document_file and not self.pk:
@@ -104,7 +103,7 @@ class InstitutionDocument(models.Model):
 
 
 class Branch(models.Model):
-    institution = models.ForeignKey(Institution, related_name="branches", on_delete=models.CASCADE)
+    institution = models.ForeignKey(Institution, related_name="branches", on_delete=models.PROTECT)
     branch_name = models.CharField(max_length=255, blank=True, null=True)
     branch_phone_number = models.CharField(max_length=20, blank=True, null=True)
     branch_location = models.CharField(max_length=255)
@@ -120,7 +119,7 @@ class Branch(models.Model):
     created_by = models.ForeignKey(
         "users.CustomUser",
         related_name="created_branches",
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         null=True,
         blank=True,
     )
@@ -138,10 +137,10 @@ class Branch(models.Model):
 # user can have multiple branches and branches can have multiple users
 class UserBranch(models.Model):
     user = models.ForeignKey(
-        "users.CustomUser", related_name="attached_branches", on_delete=models.CASCADE
+        "users.CustomUser", related_name="attached_branches", on_delete=models.PROTECT
     )
     branch = models.ForeignKey(
-        Branch, related_name="attached_users", on_delete=models.CASCADE
+        Branch, related_name="attached_users", on_delete=models.PROTECT
     )
     is_default = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -149,7 +148,7 @@ class UserBranch(models.Model):
     created_by = models.ForeignKey(
         "users.CustomUser",
         related_name="created_user_branches",
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         null=True,
         blank=True,
     )
@@ -169,3 +168,82 @@ class UserBranch(models.Model):
 
     def __str__(self):
         return self.user.email + " - " + self.branch.branch_location
+    
+
+class ClientCompany(models.Model):
+    status_choices = [
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+        ('pending', 'Pending'),
+        ('suspended', 'Suspended'),
+    ]
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    institution = models.ForeignKey(Institution, related_name="client_companies", on_delete=models.PROTECT)
+    company_name = models.CharField(max_length=255)
+    contact_email = models.EmailField(max_length=255, blank=True, null=True)
+    contact_phone = models.CharField(max_length=20, blank=True, null=True)
+    status = models.CharField(
+        max_length=20,
+        choices=status_choices,
+        default='active'
+    )
+    created_by = models.ForeignKey(
+        "users.CustomUser",
+        related_name="created_client_companies",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    has_system = models.BooleanField(default=False)
+    callback_url = models.URLField(max_length=500, blank=True, null=True)
+    api_key = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.company_name} - {self.institution.institution_name}"
+    
+class Product(models.Model):
+    status_choices = [
+        ('active', 'Active'),
+        ('disabled', 'Disabled'),
+    ]
+    
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    institution = models.ForeignKey(Institution, related_name="products", on_delete=models.PROTECT)
+    name = models.CharField(max_length=255)
+    descriptions = models.TextField(blank=True, null=True)
+    status = models.CharField(
+        max_length=20,
+        choices=status_choices,
+        default='active'
+    )
+    feedback_fields = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="JSON array of feedback field configurations"
+    )
+    
+    def __str__(self):
+        return f"{self.name} - {self.institution.institution_name}"
+    
+    class Meta:
+        verbose_name = "Product"
+        verbose_name_plural = "Products"
+
+
+class ClientCompanyProduct(models.Model):
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    client_company = models.ForeignKey(ClientCompany, related_name="products", on_delete=models.PROTECT)
+    product = models.ForeignKey(Product, related_name="client_companies", on_delete=models.PROTECT)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        "users.CustomUser",
+        related_name="created_client_company_products",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+    
+    def __str__(self):
+        return f"{self.client_company.company_name} - {self.product.name}"
