@@ -12,8 +12,9 @@ import pandas as pd
 from django.http import HttpResponse
 import io
 import uuid as uuid_module
+import logging
 
-
+logger = logging.getLogger(__name__)
 @extend_schema(tags=["CallGroup"])
 class CallGroupListCreateView(APIView):
 
@@ -608,30 +609,37 @@ class CallListCreateAPIView(APIView):
         contact_uuid = request.data.get('contact')
         if not contact_uuid:
             return Response({"detail": "Contact UUID is required."}, status=status.HTTP_400_BAD_REQUEST)
-
+        
         contact = get_object_or_404(Contact, uuid=contact_uuid)
-
         # Ensure contact's product belongs to the specified institution
         if contact.product.institution.id != institution_id:
             return Response(
                 {'detail': 'Contact does not belong to this institution.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
+        
         # Create a mutable copy of the data
         data = request.data.copy()
         
-        # Debug: Check if file is in request.FILES
-        if 'file' in request.FILES:
-            data['file'] = request.FILES['file']
+        # Add all files from request.FILES to data
+        for field_name, file in request.FILES.items():
+            data[field_name] = file
         
-        
-        serializer = CallSerializer(data=data)
+        # Pass request context to serializer for dynamic file field creation
+        serializer = CallSerializer(data=data, context={'request': request})
         if serializer.is_valid():
             call = serializer.save(made_by=request.user)
-            return Response(CallSerializer(call).data, status=status.HTTP_201_CREATED)
+            
+            call.refresh_from_db()
+            
+            # Create a new serializer instance with the refreshed call for the response
+            response_serializer = CallSerializer(call, context={'request': request})
+            response_data = response_serializer.data
+            
+            return Response(response_data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     
 @extend_schema(tags=['Calls'])
 class CallDetailAPIView(APIView):
