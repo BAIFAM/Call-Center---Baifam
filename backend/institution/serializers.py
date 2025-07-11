@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from users.models import CustomUser
 from users.serializers import CustomUserSerializer
-from .models import Institution, Branch, UserBranch, InstitutionDocument
+from .models import ClientCompany, ClientCompanyProduct, Institution, Branch, Product, UserBranch, InstitutionDocument
 import os
 
 class InstitutionDocumentSerializer(serializers.ModelSerializer):
@@ -10,7 +10,7 @@ class InstitutionDocumentSerializer(serializers.ModelSerializer):
         model = InstitutionDocument
         fields = [
             "id",
-            "shop",
+            "institution",
             "document_title",
             "document_file",
             "document_type",
@@ -178,3 +178,70 @@ class UserBranchSerializer(serializers.ModelSerializer):
                 "User must be authenticated to create a user branch."
             )
         return UserBranch.objects.create(created_by=request.user, **validated_data)
+    
+    
+class ClientCompanySerializer(serializers.ModelSerializer):
+    institution = serializers.PrimaryKeyRelatedField(queryset=Institution.objects.all())
+
+    class Meta:
+        model = ClientCompany
+        fields = '__all__'
+        read_only_fields = ['uuid', 'created_at', 'updated_at']
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['institution'] = InstitutionSerializer(instance.institution).data
+        return rep
+    
+class ProductSerializer(serializers.ModelSerializer):
+    institution = serializers.PrimaryKeyRelatedField(queryset=Institution.objects.all())
+
+    class Meta:
+        model = Product
+        fields = '__all__'
+        read_only_fields = ['uuid']
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['institution'] = InstitutionSerializer(instance.institution).data
+        return rep    
+    
+    def validate_feedback_fields(self, value):
+        if not isinstance(value, list):
+            raise serializers.ValidationError("Feedback fields must be a list.")
+        
+        valid_field_types = ['text', 'textarea', 'select', 'checkbox', 'number', 'email', 'file']
+        
+        for field in value:
+            if not isinstance(field, dict):
+                raise serializers.ValidationError("Each feedback field must be a dictionary.")
+            
+            if 'name' not in field or 'type' not in field:
+                raise serializers.ValidationError("Each feedback field must have 'name' and 'type'.")
+            
+            if field['type'] not in valid_field_types:
+                raise serializers.ValidationError(f"Invalid field type: {field['type']}. Must be one of {valid_field_types}.")
+            
+            if 'is_required' in field and not isinstance(field['is_required'], bool):
+                raise serializers.ValidationError("'is_required' must be a boolean value.")
+            
+            if field['type'] == 'select' and 'options' not in field:
+                raise serializers.ValidationError("Select fields must have 'options'.")
+            
+        return value    
+    
+class ClientCompanyProductSerializer(serializers.ModelSerializer):
+    client_company = serializers.PrimaryKeyRelatedField(queryset=ClientCompany.objects.all())
+    product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
+
+    class Meta:
+        model = ClientCompanyProduct
+        fields = '__all__'
+        read_only_fields = ['uuid', 'created_at', 'created_by']
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['client_company'] = ClientCompanySerializer(instance.client_company).data
+        rep['product'] = ProductSerializer(instance.product).data
+        return rep    
+        
