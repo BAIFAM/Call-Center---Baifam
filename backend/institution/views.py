@@ -544,11 +544,74 @@ class ProductListCreateView(APIView):
     @extend_schema(
         summary="Create a new product for a specific institution",
         description=(
-                "Field types must be one of: "
-                "`text`, `textarea`, `select`, `checkbox`, `number`, `email`, `file`."
-            ),
+            "Field types must be one of: "
+            "`text`, `textarea`, `select`, `checkbox`, `number`, `email`, `file`."
+        ),
         request=ProductSerializer,
-        responses={201: ProductSerializer}
+        responses={201: ProductSerializer},
+        examples=[
+            OpenApiExample(
+                name="Product Creation - All Field Types",
+                value={
+                    "institution": 1,
+                    "name": "loan",
+                    "descriptions": "loaner",
+                    "status": "active",
+                    "feedback_fields": [
+                        {
+                            "name": "customer_name",
+                            "type": "text",
+                            "min_length": 2,
+                            "max_length": 100,
+                            "is_required": True
+                        },
+                        {
+                            "name": "comments",
+                            "type": "textarea",
+                            "min_length": 5,
+                            "max_length": 500,
+                            "is_required": False
+                        },
+                        {
+                            "name": "rating",
+                            "type": "number",
+                            "min_value": 1,
+                            "max_value": 10,
+                            "is_required": True
+                        },
+                        {
+                            "name": "email_address",
+                            "type": "email",
+                            "is_required": True
+                        },
+                        {
+                            "name": "is_satisfied",
+                            "type": "select",
+                            "options": ["yes", "no", "maybe"],
+                            "is_required": True
+                        },
+                        {
+                            "name": "service_quality",
+                            "type": "checkbox",
+                            "options": ["excellent", "good", "fair", "poor"],
+                            "is_required": True
+                        },
+                        {
+                            "name": "supporting_screenshot",
+                            "type": "file",
+                            "is_required": False
+                        },
+                        {
+                            "name": "identity_document",
+                            "type": "file",
+                            "is_required": True
+                        }
+                    ]
+                },
+                request_only=True,
+                response_only=False
+            )
+        ]
     )
     def post(self, request, institution_id):
         institution = get_object_or_404(Institution, id=institution_id)
