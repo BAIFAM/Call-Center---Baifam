@@ -4,19 +4,21 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Icon } from "@iconify/react"
 import type { Call } from "@/app/types/types.utils"
+import { ICall } from "@/app/types/api.types"
+import { formatDate } from "date-fns"
 
 interface CallsListProps {
-  calls: Call[]
+  calls: ICall[]
 }
 
 export function CallsList({ calls }: CallsListProps) {
-  const getStatusColor = (status: Call["status"]) => {
+  const getStatusColor = (status: ICall["status"]) => {
     switch (status) {
-      case "Complete":
+      case "completed":
         return "bg-green-100 text-green-800"
-      case "Missed":
+      case "failed":
         return "bg-red-100 text-red-800"
-      case "Unanswered":
+      case "busy":
         return "bg-gray-100 text-gray-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -51,16 +53,16 @@ export function CallsList({ calls }: CallsListProps) {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {calls.map((call) => (
-              <tr key={call.id} className="hover:bg-gray-50">
+            {calls.map((call, idx) => (
+              <tr key={idx} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <input type="checkbox" className="rounded" />
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{call.date}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{call.client}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{call.direction}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{call.customField}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{call.agent}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDate(new Date(call.made_on), "PPpp")}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{call.contact.name}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{call.contact.phone_number}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{call.contact.country}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{call.made_by.fullname}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <Badge className={`rounded-full ${getStatusColor(call.status)}`}>{call.status}</Badge>
                 </td>

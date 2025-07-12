@@ -5,6 +5,7 @@ import { ContactDetailsHeader } from "@/components/contacts/contacts-details-hea
 import { ContactDetailsInfo } from "@/components/contacts/contact-details-info"
 import { ContactDetailsTabs } from "@/components/contacts/contact-details-tabs"
 import { CallHistoryRecord, RecentAssignee } from "@/app/types/types.utils"
+import { useParams } from "next/navigation"
 
 
 
@@ -94,7 +95,9 @@ const mockRecentAssignees: RecentAssignee[] = [
   },
 ]
 
-export default function ContactDetailsPage({ params }: { params: { id: string } }) {
+export default function ContactDetailsPage() {
+  const params = useParams()
+  const contactId = params.id as string
   const [activeTab, setActiveTab] = useState<"call-history" | "recent-assignees" | "documents">("call-history")
 
   return (

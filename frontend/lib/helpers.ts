@@ -1,11 +1,11 @@
-import {clsx, type ClassValue} from "clsx";
-import {twMerge} from "tailwind-merge";
-import {format} from "date-fns";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+import { format } from "date-fns";
 
 import apiRequest from "./apiRequest";
 
-import {IMarketPlaceOrder, IPaginatedResponse, IPermission, IUser, Role} from "@/app/types/api.types";
-import {store} from "@/store";
+import { IPaginatedResponse, IPermission, IUser, Role } from "@/app/types/api.types";
+import { store } from "@/store";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -142,9 +142,9 @@ export function formatCurrency(amount: any) {
   return numAmount % 1 === 0
     ? numAmount.toLocaleString("en-US")
     : numAmount.toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      });
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
 }
 
 export function formatTransactionDate(dateString: any) {
@@ -277,26 +277,12 @@ export function hasAnyRequiredPermissions(
   );
 }
 
-export const fetchMarketPlaceOrders = async () => {
-  try {
-    const selectedBranch = store.getState().auth.selectedBranch.value;
 
-    if (!selectedBranch) {
-      return null;
-    }
-    const response = await apiRequest.get(`marketplace/orders/by-branch/${selectedBranch.id}`);
-
-    return response.data as IMarketPlaceOrder[];
-  } catch {
-    // console.log("\nError fetching orders as : ", error)
-    return null;
-  }
-};
 
 export const getInstitutionById = async (InstitutionId: number) =>
   await apiRequest.get(`institution/${InstitutionId}/`);
 
-export async function sendOtp({mode, email}: {mode: "password_link" | "otp"; email: string}) {
+export async function sendOtp({ mode, email }: { mode: "password_link" | "otp"; email: string }) {
   return await apiRequest.post(`user/resend-otp/?mode=${mode}`, {
     email,
   });

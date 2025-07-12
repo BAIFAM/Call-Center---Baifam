@@ -3,8 +3,8 @@
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Icon } from "@iconify/react"
-import type { IContact } from "@/app/types/types.utils"
 import Link from "next/link"
+import { IContact } from "@/app/types/api.types"
 
 interface ContactsListProps {
   contacts: IContact[]
@@ -13,6 +13,8 @@ interface ContactsListProps {
 }
 
 export function ContactsList({ contacts, selectedContactIds, onSelectionChange }: ContactsListProps) {
+
+  console.log("\nRendering ContactsList with contacts:", contacts)
   const getStatusColor = (status: IContact["status"]) => {
     switch (status) {
       case "Active":
@@ -28,7 +30,7 @@ export function ContactsList({ contacts, selectedContactIds, onSelectionChange }
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      onSelectionChange(contacts.map((contact) => contact.id))
+      onSelectionChange(contacts.map((contact) => contact.uuid))
     } else {
       onSelectionChange([])
     }
@@ -77,37 +79,37 @@ export function ContactsList({ contacts, selectedContactIds, onSelectionChange }
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {contacts.map((contact) => (
+            {contacts.map((contact, idx) => (
               <tr
-                key={contact.id}
-                className={`hover:bg-gray-50 ${selectedContactIds.includes(contact.id) ? "bg-blue-50" : ""}`}
+                key={idx}
+                className={`hover:bg-gray-50 ${selectedContactIds.includes(contact.uuid) ? "bg-blue-50" : ""}`}
               >
                 <td className="px-4 py-3 whitespace-nowrap">
                   <input
                     type="checkbox"
                     className="rounded"
-                    checked={selectedContactIds.includes(contact.id)}
-                    onChange={(e) => handleSelectContact(contact.id, e.target.checked)}
+                    checked={selectedContactIds.includes(contact.uuid)}
+                    onChange={(e) => handleSelectContact(contact.uuid, e.target.checked)}
                   />
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">{contact.name}</div>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{contact.phone}</div>
+                  <div className="text-sm text-gray-900">{contact.phone_number}</div>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{contact.agent || "-"}</div>
+                  <div className="text-sm text-gray-900">{contact.country_code || " No agent"}</div>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{contact.product}</div>
+                  <div className="text-sm text-gray-900">{contact.product.name}</div>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
                   <Badge className={`rounded-full ${getStatusColor(contact.status)}`}>{contact.status}</Badge>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
                   <div className="flex items-center space-x-2">
-                    <Link href={`/contacts/${contact.id}`}>
+                    <Link href={`/contacts/${contact.uuid}`}>
                       <Button variant="ghost" size="sm" className="p-2 rounded-lg">
                         <Icon icon="hugeicons:view" className="w-4 h-4" />
                       </Button>

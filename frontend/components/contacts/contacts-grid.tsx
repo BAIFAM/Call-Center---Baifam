@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Icon } from "@iconify/react"
-import type { IContact } from "@/app/types/types.utils"
+import { IContact } from "@/app/types/api.types"
 import Link from "next/link"
 
 interface ContactsGridProps {
@@ -38,29 +38,28 @@ export function ContactsGrid({ contacts, selectedContactIds, onSelectionChange }
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {contacts.map((contact) => (
         <div
-          key={contact.id}
-          className={`bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow relative ${
-            selectedContactIds.includes(contact.id) ? "ring-2 ring-blue-500 bg-blue-50" : ""
-          }`}
+          key={contact.uuid}
+          className={`bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow relative ${selectedContactIds.includes(contact.uuid) ? "ring-2 ring-blue-500 bg-blue-50" : ""
+            }`}
         >
           {/* Selection checkbox */}
           <div className="absolute top-4 left-4">
             <input
               type="checkbox"
               className="rounded"
-              checked={selectedContactIds.includes(contact.id)}
-              onChange={(e) => handleSelectContact(contact.id, e.target.checked)}
+              checked={selectedContactIds.includes(contact.uuid)}
+              onChange={(e) => handleSelectContact(contact.uuid, e.target.checked)}
             />
           </div>
 
           <div className="flex items-start justify-between mb-4 ml-8">
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-gray-900 mb-1">{contact.name}</h3>
-              <p className="text-sm text-gray-600 mb-2">{contact.phone}</p>
+              <p className="text-sm text-gray-600 mb-2">{contact.phone_number}</p>
               <div className="flex items-center space-x-4 text-sm text-gray-500">
-                <span>{contact.product}</span>
+                <span>{contact.product.name}</span>
                 <span>•</span>
-                <span>{contact.agent || "Unassigned"}</span>
+                <span>{"Unassigned"}</span>
               </div>
             </div>
             <Badge className={`rounded-full ${getStatusColor(contact.status)}`}>{contact.status}</Badge>
@@ -73,7 +72,7 @@ export function ContactsGrid({ contacts, selectedContactIds, onSelectionChange }
             </Button>
 
             <div className="flex items-center space-x-1">
-              <Link href={`/contacts/${contact.id}`}>
+              <Link href={`/contacts/${contact.uuid}`}>
                 <Button variant="ghost" size="sm" className="p-2 rounded-lg">
                   <Icon icon="hugeicons:view" className="w-4 h-4" />
                 </Button>

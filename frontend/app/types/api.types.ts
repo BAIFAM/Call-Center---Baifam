@@ -1,4 +1,4 @@
-import {PERMISSION_CODES} from "./types.utils";
+import { CustomField, FieldType, PERMISSION_CODES } from "./types.utils";
 
 export interface IProductCategoryDetail {
   id: number;
@@ -17,13 +17,13 @@ export interface IUserInstitution {
   branches?: Branch[];
   first_phone_number: string;
   second_phone_number: string;
-  approval_date:string|null,
-  approval_status:"pending"|"approved"|"rejected"|"under_review",
-  approval_status_display:"Pending Approval"|"Approved"|"Rejected"|"Under Review",
-  documents:string[],
-  latitude:number,
-  logitude:number,
-  location:string
+  approval_date: string | null,
+  approval_status: "pending" | "approved" | "rejected" | "under_review",
+  approval_status_display: "Pending Approval" | "Approved" | "Rejected" | "Under Review",
+  documents: string[],
+  latitude: number,
+  logitude: number,
+  location: string
 }
 
 
@@ -36,12 +36,6 @@ export interface IUnitOfMeasure {
   institution: number | null;
 }
 
-export interface ICartItem {
-  id: number;
-  name: string;
-  price: number;
-  quantity: number;
-}
 
 export interface Product {
   product: any;
@@ -64,69 +58,7 @@ export interface Product {
   is_approved: boolean;
 }
 
-export interface IProductReturned {
-  id: number;
-  product: number;
-  product_details: Product;
-  quantity: string;
-  condition: "GOOD" | "OPENED" | "DAMAGED" | "EXPIRED";
-  reason: string;
-}
 
-export interface IReturnRequest {
-  id: number;
-  sale_transaction: number;
-  sale_transaction_code: string;
-  branch: number;
-  request_date: string;
-  return_status: "PENDING" | "APPROVED" | "REJECTED";
-  notes: string;
-  reference_code: string;
-  replacement_transaction?: number;
-  replacement_transaction_code?: string;
-  created_by: number;
-  products_returned: IProductReturned[];
-  tasks: Array<ITask>;
-  status: string;
-}
-
-export interface IBranchStoreProduct {
-  id: number;
-  branch: number;
-  product: Product;
-  quantity_in_stock: number;
-  quantity_in_shelf: number;
-  stock_threshold: number | null;
-  shelf_threshold: number | null;
-  branch_selling_price: number;
-}
-
-export interface IPurchaseOrderProduct {
-  id: number;
-  purchase_order: number;
-  product: number;
-  quantity: string;
-  unit_price: string;
-  total_price: string;
-  product_details: Product;
-}
-
-export interface ISupplier {
-  id: number;
-  supplier_name: string;
-  supplier_email: string;
-  supplier_phone_number: string;
-  institution: number;
-}
-
-export interface IPurchaseOrder {
-  id: number;
-  supplier: ISupplier;
-  order_date: string;
-  order_status: string;
-  total_amount: string;
-  purchase_order_products: IPurchaseOrderProduct[];
-}
 
 export interface ITask {
   id: number;
@@ -146,12 +78,7 @@ export interface IApprovalProductDetails extends Product {
   tasks: Array<ITask>;
 }
 
-export interface IApprovalPurchaseOrderDetails extends IPurchaseOrder {
-  id: number;
-  institution: number;
-  status: string;
-  tasks: Array<ITask>;
-}
+
 
 export interface Role {
   id: number;
@@ -173,7 +100,7 @@ export type WorkflowAction = {
 export interface Branch {
   id: number;
   institution: number;
-  institution_name?:string;
+  institution_name?: string;
   tills?: ITill[];
   branch_name: string;
   branch_phone_number?: string;
@@ -252,11 +179,7 @@ export interface SalesTransaction {
   products: SalesTransactionProduct[];
 }
 
-export interface IMarketPlaceOrderProduct {
-  product: IBranchStoreProduct;
-  price: number;
-  quantity: number;
-}
+
 
 export type IOrderStatus = {
   code: string;
@@ -271,22 +194,7 @@ export type IOrderSubStatus = {
   order_status: IOrderStatus;
 };
 
-export interface IMarketPlaceOrder {
-  branch: Branch;
-  order_id: string;
-  order_date: string;
-  order_sub_status: IOrderSubStatus;
-  total_amount: number;
-  is_to_be_delivered: boolean;
-  delivery_address: string;
-  created_at: string;
-  products: IMarketPlaceOrderProduct[];
-  updated_at: string;
-  sale_transaction: SalesTransaction;
-  customer_profile: ICustomerProfile;
-  delivery_info: string | null;
-  customer: IUser;
-}
+
 
 export interface StoredColorData {
   colors: string[];
@@ -346,4 +254,84 @@ export interface IResponse<T> {
   status: string;
   message: string;
   data: T;
+}
+
+// {
+//   "product": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+//     "name": "string",
+//       "phone_number": "string",
+//         "country": "string",
+//           "country_code": "string",
+//             "status": "new"
+// }
+
+export interface ICall {
+  uuid: string;
+  contact: IContact;
+  feedback: string;
+  status: "failed" | "completed" | "busy";
+  made_on: string;
+  made_by: IUser
+}
+
+
+export interface IContact {
+  uuid: string;
+  product: ICallCenterProduct
+  name: string;
+  phone_number: string;
+  country: string;
+  country_code: string;
+  status: string;
+}
+
+export interface IContactFormData {
+  name: string;
+  phone_number: string;
+  country: string;
+  country_code: string;
+  status: string;
+  product: string;
+}
+
+
+export interface IClientCompany {
+  uuid: string;
+  institution: number;
+  company_name: string;
+  contact_email: string;
+  contact_phone: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  has_system: boolean;
+  callback_url: string;
+  api_key: string;
+  created_by: number;
+}
+
+
+export interface ICallCenterProduct {
+  uuid: string;
+  institution: number;
+  name: string;
+  descriptions: string;
+  status: "active" | "inactive";
+  feedback_fields: Omit<CustomField, 'id'>[];
+}
+
+// name: string;
+//             type: FieldType;
+//             min_length?: number;
+//             max_length?: number;
+//             options?: string[];
+//             is_required: boolean;
+
+export interface IFeedbackFieldFormData {
+  name: string;
+  type: FieldType;
+  min_length?: number;
+  max_length?: number;
+  options?: string[];
+  is_required: boolean;
 }
