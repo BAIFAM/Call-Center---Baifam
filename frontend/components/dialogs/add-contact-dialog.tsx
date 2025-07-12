@@ -4,33 +4,46 @@ import { useState } from "react"
 import { DialogSkeleton } from "@/components/dialogs/dialog-skeleton"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
+import { ICallCenterProduct } from "@/app/types/api.types"
 
 interface AddContactDialogProps {
   isOpen: boolean
   onClose: () => void
-  onAddContact: (contact: { name: string; phone: string; product: string }) => void
+  onAddContact: (contact: { name: string; phone: string; product: string; country_code: string; country: string }) => void
+  products: ICallCenterProduct[];
+  onRefreshContacts: () => void
 }
 
-export function AddContactDialog({ isOpen, onClose, onAddContact }: AddContactDialogProps) {
-  const [formData, setFormData] = useState({
+export function AddContactDialog({ isOpen, onClose, onAddContact, products, onRefreshContacts }: AddContactDialogProps) {
+  const [formData, setFormData] = useState<{ name: string; phone: string; product: string; country_code: string; country: string }>({
     name: "",
     phone: "",
     product: "",
+    country_code: "+256",
+    country: "Uganda",
   })
 
   const handleConfirm = () => {
     if (formData.name.trim() && formData.phone.trim() && formData.product) {
       onAddContact(formData)
-      setFormData({ name: "", phone: "", product: "" })
+      setFormData({ name: "", phone: "", product: "", country_code: "+256", country: "Uganda" });
+      onRefreshContacts()
     }
   }
 
   const handleCancel = () => {
-    setFormData({ name: "", phone: "", product: "" })
+    setFormData({ name: "", phone: "", product: "", country_code: "+256", country: "Uganda" });
   }
 
   const isFormValid = formData.name.trim() !== "" && formData.phone.trim() !== "" && formData.product !== ""
+
+  const countries = [
+    { value: 'Uganda', label: 'Uganda', code: '+256' },
+    { value: 'Kenya', label: 'Kenya', code: '+254' },
+    { value: 'Tanzania', label: 'Tanzania', code: '+255' },
+    // ...other countries
+  ];
 
   return (
     <DialogSkeleton
@@ -77,13 +90,52 @@ export function AddContactDialog({ isOpen, onClose, onAddContact }: AddContactDi
             value={formData.product}
             onValueChange={(value) => setFormData((prev) => ({ ...prev, product: value }))}
           >
-            <SelectTrigger className="mt-1 rounded-xl">
+            <SelectTrigger>
               <SelectValue placeholder="Select Product" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Loan">Loan</SelectItem>
-              <SelectItem value="Valuation">Valuation</SelectItem>
-              <SelectItem value="Investment">Investment</SelectItem>
+              {
+                products.map((product) => (
+                  <SelectItem key={product.uuid} value={product.uuid}>
+                    {product.name}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label htmlFor="contact-country" className="text-sm font-medium">
+            Country
+          </Label>
+          <Select
+            value={formData.country}
+            onValueChange={(value) => {
+              const selectedCountry = countries.find((c) => c.value === value);
+              if (selectedCountry) {
+                setFormData((prev) => ({
+                  ...prev,
+                  country: selectedCountry.value,
+                  country_code: selectedCountry.code,
+                }));
+              } else {
+                setFormData((prev) => ({
+                  ...prev,
+                  country: "Uganda",
+                  country_code: "+256",
+                }));
+              }
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select Country" />
+            </SelectTrigger>
+            <SelectContent>
+              {countries.map((country) => (
+                <SelectItem key={country.value} value={country.value}>
+                  {country.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

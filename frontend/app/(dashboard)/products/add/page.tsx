@@ -11,6 +11,7 @@ import { AddFieldDialog } from "@/components/dialogs/add-field-dialog"
 import { EditFieldDialog } from "@/components/dialogs/edit-field-dialog"
 import { CustomFieldComponent } from "@/components/form/custom-field"
 import type { CustomField, AddFieldFormData } from "@/app/types/types.utils"
+import { institutionAPI } from "@/lib/api-helpers"
 
 export default function AddProductPage() {
   const router = useRouter()
@@ -48,19 +49,19 @@ export default function AddProductPage() {
       prev.map((field) =>
         field.id === fieldId
           ? {
-              ...field,
-              name: fieldData.title,
-              description: fieldData.description,
-              type: fieldData.fieldType,
-              options: fieldData.options,
-              // Reset value if field type changed
-              value:
-                field.type !== fieldData.fieldType
-                  ? fieldData.fieldType === "checkbox" && fieldData.options
-                    ? []
-                    : ""
-                  : field.value,
-            }
+            ...field,
+            name: fieldData.title,
+            description: fieldData.description,
+            type: fieldData.fieldType,
+            options: fieldData.options,
+            // Reset value if field type changed
+            value:
+              field.type !== fieldData.fieldType
+                ? fieldData.fieldType === "checkbox" && fieldData.options
+                  ? []
+                  : ""
+                : field.value,
+          }
           : field,
       ),
     )
@@ -75,13 +76,18 @@ export default function AddProductPage() {
     setCustomFields((prev) => prev.map((field) => (field.id === fieldId ? { ...field, value } : field)))
   }
 
-  const handleSubmit = () => {
-    // TODO: Implement product creation
-    console.log("Creating product:", {
+  const handleSubmit = async () => {
+    await institutionAPI.createProduct({
+      institutionId: 1,
       name: productName,
       description: productDescription,
-      customFields,
-    })
+      feedbackFields: customFields.map((field) => ({
+        name: field.name,
+        type: field.type,
+        description: field.description,
+        options: field.options,
+      })),
+    });
     router.push("/products")
   }
 

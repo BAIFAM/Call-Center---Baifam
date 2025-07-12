@@ -3,3 +3,4 @@
 .husky
 .env.local
 *.env
+node_modules

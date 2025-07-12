@@ -2,40 +2,95 @@
 "use client";
 
 
+import { ICall, IContact } from "@/app/types/api.types";
 import { StatsCard } from "@/components/dashboard/stats-cards"
+import { callsAPI, contactsAPI } from "@/lib/api-helpers";
+import { selectSelectedInstitution } from "@/store/auth/selectors";
 import { Icon } from "@iconify/react"
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+
+// const stats = [
+//   {
+//     title: "Calls Today",
+//     value: "130",
+//     icon: "hugeicons:call-outgoing-02",
+//     color: "text-blue-600",
+//     bgColor: "bg-blue-100",
+//   },
+//   {
+//     title: "Total Agents",
+//     value: "74",
+//     icon: "hugeicons:headset",
+//     color: "text-green-600",
+//     bgColor: "bg-green-100",
+//   },
+//   {
+//     title: "Total Contacts",
+//     value: "342",
+//     icon: "hugeicons:contact-01",
+//     color: "text-purple-600",
+//     bgColor: "bg-purple-100",
+//   },
+//   {
+//     title: "Prospect Contacts",
+//     value: "32",
+//     icon: "hugeicons:contact",
+//     color: "text-orange-600",
+//     bgColor: "bg-orange-100",
+//   },
+// ]
 
 export default function DashboardPage() {
+
+  const [calls, setCalls] = useState<ICall[]>([]);
+  const [contacts, setContacts] = useState<IContact[]>([]);
+
+  const selectedInstitution = useSelector(selectSelectedInstitution)
+
+  useEffect(() => {
+    handleFetchCalls();
+    handleFetchContacts()
+  }, []);
+
+  const handleFetchCalls = async () => {
+    if (!selectedInstitution) { return }
+    try {
+      const response = await callsAPI.getByInstitution({ institutionId: selectedInstitution.id });
+      setCalls(response);
+    } catch (error) {
+      console.error("Error fetching calls:", error);
+    }
+  };
+
+
+  const handleFetchContacts = async () => {
+    if (!selectedInstitution) { return }
+    try {
+      const response = await contactsAPI.getContactsByInstitution({ institutionId: selectedInstitution.id });
+      setContacts(response);
+    } catch (error) {
+      console.error("Error fetching contacts:", error);
+      console.error("Error fetching contacts:", error);
+    }
+  };
+
   const stats = [
     {
       title: "Calls Today",
-      value: "130",
+      value: calls.length.toString(),
       icon: "hugeicons:call-outgoing-02",
       color: "text-blue-600",
       bgColor: "bg-blue-100",
     },
     {
-      title: "Total Agents",
-      value: "74",
-      icon: "hugeicons:headset",
-      color: "text-green-600",
-      bgColor: "bg-green-100",
-    },
-    {
       title: "Total Contacts",
-      value: "342",
+      value: contacts.length.toString(),
       icon: "hugeicons:contact-01",
       color: "text-purple-600",
       bgColor: "bg-purple-100",
     },
-    {
-      title: "Prospect Contacts",
-      value: "32",
-      icon: "hugeicons:contact",
-      color: "text-orange-600",
-      bgColor: "bg-orange-100",
-    },
-  ]
+  ];
 
   return (
     <div className="space-y-6">

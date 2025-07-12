@@ -5,34 +5,41 @@ import { Icon } from "@iconify/react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { Input } from "../ui/input"
 import { useEffect, useState } from "react"
-import type { IContact } from "@/app/types/types.utils"
 import { AddContactDialog } from "@/components/dialogs/add-contact-dialog"
 import { ImportContactsDialog } from "@/components/dialogs/import-contacts-dialog"
 import { ReassignContactsDialog } from "@/components/dialogs/reassign-contacts-dialog"
 import { AssignContactsDialog } from "@/components/dialogs/assign-contacts-dialog"
+import { ICallCenterProduct, IContact } from "@/app/types/api.types"
+import { contactsAPI, institutionAPI } from "@/lib/api-helpers"
+import { toast } from "sonner"
+import { selectSelectedInstitution } from "@/store/auth/selectors"
+import { useSelector } from "react-redux"
+import { count } from "console"
 
 interface ContactsHeaderProps {
   contacts: IContact[]
   onFilteredContactsChange: (contacts: IContact[]) => void
   selectedContactIds?: string[]
-  onContactsUpdate?: (contacts: IContact[]) => void
+  onRefreshContacts: () => void
 }
 
 export function ContactsHeader({
   contacts,
   onFilteredContactsChange,
   selectedContactIds = [],
-  onContactsUpdate,
+  onRefreshContacts,
 }: ContactsHeaderProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
-  const [productFilter, setProductFilter] = useState("all")
+  const [productFilter, setProductFilter] = useState("all");
+  const [products, setProducts] = useState<ICallCenterProduct[]>([])
 
   // Dialog states
   const [isAddContactOpen, setIsAddContactOpen] = useState(false)
   const [isImportContactsOpen, setIsImportContactsOpen] = useState(false)
   const [isReassignContactsOpen, setIsReassignContactsOpen] = useState(false)
   const [isAssignContactsOpen, setIsAssignContactsOpen] = useState(false)
+  const selectedInstitution = useSelector(selectSelectedInstitution);
 
   useEffect(() => {
     let filtered = contacts
@@ -40,7 +47,7 @@ export function ContactsHeader({
     if (searchTerm) {
       filtered = filtered.filter(
         (contact) =>
-          contact.name.toLowerCase().includes(searchTerm.toLowerCase()) || contact.phone.includes(searchTerm),
+          contact.name.toLowerCase().includes(searchTerm.toLowerCase()) || contact.phone_number.includes(searchTerm),
       )
     }
 
@@ -55,18 +62,35 @@ export function ContactsHeader({
     onFilteredContactsChange(filtered)
   }, [searchTerm, statusFilter, productFilter, contacts, onFilteredContactsChange])
 
-  const handleAddContact = (contactData: { name: string; phone: string; product: string }) => {
-    const newContact: IContact = {
-      id: Date.now().toString(),
+  useEffect(() => {
+    handleFetchInstitutionProducts()
+  }, [])
+
+  const handleAddContact = async (contactData: { name: string; phone: string; product: string, country_code: string, country: string }) => {
+    if (!selectedInstitution) {
+      return
+    }
+    const newContact: Omit<IContact, "uuid" | "status"> = {
       name: contactData.name,
-      phone: contactData.phone,
-      agent: null,
+      phone_number: contactData.phone,
       product: contactData.product,
-      status: "Active",
+      country_code: contactData.country_code,
+      country: contactData.country,
     }
 
-    const updatedContacts = [...contacts, newContact]
-    onContactsUpdate?.(updatedContacts)
+    try {
+      const createdContact = await contactsAPI.createForInstitution({
+        institutionId: selectedInstitution.id,
+        contactData: newContact,
+      })
+      console.log("Contact created:", createdContact)
+      onRefreshContacts()
+    } catch (error) {
+      console.error("Error creating contact:", error)
+      toast.error("Failed to create contact. Please try again later.")
+      return
+    }
+    onRefreshContacts()
     console.log("Added contact:", newContact)
   }
 
@@ -78,19 +102,13 @@ export function ContactsHeader({
 
   const handleReassignContacts = (agentId: string, contactIds: string[]) => {
     const agentName = getAgentNameById(agentId)
-    const updatedContacts = contacts.map((contact) =>
-      contactIds.includes(contact.id) ? { ...contact, agent: agentName } : contact,
-    )
-    onContactsUpdate?.(updatedContacts)
+    onRefreshContacts()
     console.log(`Re-assigned ${contactIds.length} contacts to agent ${agentName}`)
   }
 
   const handleAssignContacts = (agentId: string, contactIds: string[]) => {
     const agentName = getAgentNameById(agentId)
-    const updatedContacts = contacts.map((contact) =>
-      contactIds.includes(contact.id) ? { ...contact, agent: agentName } : contact,
-    )
-    onContactsUpdate?.(updatedContacts)
+    onRefreshContacts()
     console.log(`Assigned ${contactIds.length} contacts to agent ${agentName}`)
   }
 
@@ -105,13 +123,23 @@ export function ContactsHeader({
     return agents.find((agent) => agent.id === agentId)?.name || "Unknown Agent"
   }
 
+  const handleFetchInstitutionProducts = async () => {
+    try {
+      const products = await institutionAPI.getProductsByInstitution({ institutionId: 1 })
+      setProducts(products)
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      toast.error("Failed to fetch products. Please try again later.")
+    }
+  }
+
   const handleExport = () => {
     // Create CSV content
     const csvContent = [
-      "Name,Phone,Agent,Product,Status",
+      "Name,Phone,Country Code,Product,Status",
       ...contacts.map(
         (contact) =>
-          `"${contact.name}","${contact.phone}","${contact.agent || "Unassigned"}","${contact.product}","${contact.status}"`,
+          `"${contact.name}","${contact.phone_number}","${contact?.country_code || "Unassigned"}","${contact.product}","${contact.status}"`,
       ),
     ].join("\n")
 
@@ -211,6 +239,8 @@ export function ContactsHeader({
         isOpen={isAddContactOpen}
         onClose={() => setIsAddContactOpen(false)}
         onAddContact={handleAddContact}
+        products={products}
+        onRefreshContacts={onRefreshContacts}
       />
 
       <ImportContactsDialog
