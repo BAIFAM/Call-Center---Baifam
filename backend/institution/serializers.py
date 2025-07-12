@@ -193,6 +193,10 @@ class ClientCompanySerializer(serializers.ModelSerializer):
         rep['institution'] = InstitutionSerializer(instance.institution).data
         return rep
     
+import re
+from rest_framework import serializers
+from .models import Product, Institution
+
 class ProductSerializer(serializers.ModelSerializer):
     institution = serializers.PrimaryKeyRelatedField(queryset=Institution.objects.all())
 
@@ -206,11 +210,35 @@ class ProductSerializer(serializers.ModelSerializer):
         rep['institution'] = InstitutionSerializer(instance.institution).data
         return rep    
     
+    def generate_code_from_name(self, name):
+        """
+        Generate a code from field name by:
+        1. Converting to lowercase
+        2. Replacing spaces and special characters with underscores
+        3. Removing multiple consecutive underscores
+        4. Stripping leading/trailing underscores
+        """
+        if not name:
+            return ""
+        
+        # Convert to lowercase and replace spaces/special chars with underscores
+        code = re.sub(r'[^a-zA-Z0-9]+', '_', name.lower())
+        
+        # Remove multiple consecutive underscores
+        code = re.sub(r'_+', '_', code)
+        
+        # Strip leading and trailing underscores
+        code = code.strip('_')
+        
+        return code
+    
     def validate_feedback_fields(self, value):
         if not isinstance(value, list):
             raise serializers.ValidationError("Feedback fields must be a list.")
         
         valid_field_types = ['text', 'textarea', 'select', 'checkbox', 'number', 'email', 'file']
+        processed_fields = []
+        used_codes = set()
         
         for field in value:
             if not isinstance(field, dict):
@@ -228,7 +256,24 @@ class ProductSerializer(serializers.ModelSerializer):
             if field['type'] == 'select' and 'options' not in field:
                 raise serializers.ValidationError("Select fields must have 'options'.")
             
-        return value    
+            # Generate code from name
+            base_code = self.generate_code_from_name(field['name'])
+            
+            # Ensure code uniqueness within this feedback_fields array
+            code = base_code
+            counter = 1
+            while code in used_codes:
+                code = f"{base_code}_{counter}"
+                counter += 1
+            
+            used_codes.add(code)
+            
+            # Create a copy of the field and add the code
+            processed_field = field.copy()
+            processed_field['code'] = code
+            processed_fields.append(processed_field)
+        
+        return processed_fields
     
 class ClientCompanyProductSerializer(serializers.ModelSerializer):
     client_company = serializers.PrimaryKeyRelatedField(queryset=ClientCompany.objects.all())
