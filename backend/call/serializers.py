@@ -91,6 +91,7 @@ class CallSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
         
         rep['contact'] = ContactSerializer(instance.contact).data
+        rep['made_by'] = CustomUserSerializer(instance.made_by).data if instance.made_by else None
         
         # Remove any dynamically added file fields from representation
         if hasattr(self, 'context') and 'request' in self.context:

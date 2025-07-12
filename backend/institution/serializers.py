@@ -236,7 +236,7 @@ class ProductSerializer(serializers.ModelSerializer):
         if not isinstance(value, list):
             raise serializers.ValidationError("Feedback fields must be a list.")
         
-        valid_field_types = ['text', 'textarea', 'select', 'checkbox', 'number', 'email', 'file']
+        valid_field_types = ['text', 'textarea', 'select', 'checkbox', 'number', 'email', 'file', 'date']
         processed_fields = []
         used_codes = set()
         
