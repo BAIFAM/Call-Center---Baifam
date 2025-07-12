@@ -13,6 +13,8 @@ interface ContactsListProps {
 }
 
 export function ContactsList({ contacts, selectedContactIds, onSelectionChange }: ContactsListProps) {
+
+  console.log("\nRendering ContactsList with contacts:", contacts)
   const getStatusColor = (status: IContact["status"]) => {
     switch (status) {
       case "Active":
@@ -77,9 +79,9 @@ export function ContactsList({ contacts, selectedContactIds, onSelectionChange }
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {contacts.map((contact) => (
+            {contacts.map((contact, idx) => (
               <tr
-                key={contact.uuid}
+                key={idx}
                 className={`hover:bg-gray-50 ${selectedContactIds.includes(contact.uuid) ? "bg-blue-50" : ""}`}
               >
                 <td className="px-4 py-3 whitespace-nowrap">
@@ -100,7 +102,7 @@ export function ContactsList({ contacts, selectedContactIds, onSelectionChange }
                   <div className="text-sm text-gray-900">{contact.country_code || " No agent"}</div>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{contact.product}</div>
+                  <div className="text-sm text-gray-900">{contact.product.name}</div>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
                   <Badge className={`rounded-full ${getStatusColor(contact.status)}`}>{contact.status}</Badge>

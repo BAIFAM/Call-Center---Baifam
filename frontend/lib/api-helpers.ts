@@ -1,6 +1,7 @@
-import { ICall, ICallCenterProduct, IContact, IFeedbackFieldFormData } from "@/app/types/api.types";
+import { ICall, ICallCenterProduct, IContact, IContactFormData, IFeedbackFieldFormData } from "@/app/types/api.types";
 import apiRequest from "./apiRequest";
 import { CustomField, FieldType } from "@/app/types/types.utils";
+import { getInstitutionById } from "./helpers";
 
 
 type IContactCreationData = {
@@ -33,6 +34,27 @@ export const callsAPI = {
             console.error("Error fetching calls by institution:", error);
             throw error;
         }
+    },
+
+
+
+
+    createForProduct: async ({
+        productId,
+        institutionId,
+        callData
+    }: {
+        productId: number;
+        institutionId: number;
+        callData: Omit<ICall, "uuid" | "status">;
+    }) => {
+        try {
+            const response = await apiRequest.post(`call/products/${productId}/contacts/`, callData);
+            return response.data as IContact;
+        } catch (error) {
+            console.error("Error creating contact for product:", error);
+            throw error;
+        }
     }
 }
 
@@ -61,7 +83,7 @@ export const contactsAPI = {
         contactData
     }: {
         institutionId: number;
-        contactData: Omit<IContact, "uuid" | "status">;
+        contactData: Omit<IContactFormData, "uuid" | "status">;
     }) => {
         try {
             const response = await apiRequest.post(`call/contacts/institution/${institutionId}/`, contactData);

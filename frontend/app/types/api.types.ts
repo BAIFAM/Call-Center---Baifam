@@ -1,4 +1,4 @@
-import { FieldType, PERMISSION_CODES } from "./types.utils";
+import { CustomField, FieldType, PERMISSION_CODES } from "./types.utils";
 
 export interface IProductCategoryDetail {
   id: number;
@@ -256,25 +256,42 @@ export interface IResponse<T> {
   data: T;
 }
 
+// {
+//   "product": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+//     "name": "string",
+//       "phone_number": "string",
+//         "country": "string",
+//           "country_code": "string",
+//             "status": "new"
+// }
 
 export interface ICall {
   uuid: string;
-  contact: string;
+  contact: IContact;
   feedback: string;
-  status: "pending" | "in_progress" | "completed" | "failed";
+  status: "failed" | "completed" | "busy";
   made_on: string;
-  made_by: number;
+  made_by: IUser
 }
 
 
 export interface IContact {
   uuid: string;
-  product: string;
+  product: ICallCenterProduct
   name: string;
   phone_number: string;
   country: string;
   country_code: string;
   status: string;
+}
+
+export interface IContactFormData {
+  name: string;
+  phone_number: string;
+  country: string;
+  country_code: string;
+  status: string;
+  product: string;
 }
 
 
@@ -300,7 +317,7 @@ export interface ICallCenterProduct {
   name: string;
   descriptions: string;
   status: "active" | "inactive";
-  feedback_fields: string[];
+  feedback_fields: Partial<CustomField>[];
 }
 
 // name: string;

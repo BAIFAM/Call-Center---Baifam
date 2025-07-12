@@ -81,6 +81,8 @@ export default function ContactsPage() {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list")
   const [contacts, setContacts] = useState<IContact[]>([])
   const [filteredContacts, setFilteredContacts] = useState(contacts)
+  const [activeContactsCount, setActiveContactsCount] = useState(0)
+  const [archivedContactsCount, setArchivedContactsCount] = useState(0)
   const [selectedContactIds, setSelectedContactIds] = useState<string[]>([]);
 
   const selectedInstitution = useSelector(selectSelectedInstitution);
@@ -89,6 +91,12 @@ export default function ContactsPage() {
   useEffect(() => {
     handleFetchContacts()
   }, [selectedInstitution])
+
+  useEffect(() => {
+    setFilteredContacts(contacts)
+    setActiveContactsCount(contacts.filter(contact => contact.status.toLowerCase() === "active").length)
+    setArchivedContactsCount(contacts.filter(contact => contact.status.toLowerCase() === "inactive").length)
+  }, [contacts])
 
   const handleFetchContacts = async () => {
     if (!selectedInstitution) { return }
@@ -112,7 +120,7 @@ export default function ContactsPage() {
         selectedContactIds={selectedContactIds}
         onRefreshContacts={handleFetchContacts}
       />
-      <ContactsFilters viewMode={viewMode} onViewModeChange={setViewMode} />
+      <ContactsFilters viewMode={viewMode} onViewModeChange={setViewMode} activeContactsCount={activeContactsCount} archivedContactsCount={archivedContactsCount} />
 
       {viewMode === "list" ? (
         <ContactsList

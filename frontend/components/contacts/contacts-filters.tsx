@@ -1,18 +1,19 @@
 "use client"
 
-import {  useEffect } from "react"
+import { useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Icon } from "@iconify/react"
 import { IContact } from "@/app/types/types.utils"
 
 
 interface ContactsFiltersProps {
-    viewMode: "list" | "grid"
-  onViewModeChange: (mode: "list" | "grid") => void,
-  
+  viewMode: "list" | "grid"
+  onViewModeChange: (mode: "list" | "grid") => void
+  activeContactsCount: number
+  archivedContactsCount: number
 }
 
-export function ContactsFilters({viewMode, onViewModeChange}: ContactsFiltersProps) {
+export function ContactsFilters({ viewMode, onViewModeChange, activeContactsCount, archivedContactsCount }: ContactsFiltersProps) {
 
 
   return (
@@ -20,14 +21,14 @@ export function ContactsFilters({viewMode, onViewModeChange}: ContactsFiltersPro
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
           <Button variant="outline" className="rounded-xl border-primary-200 text-primary-700">
-            Active Contacts (321)
+            Active Contacts ({activeContactsCount})
           </Button>
           <Button variant="ghost" className="rounded-xl">
-            Archived
+            Archived ({archivedContactsCount})
           </Button>
         </div>
 
-         <div className="flex items-center bg-gray-100 rounded-xl p-1">
+        <div className="flex items-center bg-gray-100 rounded-xl p-1">
           <Button
             variant={viewMode === "list" ? "default" : "ghost"}
             size="sm"
@@ -49,7 +50,7 @@ export function ContactsFilters({viewMode, onViewModeChange}: ContactsFiltersPro
         </div>
       </div>
 
-      
+
     </div>
   )
 }

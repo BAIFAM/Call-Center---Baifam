@@ -9,7 +9,7 @@ import { AddContactDialog } from "@/components/dialogs/add-contact-dialog"
 import { ImportContactsDialog } from "@/components/dialogs/import-contacts-dialog"
 import { ReassignContactsDialog } from "@/components/dialogs/reassign-contacts-dialog"
 import { AssignContactsDialog } from "@/components/dialogs/assign-contacts-dialog"
-import { ICallCenterProduct, IContact } from "@/app/types/api.types"
+import { ICallCenterProduct, IContact, IContactFormData } from "@/app/types/api.types"
 import { contactsAPI, institutionAPI } from "@/lib/api-helpers"
 import { toast } from "sonner"
 import { selectSelectedInstitution } from "@/store/auth/selectors"
@@ -56,7 +56,7 @@ export function ContactsHeader({
     }
 
     if (productFilter !== "all") {
-      filtered = filtered.filter((contact) => contact.product === productFilter)
+      filtered = filtered.filter((contact) => contact.product.uuid === productFilter)
     }
 
     onFilteredContactsChange(filtered)
@@ -70,7 +70,7 @@ export function ContactsHeader({
     if (!selectedInstitution) {
       return
     }
-    const newContact: Omit<IContact, "uuid" | "status"> = {
+    const newContact: Omit<IContactFormData, "uuid" | "status"> = {
       name: contactData.name,
       phone_number: contactData.phone,
       product: contactData.product,
@@ -126,6 +126,7 @@ export function ContactsHeader({
   const handleFetchInstitutionProducts = async () => {
     try {
       const products = await institutionAPI.getProductsByInstitution({ institutionId: 1 })
+      console.log("\n\n ed products:", products)
       setProducts(products)
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -179,9 +180,9 @@ export function ContactsHeader({
               </SelectTrigger>
               <SelectContent className="rounded-xl">
                 <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Inactive">Inactive</SelectItem>
-                <SelectItem value="Processing">Processing</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="processing">Processing</SelectItem>
               </SelectContent>
             </Select>
 
@@ -191,8 +192,13 @@ export function ContactsHeader({
               </SelectTrigger>
               <SelectContent className="rounded-xl">
                 <SelectItem value="all">All Products</SelectItem>
-                <SelectItem value="Loan">Loan</SelectItem>
-                <SelectItem value="Valuation">Valuation</SelectItem>
+                {
+                  products.map((product) => (
+                    <SelectItem key={product.uuid} value={product.uuid}>
+                      {product.name}
+                    </SelectItem>
+                  ))
+                }
               </SelectContent>
             </Select>
           </div>

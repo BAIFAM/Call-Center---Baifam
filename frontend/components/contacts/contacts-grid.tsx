@@ -57,7 +57,7 @@ export function ContactsGrid({ contacts, selectedContactIds, onSelectionChange }
               <h3 className="text-lg font-semibold text-gray-900 mb-1">{contact.name}</h3>
               <p className="text-sm text-gray-600 mb-2">{contact.phone_number}</p>
               <div className="flex items-center space-x-4 text-sm text-gray-500">
-                <span>{contact.product}</span>
+                <span>{contact.product.name}</span>
                 <span>•</span>
                 <span>{"Unassigned"}</span>
               </div>

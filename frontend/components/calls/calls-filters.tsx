@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button"
 import { Icon } from "@iconify/react"
 import type { Call } from "@/app/types/types.utils"
 import Link from "next/link"
+import { ICall, ICallCenterProduct } from "@/app/types/api.types"
+import { institutionAPI } from "@/lib/api-helpers"
 
 interface CallsFiltersProps {
-  calls: Call[]
-  onFilteredCallsChange: (calls: Call[]) => void
+  calls: ICall[]
+  onFilteredCallsChange: (calls: ICall[]) => void
   totalCalls: number
 }
 
@@ -18,7 +20,24 @@ export function CallsFilters({ calls, onFilteredCallsChange, totalCalls }: Calls
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [directionFilter, setDirectionFilter] = useState("all")
-  const [productFilter, setProductFilter] = useState("all")
+  const [productFilter, setProductFilter] = useState("all");
+  const [products, setProducts] = useState<ICallCenterProduct[]>([]);
+
+
+  useEffect(() => {
+    handleFetchProducts();
+  }, []);
+
+  const handleFetchProducts = async () => {
+    try {
+      const fetchedProducts = await institutionAPI.getProductsByInstitution({
+        institutionId: 1,
+      });
+      setProducts(fetchedProducts);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
 
   useEffect(() => {
     let filtered = calls
@@ -26,8 +45,8 @@ export function CallsFilters({ calls, onFilteredCallsChange, totalCalls }: Calls
     if (searchTerm) {
       filtered = filtered.filter(
         (call) =>
-          call.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          call.agent.toLowerCase().includes(searchTerm.toLowerCase()),
+          call.contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          call.made_by.fullname.toLowerCase().includes(searchTerm.toLowerCase()),
       )
     }
 
@@ -35,12 +54,12 @@ export function CallsFilters({ calls, onFilteredCallsChange, totalCalls }: Calls
       filtered = filtered.filter((call) => call.status === statusFilter)
     }
 
-    if (directionFilter !== "all") {
-      filtered = filtered.filter((call) => call.direction === directionFilter)
-    }
+    // if (directionFilter !== "all") {
+    //   filtered = filtered.filter((call) => call.direction === directionFilter)
+    // }
 
     if (productFilter !== "all") {
-      filtered = filtered.filter((call) => call.product === productFilter)
+      filtered = filtered.filter((call) => call.contact.product.uuid === productFilter)
     }
 
     onFilteredCallsChange(filtered)
@@ -111,44 +130,27 @@ export function CallsFilters({ calls, onFilteredCallsChange, totalCalls }: Calls
         <div className="flex space-x-8 px-4">
           <button
             onClick={() => setProductFilter("all")}
-            className={`py-4 text-sm font-medium border-b-2 transition-colors ${
-              productFilter === "all"
-                ? "border-gray-900 text-gray-900"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
+            className={`py-4 text-sm font-medium border-b-2 transition-colors ${productFilter === "all"
+              ? "border-gray-900 text-gray-900"
+              : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
           >
             All Products
           </button>
-          <button
-            onClick={() => setProductFilter("Valuation")}
-            className={`py-4 text-sm font-medium border-b-2 transition-colors ${
-              productFilter === "Valuation"
-                ? "border-gray-900 text-gray-900"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Valuation
-          </button>
-          <button
-            onClick={() => setProductFilter("Loan")}
-            className={`py-4 text-sm font-medium border-b-2 transition-colors ${
-              productFilter === "Loan"
-                ? "border-gray-900 text-gray-900"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Loan
-          </button>
-          <button
-            onClick={() => setProductFilter("Investment")}
-            className={`py-4 text-sm font-medium border-b-2 transition-colors ${
-              productFilter === "Investment"
-                ? "border-gray-900 text-gray-900"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Investment
-          </button>
+          {
+            products.map((product) => (
+              <button
+                key={product.uuid}
+                onClick={() => setProductFilter(product.uuid)}
+                className={`py-4 text-sm font-medium border-b-2 transition-colors ${productFilter === product.uuid
+                  ? "border-gray-900 text-gray-900"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+                  }`}
+              >
+                {product.name}
+              </button>
+            ))}
+
         </div>
       </div>
     </div>
