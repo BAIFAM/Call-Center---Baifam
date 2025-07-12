@@ -44,9 +44,8 @@ import { useSelector } from "react-redux";
 export default function DashboardPage() {
 
   const [calls, setCalls] = useState<ICall[]>([]);
-  const [contacts, setContacts] = useState<IContact[]>([]);
-
   const selectedInstitution = useSelector(selectSelectedInstitution)
+  const [contacts, setContacts] = useState<IContact[]>([]);
 
   useEffect(() => {
     handleFetchCalls();

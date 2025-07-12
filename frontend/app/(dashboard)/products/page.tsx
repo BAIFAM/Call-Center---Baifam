@@ -43,9 +43,9 @@ import { ICallCenterProduct } from "@/app/types/api.types";
 
 export default function ProductsPage() {
   const router = useRouter();
-  const [products, setProducts] = useState<ICallCenterProduct[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [products, setProducts] = useState<ICallCenterProduct[]>([]);
 
   useEffect(() => {
     handleFetchProducts();

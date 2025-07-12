@@ -38,7 +38,6 @@ export const callsAPI = {
 
 
 
-
     createForProduct: async ({
         productId,
         institutionId,
@@ -53,6 +52,34 @@ export const callsAPI = {
             return response.data as IContact;
         } catch (error) {
             console.error("Error creating contact for product:", error);
+            throw error;
+        }
+    },
+
+    createCall: async ({
+        institutionId,
+        contact,
+        feedback,
+        status,
+    }: {
+        institutionId: number;
+        contact: string; // uuid
+        feedback: Record<string, any>;
+        status: "failed" | "completed" | "busy";
+    }) => {
+        try {
+            const payload = {
+                contact,
+                feedback,
+                status,
+            };
+            const response = await apiRequest.post(
+                `call/institution/${institutionId}/`,
+                payload
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error creating call:", error);
             throw error;
         }
     }

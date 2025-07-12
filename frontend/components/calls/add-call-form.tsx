@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,31 +12,86 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Icon } from "@iconify/react"
 import type { CallFormData } from "@/app/types/types.utils"
 import { useRouter } from "next/navigation"
+import { callsAPI, contactsAPI, institutionAPI } from "@/lib/api-helpers"
+import { ICallCenterProduct, IContact } from "@/app/types/api.types"
+import { useSelector } from "react-redux"
+import { selectSelectedInstitution } from "@/store/auth/selectors"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { toast } from "sonner"
 
 export function AddCallForm() {
 
-  const [formData, setFormData] = useState<CallFormData>({
+  const [products, setProducts] = useState<ICallCenterProduct[]>([]);
+  const [contacts, setContacts] = useState<IContact[]>([]);
+  const selectedInstitution = useSelector(selectSelectedInstitution)
+
+  useEffect(() => {
+    handleFetchProducts();
+    handleFetchContacts();
+  }, []);
+
+  const handleFetchProducts = async () => {
+    try {
+      const fetchedProducts = await institutionAPI.getProductsByInstitution({
+        institutionId: 1,
+      });
+      setProducts(fetchedProducts);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
+
+  const handleFetchContacts = async () => {
+    if (!selectedInstitution) { return }
+    try {
+      const response = await contactsAPI.getContactsByInstitution({ institutionId: selectedInstitution.id });
+      setContacts(response);
+    } catch (error) {
+      console.error("Error fetching contacts:", error);
+      console.error("Error fetching contacts:", error);
+    }
+  };
+
+  const [formData, setFormData] = useState<{
+    client: string
+    product: string
+    contact: string
+    status: string
+    date: string
+    duration: string
+    direction: string
+    feedback: Record<string, any>
+  }>({
     client: "",
+    contact: "",
     product: "",
     status: "",
     date: "",
     duration: "00:00:00",
     direction: "",
-    isProspect: true,
-    location: "",
-    comment: "",
+    feedback: {},
   })
 
   const router = useRouter();
 
-  const handleBack = () =>[
+  const handleBack = () => {
     router.back()
-  ]
+  }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Form submitted:", formData)
-    // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedInstitution) { return }
+    try {
+      await callsAPI.createCall({
+        institutionId: selectedInstitution.id,
+        contact: formData.contact,
+        feedback: formData.feedback,
+        status: formData.status as "failed" | "completed" | "busy",
+      });
+      toast.success("Call added successfully!");
+    } catch (error) {
+      toast.error("Failed to add call. Please try again.");
+    }
   }
 
   const handleInputChange = (field: keyof CallFormData, value: string | boolean) => {
@@ -45,6 +100,26 @@ export function AddCallForm() {
       [field]: value,
     }))
   }
+
+  // Find selected product
+  const selectedProduct = products.find((p) => p.uuid === formData.product);
+
+  // Handle feedback field change
+  const handleFeedbackChange = (fieldName: string, value: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      feedback: {
+        ...prev.feedback,
+        [fieldName]: value,
+      },
+    }));
+  };
+
+  // Contact search state
+  const [contactSearch, setContactSearch] = useState("");
+  const filteredContacts = contacts.filter((c) =>
+    c.name.toLowerCase().includes(contactSearch.toLowerCase())
+  );
 
   return (
     <div className="bg-white rounded-xl p-6">
@@ -57,38 +132,63 @@ export function AddCallForm() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Client */}
+          {/* Contact Picker */}
           <div className="space-y-2">
-            <Label htmlFor="client">Client</Label>
-            <Select value={formData.client} onValueChange={(value) => handleInputChange("client", value)}>
-              <SelectTrigger className="rounded-xl">
-                <SelectValue placeholder="Search Client" />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl">
-                <SelectItem value="alice-johnson">Alice Johnson</SelectItem>
-                <SelectItem value="michael-smith">Michael Smith</SelectItem>
-                <SelectItem value="sophia-brown">Sophia Brown</SelectItem>
-                <SelectItem value="olivia-wilson">Olivia Wilson</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label htmlFor="contact">Contact</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full rounded-xl justify-between">
+                  {formData.contact
+                    ? contacts.find((c) => c.uuid === formData.contact)?.name
+                    : "Search Contact"}
+                  <Icon icon="hugeicons:chevron-down" className="ml-2 w-4 h-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[300px] p-2">
+                <Input
+                  placeholder="Search contact..."
+                  value={contactSearch}
+                  onChange={(e) => setContactSearch(e.target.value)}
+                  className="mb-2"
+                />
+                <div className="max-h-48 overflow-y-auto">
+                  {filteredContacts.map((contact) => (
+                    <div
+                      key={contact.uuid}
+                      className="cursor-pointer px-2 py-1 hover:bg-gray-100 rounded"
+                      onClick={() => {
+                        setFormData((prev) => ({ ...prev, contact: contact.uuid }));
+                      }}
+                    >
+                      {contact.name} <span className="text-xs text-gray-500">{contact.phone_number}</span>
+                    </div>
+                  ))}
+                  {filteredContacts.length === 0 && (
+                    <div className="text-sm text-gray-400 px-2 py-1">No contacts found</div>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
 
-          {/* Product */}
+          {/* Product Picker */}
           <div className="space-y-2">
             <Label htmlFor="product">Product</Label>
             <Select value={formData.product} onValueChange={(value) => handleInputChange("product", value)}>
               <SelectTrigger className="rounded-xl">
-                <SelectValue placeholder="Select Status" />
+                <SelectValue placeholder="Select Product" />
               </SelectTrigger>
               <SelectContent className="rounded-xl">
-                <SelectItem value="valuation">Valuation</SelectItem>
-                <SelectItem value="loan">Loan</SelectItem>
-                <SelectItem value="investment">Investment</SelectItem>
+                {products.map((product) => (
+                  <SelectItem key={product.uuid} value={product.uuid}>
+                    {product.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
 
-          {/* Status */}
+          {/* Status Picker */}
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
             <Select value={formData.status} onValueChange={(value) => handleInputChange("status", value)}>
@@ -96,102 +196,91 @@ export function AddCallForm() {
                 <SelectValue placeholder="Select Status" />
               </SelectTrigger>
               <SelectContent className="rounded-xl">
-                <SelectItem value="complete">Complete</SelectItem>
-                <SelectItem value="missed">Missed</SelectItem>
-                <SelectItem value="unanswered">Unanswered</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Date */}
-          <div className="space-y-2">
-            <Label htmlFor="date">Date</Label>
-            <div className="relative">
-              <Input
-                id="date"
-                type="date"
-                value={formData.date}
-                onChange={(e) => handleInputChange("date", e.target.value)}
-                className="rounded-xl pr-10"
-                placeholder="mm/dd/yyyy --:--:--"
-              />
-              <Icon
-                icon="hugeicons:calendar-01"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"
-              />
-            </div>
-          </div>
-
-          {/* Duration */}
-          <div className="space-y-2">
-            <Label htmlFor="duration">Duration</Label>
-            <Input
-              id="duration"
-              type="text"
-              value={formData.duration}
-              onChange={(e) => handleInputChange("duration", e.target.value)}
-              className="rounded-xl"
-              placeholder="00:00:00"
-            />
-          </div>
-
-          {/* Direction */}
-          <div className="space-y-2">
-            <Label htmlFor="direction">Direction</Label>
-            <Select value={formData.direction} onValueChange={(value) => handleInputChange("direction", value)}>
-              <SelectTrigger className="rounded-xl">
-                <SelectValue placeholder="Select Direction" />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl">
-                <SelectItem value="outgoing">Outgoing</SelectItem>
-                <SelectItem value="incoming">Incoming</SelectItem>
+                <SelectItem value="failed">Failed</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="busy">Busy</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
 
-        {/* Feedback Section */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900">Feedback</h3>
-
-          {/* Is Prospect */}
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="isProspect"
-              checked={formData.isProspect}
-              onCheckedChange={(checked) => handleInputChange("isProspect", checked as boolean)}
-              className="rounded"
-            />
-            <Label htmlFor="isProspect" className="text-sm font-medium">
-              Is Prospect
-            </Label>
+        {/* Dynamic Feedback Fields */}
+        {selectedProduct && selectedProduct.feedback_fields.length > 0 && (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900">Feedback</h3>
+            {selectedProduct.feedback_fields.map((field) => (
+              <div key={field.name} className="space-y-2">
+                <Label>{field.name}</Label>
+                {field.type === "text" && (
+                  <Input
+                    value={formData.feedback[field.name] || ""}
+                    onChange={(e) => handleFeedbackChange(field.name, e.target.value)}
+                    placeholder={field.description}
+                  />
+                )}
+                {field.type === "number" && (
+                  <Input
+                    type="number"
+                    value={formData.feedback[field.name] || ""}
+                    onChange={(e) => handleFeedbackChange(field.name, e.target.value)}
+                    placeholder={field.description}
+                  />
+                )}
+                {field.type === "textarea" && (
+                  <Textarea
+                    value={formData.feedback[field.name] || ""}
+                    onChange={(e) => handleFeedbackChange(field.name, e.target.value)}
+                    placeholder={field.description}
+                  />
+                )}
+                {field.type === "date" && (
+                  <Input
+                    type="date"
+                    value={formData.feedback[field.name] || ""}
+                    onChange={(e) => handleFeedbackChange(field.name, e.target.value)}
+                  />
+                )}
+                {field.type === "select" && field.options && (
+                  <Select
+                    value={formData.feedback[field.name] || ""}
+                    onValueChange={(value) => handleFeedbackChange(field.name, value)}
+                  >
+                    <SelectTrigger className="rounded-xl">
+                      <SelectValue placeholder={field.description || "Select"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {field.options.map((opt) => (
+                        <SelectItem key={opt} value={opt}>
+                          {opt}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                {field.type === "checkbox" && field.options && (
+                  <div className="flex flex-wrap gap-2">
+                    {field.options.map((opt) => (
+                      <label key={opt} className="flex items-center gap-1">
+                        <Checkbox
+                          checked={Array.isArray(formData.feedback[field.name]) && formData.feedback[field.name].includes(opt)}
+                          onCheckedChange={(checked) => {
+                            let arr = Array.isArray(formData.feedback[field.name])
+                              ? [...formData.feedback[field.name]]
+                              : [];
+                            if (checked) arr.push(opt);
+                            else arr = arr.filter((v) => v !== opt);
+                            handleFeedbackChange(field.name, arr);
+                          }}
+                        />
+                        <span>{opt}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-
-          {/* Location */}
-          <div className="space-y-2">
-            <Label htmlFor="location">location</Label>
-            <Input
-              id="location"
-              type="text"
-              value={formData.location}
-              onChange={(e) => handleInputChange("location", e.target.value)}
-              className="rounded-xl"
-              placeholder="Client Location"
-            />
-          </div>
-
-          {/* Comment */}
-          <div className="space-y-2">
-            <Label htmlFor="comment">Comment</Label>
-            <Textarea
-              id="comment"
-              value={formData.comment}
-              onChange={(e) => handleInputChange("comment", e.target.value)}
-              className="rounded-xl min-h-[120px]"
-              placeholder="Add your comments here..."
-            />
-          </div>
-        </div>
+        )}
 
         {/* Submit Button */}
         <Button type="submit" className="w-full bg-primary-700 max-w-sm rounded-full h-12">
@@ -199,5 +288,5 @@ export function AddCallForm() {
         </Button>
       </form>
     </div>
-  )
+  );
 }

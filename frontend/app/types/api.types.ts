@@ -317,7 +317,7 @@ export interface ICallCenterProduct {
   name: string;
   descriptions: string;
   status: "active" | "inactive";
-  feedback_fields: Partial<CustomField>[];
+  feedback_fields: Omit<CustomField, 'id'>[];
 }
 
 // name: string;
