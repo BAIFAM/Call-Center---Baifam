@@ -188,6 +188,8 @@ class CallSerializer(serializers.ModelSerializer):
     def _validate_feedback(self, data):
         contact = data.get('contact')
         feedback_data = data.get('feedback', {})
+
+        print("\n\n Feedback data in _validate_feedback method :  ", feedback_data)
         
         if not contact:
             # If updating existing call, get contact from instance
@@ -198,7 +200,7 @@ class CallSerializer(serializers.ModelSerializer):
         
         product = contact.product
         feedback_fields = product.feedback_fields
-        
+
         # Validate required fields
         for field_config in feedback_fields:
             field_name = field_config.get('name')
@@ -259,6 +261,7 @@ class CallSerializer(serializers.ModelSerializer):
                     if value not in options:
                         raise serializers.ValidationError(f"Field '{field_name}' contains invalid option: {value}")
         
+        print("\n\n Feedback data after validation in _validate_feedback method :  ", feedback_data)
         return data
     
     def create(self, validated_data):
@@ -270,16 +273,18 @@ class CallSerializer(serializers.ModelSerializer):
         if 'feedback' not in validated_data:
             validated_data['feedback'] = {}
 
-        
+        print("\n\n File fields extracted in create method :  ", file_fields, "\n\n\n\n  With Validated data after extracting file fields : ", validated_data, "\n\n\n")
         # Create the call instance
         call = super().create(validated_data)
+
+        print("\n\n Call created from parent class create method :  ", call)
         
         # Handle file uploads if present
         if file_fields:
             self._handle_file_uploads(call, file_fields)
             # Refresh the instance to get updated feedback
             call.refresh_from_db()
-        
+    
         return call
     
     def update(self, instance, validated_data):
@@ -321,6 +326,8 @@ class CallSerializer(serializers.ModelSerializer):
     
     def _handle_file_uploads(self, call, file_fields):
         """Handle multiple file uploads"""
+
+        print("\n\n Handling file uploads for call : ", call.uuid, " with file fields : ", file_fields)
         
         # Initialize feedback if it's None or empty
         if call.feedback is None:

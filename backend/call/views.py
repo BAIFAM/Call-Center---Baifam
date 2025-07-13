@@ -261,7 +261,7 @@ class ContactTemplateDownloadView(APIView):
                         'Phone number with country code (required)',
                         'Country name (optional)',
                         'Country calling code (optional)',
-                        'Status: new, verified, called, achieved, or flagged (defaults to new)'
+                        'Status: new, verified, called, archived, or flagged (defaults to new)'
                     ],
                     'Required': ['Yes', 'Yes', 'No', 'No', 'No'],
                     'Examples': [
@@ -269,7 +269,7 @@ class ContactTemplateDownloadView(APIView):
                         '+1234567890, +256701234567',
                         'Uganda, USA, UK',
                         '+256, +1, +44',
-                        'new, verified, called, achieved, flagged'
+                        'new, verified, called, archived, flagged'
                     ]
                 })
                 instructions_df.to_excel(writer, sheet_name='Instructions', index=False)
@@ -430,7 +430,7 @@ class ContactBulkUploadView(APIView):
                     }
                     
                     # Validate status
-                    valid_statuses = ['new', 'verified', 'called', 'achieved', 'flagged']
+                    valid_statuses = ['new', 'verified', 'called', 'archived', 'flagged']
                     if contact_data['status'] not in valid_statuses:
                         contact_data['status'] = 'new'
                     
@@ -625,6 +625,7 @@ class CallListCreateAPIView(APIView):
         for field_name, file in request.FILES.items():
             data[field_name] = file
         
+        print("\n\n\n Creating call with data : ", data)
         # Pass request context to serializer for dynamic file field creation
         serializer = CallSerializer(data=data, context={'request': request})
         if serializer.is_valid():
