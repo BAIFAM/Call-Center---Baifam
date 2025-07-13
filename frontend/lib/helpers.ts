@@ -112,7 +112,7 @@ export async function fetchInstitutionRoles() {
   try {
     return await apiRequest.get(`user/role/?Institution_id=${getDefaultInstitutionId()}`);
   } catch (error: any) {
-    console.log("Error fetching  Institution roles ");
+    // console.log("Error fetching  Institution roles ");
     throw error;
   }
 }
@@ -121,7 +121,7 @@ export async function fetchUserTasks() {
   try {
     return await apiRequest.get("workflow/task/");
   } catch (error) {
-    console.log("Error fetching  user tasks ");
+    // console.log("Error fetching  user tasks ");
     throw error;
   }
 }
@@ -249,7 +249,7 @@ export function extractRequiredPermissions(
   userRoles: Role[],
   requiredPermissionCodes: string[],
 ): IPermission[] {
-  console.log("\n\nEXtracting permission codes : ", requiredPermissionCodes);
+  // console.log("\n\nEXtracting permission codes : ", requiredPermissionCodes);
   const requiredPermissions: IPermission[] = [];
 
   userRoles.forEach((role) => {

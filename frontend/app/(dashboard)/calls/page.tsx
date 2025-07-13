@@ -118,10 +118,13 @@ export default function CallsPage() {
   const [filteredCalls, setFilteredCalls] = useState<ICall[]>([]);
   const selectedInstitution = useSelector(selectSelectedInstitution);
 
+
   const handleFetchCalls = async () => {
     if (!selectedInstitution) { return }
     try {
       const response = await callsAPI.getByInstitution({ institutionId: selectedInstitution.id });
+      setCalls(response);
+      setFilteredCalls(response);
     } catch (error) {
       toast.error("Failed to fetch calls. Please try again later.");
       console.error("Error fetching calls:", error);

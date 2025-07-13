@@ -32,7 +32,7 @@ export default function AddProductPage() {
       options: fieldData.options,
     }
 
-    console.log("\n\n Adding new field : ", newField)
+    // console.log("\n\n Adding new field : ", newField)
     setCustomFields((prev) => [...prev, newField])
   }
 

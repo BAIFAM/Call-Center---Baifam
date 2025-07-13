@@ -1,16 +1,16 @@
 "use client";
 
-import type {Branch} from "@/app/types/api.types";
+import type { Branch } from "@/app/types/api.types";
 
-import {useEffect, useState} from "react";
-import {Edit, MapPin, Plus, Search, Trash, Loader2, Eye} from "lucide-react";
-import {toast} from "sonner";
-import {useDispatch} from "react-redux";
+import { useEffect, useState } from "react";
+import { Edit, MapPin, Plus, Search, Trash, Loader2, Eye } from "lucide-react";
+import { toast } from "sonner";
+import { useDispatch } from "react-redux";
 
-import {Button} from "@/components/ui/button";
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
-import {Input} from "@/components/ui/input";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -20,9 +20,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {Label} from "@/components/ui/label";
-import {Badge} from "@/components/ui/badge";
-import {ScrollArea} from "@/components/ui/scroll-area";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import apiRequest from "@/lib/apiRequest";
 import {
   fetchAndSetData,
@@ -30,10 +30,10 @@ import {
   getDefaultInstitutionId,
 } from "@/lib/helpers";
 import ProtectedComponent from "@/components/common/ProtectedComponent";
-import {LocationAutocomplete} from "@/components/common/location-autocomplete";
-import {PERMISSION_CODES} from "@/app/types/types.utils";
-import {fetchUpToDateInstitution} from "@/store/auth/actions";
-import {useRouter} from "next/navigation";
+import { LocationAutocomplete } from "@/components/common/location-autocomplete";
+import { PERMISSION_CODES } from "@/app/types/types.utils";
+import { fetchUpToDateInstitution } from "@/store/auth/actions";
+import { useRouter } from "next/navigation";
 
 export default function BranchesPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -158,9 +158,9 @@ export default function BranchesPage() {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
-          const {latitude, longitude} = position.coords;
+          const { latitude, longitude } = position.coords;
 
-          console.log("Current location Coordinates:", latitude, longitude);
+          // console.log("Current location Coordinates:", latitude, longitude);
 
           // Use Geoapify reverse geocoding API
           const response = await fetch(
@@ -221,7 +221,7 @@ export default function BranchesPage() {
 
         setGettingCurrentLocation(false);
       },
-      {enableHighAccuracy: true, timeout: 10000, maximumAge: 0},
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
     );
   };
 
@@ -264,7 +264,7 @@ export default function BranchesPage() {
                       <Input
                         className="col-span-3"
                         id={field}
-                        type={`${field.includes("time") ? "time": field.includes("email") ? "email":"text"}`}
+                        type={`${field.includes("time") ? "time" : field.includes("email") ? "email" : "text"}`}
                         value={(newBranch as any)[field]}
                         onChange={(e) =>
                           setNewBranch({
@@ -529,17 +529,17 @@ export default function BranchesPage() {
                       value={editBranch?.branch_location || ""}
                       onChange={(location) =>
                         setEditBranch((prev) =>
-                          prev ? {...prev, branch_location: location} : prev,
+                          prev ? { ...prev, branch_location: location } : prev,
                         )
                       }
                       onCoordinatesChange={(lat, lon) =>
                         setEditBranch((prev) =>
                           prev
                             ? {
-                                ...prev,
-                                branch_latitude: lat,
-                                branch_longitude: lon,
-                              }
+                              ...prev,
+                              branch_latitude: lat,
+                              branch_longitude: lon,
+                            }
                             : prev,
                         )
                       }

@@ -1,13 +1,14 @@
-import {type ClassValue, clsx} from "clsx";
-import {twMerge} from "tailwind-merge";
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 import apiRequest from "./apiRequest";
+import { IContact } from "@/app/types/api.types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function validatePasswordStrength(password: string): {valid: boolean; errors: string[]} {
+export function validatePasswordStrength(password: string): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
 
   if (password.length < 8) {
@@ -85,7 +86,7 @@ export async function forgotPassword(email: string, frontendUrl?: string): Promi
   const payload: ForgotPasswordRequest = {
     email,
     // Only include frontend_url if provided
-    ...(frontendUrl && {frontend_url: frontendUrl}),
+    ...(frontendUrl && { frontend_url: frontendUrl }),
   };
 
   await apiRequest.post("/user/forgot-password", payload);
@@ -96,7 +97,7 @@ export async function forgotPassword(email: string, frontendUrl?: string): Promi
  * @param token Reset token
  */
 export async function verifyResetToken(token: string): Promise<TokenVerificationResponse> {
-  const response = await apiRequest.post("/user/verify-token", {token});
+  const response = await apiRequest.post("/user/verify-token", { token });
 
   return response.data;
 }
@@ -156,4 +157,22 @@ export function hexToHSL(hex: string) {
   l = Math.round(l * 100);
 
   return `${h} ${s}% ${l}%`;
+}
+
+
+export const getContactStatusColor = (status: IContact["status"]) => {
+  switch (status) {
+    case "verified":
+      return "bg-green-100 text-green-800"
+    case "new":
+      return "bg-blue-100 text-blue-800"
+    case "flagged":
+      return "bg-red-100 text-red-800"
+    case "archived":
+      return "bg-gray-100 text-gray-800"
+    case "called":
+      return "bg-purple-100 text-purple-800"
+    default:
+      return "bg-gray-100 text-gray-800"
+  }
 }

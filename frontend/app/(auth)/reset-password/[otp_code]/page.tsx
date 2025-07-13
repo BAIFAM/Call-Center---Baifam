@@ -1,12 +1,12 @@
 "use client";
 
-import {useState, useEffect} from "react";
-import {useParams, useRouter} from "next/navigation";
-import {ShoppingCart} from "lucide-react";
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { ShoppingCart } from "lucide-react";
 
-import {Button} from "@/components/ui/button";
-import {Card, CardContent, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
-import {Input} from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import apiRequest from "@/lib/apiRequest";
 
 export default function ResetPasswordPage() {
@@ -155,7 +155,7 @@ export default function ResetPasswordPage() {
 //         router.push("/login?password_reset=true");
 //       }
 //     } catch (error: any) {
-//         console.log("Error resetting password : ", error)
+//       // console.log("Error resetting password : ", error)
 //       setErrorMessage(error.response?.data?.error || "Failed to reset password.");
 //     } finally {
 //       setIsSubmitting(false);

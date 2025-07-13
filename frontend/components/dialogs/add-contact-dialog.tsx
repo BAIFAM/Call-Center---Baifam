@@ -5,17 +5,22 @@ import { DialogSkeleton } from "@/components/dialogs/dialog-skeleton"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
-import { ICallCenterProduct } from "@/app/types/api.types"
+import { ICallCenterProduct, IContactFormData } from "@/app/types/api.types"
+import { contactsAPI } from "@/lib/api-helpers"
+import { toast } from "sonner"
+import { selectSelectedInstitution } from "@/store/auth/selectors"
+import { useSelector } from "react-redux"
 
 interface AddContactDialogProps {
   isOpen: boolean
   onClose: () => void
-  onAddContact: (contact: { name: string; phone: string; product: string; country_code: string; country: string }) => void
   products: ICallCenterProduct[];
   onRefreshContacts: () => void
 }
 
-export function AddContactDialog({ isOpen, onClose, onAddContact, products, onRefreshContacts }: AddContactDialogProps) {
+export function AddContactDialog({ isOpen, onClose, products, onRefreshContacts }: AddContactDialogProps) {
+
+  const selectedInstitution = useSelector(selectSelectedInstitution)
   const [formData, setFormData] = useState<{ name: string; phone: string; product: string; country_code: string; country: string }>({
     name: "",
     phone: "",
@@ -26,7 +31,7 @@ export function AddContactDialog({ isOpen, onClose, onAddContact, products, onRe
 
   const handleConfirm = () => {
     if (formData.name.trim() && formData.phone.trim() && formData.product) {
-      onAddContact(formData)
+      handleAddContact(formData);
       setFormData({ name: "", phone: "", product: "", country_code: "+256", country: "Uganda" });
       onRefreshContacts()
     }
@@ -34,6 +39,33 @@ export function AddContactDialog({ isOpen, onClose, onAddContact, products, onRe
 
   const handleCancel = () => {
     setFormData({ name: "", phone: "", product: "", country_code: "+256", country: "Uganda" });
+  }
+
+  const handleAddContact = async (contactData: { name: string; phone: string; product: string, country_code: string, country: string }) => {
+    if (!selectedInstitution) {
+      return
+    }
+    const newContact: Omit<IContactFormData, "uuid" | "status"> = {
+      name: contactData.name,
+      phone_number: contactData.phone,
+      product: contactData.product,
+      country_code: contactData.country_code,
+      country: contactData.country,
+    }
+
+    try {
+      const createdContact = await contactsAPI.createForInstitution({
+        institutionId: selectedInstitution.id,
+        contactData: newContact,
+      })
+      // console.log("Contact created:", createdContact)
+      onRefreshContacts()
+    } catch (error) {
+      console.error("Error creating contact:", error)
+      toast.error("Failed to create contact. Please try again later.")
+      return
+    }
+    // console.log("Added contact:", newContact)
   }
 
   const isFormValid = formData.name.trim() !== "" && formData.phone.trim() !== "" && formData.product !== ""

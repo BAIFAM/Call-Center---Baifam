@@ -23,12 +23,23 @@ export function AddCallForm() {
 
   const [products, setProducts] = useState<ICallCenterProduct[]>([]);
   const [contacts, setContacts] = useState<IContact[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<ICallCenterProduct | null>(null);
   const selectedInstitution = useSelector(selectSelectedInstitution)
 
   useEffect(() => {
     handleFetchProducts();
     handleFetchContacts();
   }, []);
+
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      feedback: selectedProduct?.feedback_fields.reduce((acc, field) => {
+        acc[field.name] = field.type === "checkbox" ? [] : "";
+        return acc;
+      }, {} as Record<string, any>) || {}
+    }));
+  }, [selectedProduct]);
 
   const handleFetchProducts = async () => {
     try {
@@ -82,13 +93,18 @@ export function AddCallForm() {
     e.preventDefault();
     if (!selectedInstitution) { return }
     try {
-      await callsAPI.createCall({
-        institutionId: selectedInstitution.id,
+      // Prepare payload for FormData
+      const payload: any = {
         contact: formData.contact,
         feedback: formData.feedback,
         status: formData.status as "failed" | "completed" | "busy",
+      };
+      await callsAPI.createCall({
+        institutionId: selectedInstitution.id,
+        callData: payload,
       });
       toast.success("Call added successfully!");
+      router.push("/calls");
     } catch (error) {
       toast.error("Failed to add call. Please try again.");
     }
@@ -98,11 +114,16 @@ export function AddCallForm() {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
-    }))
+    }));
+
+    if (field === "product") {
+      const product = products.find((p) => p.uuid === value);
+      setSelectedProduct(product || null);
+    }
   }
 
   // Find selected product
-  const selectedProduct = products.find((p) => p.uuid === formData.product);
+  // const selectedProduct = products.find((p) => p.uuid === formData.product);
 
   // Handle feedback field change
   const handleFeedbackChange = (fieldName: string, value: any) => {
@@ -150,6 +171,7 @@ export function AddCallForm() {
                   value={contactSearch}
                   onChange={(e) => setContactSearch(e.target.value)}
                   className="mb-2"
+                  required
                 />
                 <div className="max-h-48 overflow-y-auto">
                   {filteredContacts.map((contact) => (
@@ -174,7 +196,7 @@ export function AddCallForm() {
           {/* Product Picker */}
           <div className="space-y-2">
             <Label htmlFor="product">Product</Label>
-            <Select value={formData.product} onValueChange={(value) => handleInputChange("product", value)}>
+            <Select required value={formData.product} onValueChange={(value) => { handleInputChange("product", value) }}>
               <SelectTrigger className="rounded-xl">
                 <SelectValue placeholder="Select Product" />
               </SelectTrigger>
@@ -224,6 +246,16 @@ export function AddCallForm() {
                     value={formData.feedback[field.name] || ""}
                     onChange={(e) => handleFeedbackChange(field.name, e.target.value)}
                     placeholder={field.description}
+                  />
+                )}
+                {field.type === "file" && (
+                  <Input
+                    type="file"
+                    onChange={(e) => {
+                      if (!e.target.files || e.target.files.length === 0) return
+                      handleFeedbackChange(field.name, e.target.files[0])
+                    }}
+                    className="flex-1 rounded-xl"
                   />
                 )}
                 {field.type === "textarea" && (

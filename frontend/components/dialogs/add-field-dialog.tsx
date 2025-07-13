@@ -13,7 +13,7 @@ interface AddFieldDialogProps {
   isOpen: boolean
   onClose: () => void
   onAddField: (field: AddFieldFormData) => void
-  initialFieldValues?:AddFieldFormData
+  initialFieldValues?: AddFieldFormData
 }
 
 const fieldTypes: { value: FieldType; label: string }[] = [
@@ -23,10 +23,11 @@ const fieldTypes: { value: FieldType; label: string }[] = [
   { value: "date", label: "Date" },
   { value: "select", label: "Select" },
   { value: "checkbox", label: "Checkbox" },
+  { value: "file", label: "File" },
 ]
 
 export function AddFieldDialog({ isOpen, onClose, onAddField, initialFieldValues }: AddFieldDialogProps) {
-  const [formData, setFormData] = useState<AddFieldFormData>(initialFieldValues ||{
+  const [formData, setFormData] = useState<AddFieldFormData>(initialFieldValues || {
     title: "",
     description: "",
     fieldType: "text",

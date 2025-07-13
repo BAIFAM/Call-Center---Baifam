@@ -9,6 +9,7 @@ import { Icon } from "@iconify/react";
 import type { Product } from "@/app/types/types.utils";
 import { institutionAPI } from "@/lib/api-helpers";
 import { ICallCenterProduct } from "@/app/types/api.types";
+import Link from "next/link";
 
 // Mock data
 // const mockProducts: Product[] = [
@@ -127,8 +128,8 @@ export default function ProductsPage() {
                 <tr key={product.uuid} className="border-b hover:bg-gray-50">
                   <td className="p-4 font-medium">{product.name}</td>
                   <td className="p-4 text-gray-600">{product.descriptions}</td>
-                  <td className="p-4">{product?.companies || "None"}</td>
-                  <td className="p-4">{product?.contacts || "None"}</td>
+                  <td className="p-4">{"None"}</td>
+                  <td className="p-4">{"None"}</td>
                   <td className="p-4">
                     <Badge
                       variant={product.status === "active" ? "default" : "secondary"}
@@ -143,9 +144,11 @@ export default function ProductsPage() {
                   </td>
                   <td className="p-4">
                     <div className="flex space-x-2">
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <Icon icon="hugeicons:edit-02" className="w-4 h-4" />
-                      </Button>
+                      <Link href={`/products/${product.uuid}/edit`}>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Icon icon="hugeicons:edit-02" className="w-4 h-4" />
+                        </Button>
+                      </Link>
                       <Button
                         variant="ghost"
                         size="sm"

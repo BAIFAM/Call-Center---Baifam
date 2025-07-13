@@ -2,19 +2,19 @@
 
 import type React from "react";
 
-import {useEffect, useState} from "react";
-import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
-import {Label} from "@/components/ui/label";
-import {Icon} from "@iconify/react";
-import {useRouter} from "next/navigation";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Icon } from "@iconify/react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {CUSTOM_CODES} from "@/app/types/types.utils";
-import {useDispatch, useSelector} from "react-redux";
-import {selectAuthError, selectUser, selectUserLoading} from "@/store/auth/selectors";
-import {toast} from "sonner";
-import {clearAuthError, loginStart} from "@/store/auth/actions";
-import {sendOtp} from "@/lib/helpers";
+import { CUSTOM_CODES } from "@/app/types/types.utils";
+import { useDispatch, useSelector } from "react-redux";
+import { selectAuthError, selectUser, selectUserLoading } from "@/store/auth/selectors";
+import { toast } from "sonner";
+import { clearAuthError, loginStart } from "@/store/auth/actions";
+import { sendOtp } from "@/lib/helpers";
 
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -24,7 +24,7 @@ export function LoginForm() {
   const [errorMessage, setErrorMessage] = useState("");
   const [OTPSentMessage, setOTPSentMessage] = useState("");
   const [customErrorCode, setCustomErrorCode] = useState<CUSTOM_CODES | null>(null);
-  const [loadingState, setLoadingState] = useState<{auth: boolean; OTP: boolean}>({
+  const [loadingState, setLoadingState] = useState<{ auth: boolean; OTP: boolean }>({
     auth: false,
     OTP: false,
   });
@@ -43,11 +43,11 @@ export function LoginForm() {
 
 
   useEffect(() => {
-    setLoadingState((prev) => ({...prev, auth: authLoading}));
+    setLoadingState((prev) => ({ ...prev, auth: authLoading }));
   }, [authLoading]);
 
   useEffect(() => {
-    console.log("\n\n Auth error : ", authError)
+    // console.log("\n\n Auth error : ", authError)
     if (!authError) {
       return;
     }
@@ -65,7 +65,7 @@ export function LoginForm() {
       errorMessage = "You need to verify your email to login";
     } else if (authError.customCode === CUSTOM_CODES.INVALID_CREDENTIALS) {
       errorMessage = "Invalid Credentials";
-    } else{
+    } else {
       errorMessage = "An error occurred during login";
     }
     errorMessage && showErrorToast(errorMessage);
@@ -99,7 +99,7 @@ export function LoginForm() {
   };
 
   const handleCustomCodeAction = async (code: CUSTOM_CODES) => {
-    setLoadingState((prev) => ({...prev, OTP: true}));
+    setLoadingState((prev) => ({ ...prev, OTP: true }));
     if (code === CUSTOM_CODES.BLOCKED_BY_ADMIN) {
       return;
     }
@@ -111,7 +111,7 @@ export function LoginForm() {
 
     if (code == CUSTOM_CODES.SELF_CREATED_UNVERIFIED) {
       try {
-        const response = await sendOtp({mode: "otp", email});
+        const response = await sendOtp({ mode: "otp", email });
         // const user_id = response.data.id;
 
         router.push(`verify-otp?q=${encodeURIComponent(email)}`);
@@ -120,13 +120,13 @@ export function LoginForm() {
       }
     } else if (code == CUSTOM_CODES.ADMIN_CREATED_UNVERIFIED) {
       try {
-        await sendOtp({mode: "password_link", email});
+        await sendOtp({ mode: "password_link", email });
         setOTPSentMessage(`We have sent an email to ${email}, check your inbox`);
       } catch (error: any) {
         setErrorMessage("Failed to send email");
       }
     }
-    setLoadingState((prev) => ({...prev, OTP: false}));
+    setLoadingState((prev) => ({ ...prev, OTP: false }));
   };
 
   const showErrorToast = (message: string) => {

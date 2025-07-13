@@ -5,28 +5,18 @@ import { Badge } from "@/components/ui/badge"
 import { Icon } from "@iconify/react"
 import Link from "next/link"
 import { IContact } from "@/app/types/api.types"
+import { getContactStatusColor } from "@/lib/utils"
 
 interface ContactsListProps {
   contacts: IContact[]
   selectedContactIds: string[]
-  onSelectionChange: (selectedIds: string[]) => void
+  onSelectionChange: (selectedIds: string[]) => void;
+  onEditContact: (contact: IContact) => void;
+  onDeleteContact: (contactId: string) => void;
 }
 
-export function ContactsList({ contacts, selectedContactIds, onSelectionChange }: ContactsListProps) {
+export function ContactsList({ contacts, selectedContactIds, onSelectionChange, onEditContact, onDeleteContact }: ContactsListProps) {
 
-  console.log("\nRendering ContactsList with contacts:", contacts)
-  const getStatusColor = (status: IContact["status"]) => {
-    switch (status) {
-      case "Active":
-        return "bg-green-100 text-green-800"
-      case "Inactive":
-        return "bg-red-100 text-red-800"
-      case "Processing":
-        return "bg-yellow-100 text-yellow-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
-  }
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -105,7 +95,7 @@ export function ContactsList({ contacts, selectedContactIds, onSelectionChange }
                   <div className="text-sm text-gray-900">{contact.product.name}</div>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
-                  <Badge className={`rounded-full ${getStatusColor(contact.status)}`}>{contact.status}</Badge>
+                  <Badge className={`rounded-full ${getContactStatusColor(contact.status)}`}>{contact.status}</Badge>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
                   <div className="flex items-center space-x-2">
@@ -117,10 +107,10 @@ export function ContactsList({ contacts, selectedContactIds, onSelectionChange }
                     <Button variant="ghost" size="sm" className="p-2 rounded-lg">
                       <Icon icon="hugeicons:call" className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="p-2 rounded-lg">
+                    <Button onClick={() => onEditContact(contact)} variant="ghost" size="sm" className="p-2 rounded-lg">
                       <Icon icon="hugeicons:edit-02" className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="p-2 rounded-lg text-red-600 hover:text-red-700">
+                    <Button variant="ghost" onClick={() => onDeleteContact(contact.uuid)} size="sm" className="p-2 rounded-lg text-red-600 hover:text-red-700">
                       <Icon icon="hugeicons:delete-02" className="w-4 h-4" />
                     </Button>
                   </div>
