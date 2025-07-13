@@ -68,7 +68,7 @@ class Contact(models.Model):
             ('new', 'New'),
             ('verified', 'Verified'),
             ('called', 'Called'),
-            ('achieved', 'Achieved'),
+            ('archived', 'Archived'),
             ('flagged', 'Flagged'),
         ],
         default='new'

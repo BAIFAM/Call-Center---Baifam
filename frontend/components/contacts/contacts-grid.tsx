@@ -5,26 +5,18 @@ import { Badge } from "@/components/ui/badge"
 import { Icon } from "@iconify/react"
 import { IContact } from "@/app/types/api.types"
 import Link from "next/link"
+import { getContactStatusColor } from "@/lib/utils"
 
 interface ContactsGridProps {
   contacts: IContact[]
   selectedContactIds: string[]
-  onSelectionChange: (selectedIds: string[]) => void
+  onSelectionChange: (selectedIds: string[]) => void;
+  onEditContact: (contact: IContact) => void;
+  onDeleteContact: (contactId: string) => void;
 }
 
-export function ContactsGrid({ contacts, selectedContactIds, onSelectionChange }: ContactsGridProps) {
-  const getStatusColor = (status: IContact["status"]) => {
-    switch (status) {
-      case "Active":
-        return "bg-green-100 text-green-800"
-      case "Inactive":
-        return "bg-red-100 text-red-800"
-      case "Processing":
-        return "bg-yellow-100 text-yellow-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
-  }
+export function ContactsGrid({ contacts, selectedContactIds, onSelectionChange, onEditContact, onDeleteContact }: ContactsGridProps) {
+
 
   const handleSelectContact = (contactId: string, checked: boolean) => {
     if (checked) {
@@ -33,6 +25,7 @@ export function ContactsGrid({ contacts, selectedContactIds, onSelectionChange }
       onSelectionChange(selectedContactIds.filter((id) => id !== contactId))
     }
   }
+
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -62,7 +55,7 @@ export function ContactsGrid({ contacts, selectedContactIds, onSelectionChange }
                 <span>{"Unassigned"}</span>
               </div>
             </div>
-            <Badge className={`rounded-full ${getStatusColor(contact.status)}`}>{contact.status}</Badge>
+            <Badge className={`rounded-full ${getContactStatusColor(contact.status)}`}>{contact.status}</Badge>
           </div>
 
           <div className="flex items-center justify-between ml-8">
@@ -77,10 +70,10 @@ export function ContactsGrid({ contacts, selectedContactIds, onSelectionChange }
                   <Icon icon="hugeicons:view" className="w-4 h-4" />
                 </Button>
               </Link>
-              <Button variant="ghost" size="sm" className="p-2 rounded-lg">
+              <Button variant="ghost" onClick={() => onEditContact(contact)} size="sm" className="p-2 rounded-lg">
                 <Icon icon="hugeicons:edit-02" className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="sm" className="p-2 rounded-lg text-red-600 hover:text-red-700">
+              <Button variant="ghost" onClick={() => onDeleteContact(contact.uuid)} size="sm" className="p-2 rounded-lg text-red-600 hover:text-red-700">
                 <Icon icon="hugeicons:delete-02" className="w-4 h-4" />
               </Button>
             </div>

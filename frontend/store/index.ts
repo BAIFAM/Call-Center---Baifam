@@ -1,7 +1,7 @@
 // src/store/index.ts
-import {configureStore} from "@reduxjs/toolkit";
-import createSagaMiddleware, {Task} from "redux-saga";
-import {Store} from "@reduxjs/toolkit";
+import { configureStore } from "@reduxjs/toolkit";
+import createSagaMiddleware, { Task } from "redux-saga";
+import { Store } from "@reduxjs/toolkit";
 import {
   persistStore,
   persistReducer,
@@ -13,10 +13,10 @@ import {
   REGISTER,
   REHYDRATE,
 } from "redux-persist";
-import {createWrapper, MakeStore, Context} from "next-redux-wrapper";
+import { createWrapper, MakeStore, Context } from "next-redux-wrapper";
 import createWebStorage from "redux-persist/lib/storage/createWebStorage";
 
-import rootReducer, {RootState} from "@/store/rootReducer";
+import rootReducer, { RootState } from "@/store/rootReducer";
 import rootSaga from "@/store/rootSaga";
 
 const createNoopStorage = () => {
@@ -38,10 +38,10 @@ const storage = typeof window !== "undefined" ? createWebStorage("local") : crea
 const persistConfig: PersistConfig<RootState> = {
   key: "root",
   storage,
-  version:1,
+  version: 1,
   blacklist: [], // We can define the slices to blacklist here,
-  migrate:async (state, currentVersion) =>{
-    if(!state || state._persist.version !== currentVersion){
+  migrate: async (state, currentVersion) => {
+    if (!state || state._persist.version !== currentVersion) {
       return undefined
     }
     return state
@@ -85,9 +85,9 @@ export const configureAppStore = () => {
   // Run the root saga
   (store as AppStore).sagaTask = sagaMiddleware.run(rootSaga);
 
-  store.subscribe(()=>{
+  store.subscribe(() => {
     const state = store.getState();
-    console.log("\n\n Institutions state : ", state.auth.selectedInstitution)
+    // console.log("\n\n Institutions state : ", state.auth.selectedInstitution)
   })
 
   return store;

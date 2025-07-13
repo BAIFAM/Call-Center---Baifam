@@ -274,6 +274,13 @@ export interface ICall {
   made_by: IUser
 }
 
+export interface ICallFormData {
+  contact: string; // uuid
+  feedback: Record<string, any>;
+  status: "failed" | "completed" | "busy";
+}
+
+export type IContactStatus = "new" | "verified" | "called" | "archived" | "flagged";
 
 export interface IContact {
   uuid: string;
@@ -282,7 +289,7 @@ export interface IContact {
   phone_number: string;
   country: string;
   country_code: string;
-  status: string;
+  status: IContactStatus;
 }
 
 export interface IContactFormData {
@@ -290,7 +297,7 @@ export interface IContactFormData {
   phone_number: string;
   country: string;
   country_code: string;
-  status: string;
+  status: IContactStatus;
   product: string;
 }
 

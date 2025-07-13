@@ -1,10 +1,10 @@
 "use client";
 
-import {useEffect, useState} from "react";
-import {useSelector, useDispatch} from "react-redux";
-import {Eye, EyeOff} from "lucide-react";
+import { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { Eye, EyeOff } from "lucide-react";
 
-import {Button} from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -12,8 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {Input} from "@/components/ui/input";
-import {Label} from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -21,11 +21,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {Card, CardContent} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import apiRequest from "@/lib/apiRequest";
-import {selectSelectedInstitution} from "@/store/auth/selectors";
-import {extractRequiredPermissions, hasAnyRequiredPermissions} from "@/lib/helpers";
-import {loginWithEmailAndPassword, setTemporaryPermissionsWithTimeout} from "@/utils/authUtils";
+import { selectSelectedInstitution } from "@/store/auth/selectors";
+import { extractRequiredPermissions, hasAnyRequiredPermissions } from "@/lib/helpers";
+import { loginWithEmailAndPassword, setTemporaryPermissionsWithTimeout } from "@/utils/authUtils";
 import { IPaginatedResponse } from "@/app/types/api.types";
 
 interface UserProfile {
@@ -155,7 +155,7 @@ export default function UnlockDialog({
           requiredPermissionCodes,
         );
 
-        console.log("Dispatching temporary permissions : ", requiredPermissions);
+        // console.log("Dispatching temporary permissions : ", requiredPermissions);
 
         // Store the temporary permissions in Redux
         setTemporaryPermissionsWithTimeout(requiredPermissions);

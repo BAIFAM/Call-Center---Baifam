@@ -1,10 +1,10 @@
 "use client";
 
-import {useState, useEffect, useRef} from "react";
-import {Check, ChevronsUpDown, MapPin} from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Check, ChevronsUpDown, MapPin } from "lucide-react";
 
-import {cn} from "@/lib/utils";
-import {Button} from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -13,10 +13,10 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {Spinner} from "@/components/ui/spinner";
-import {ScrollArea} from "@/components/ui/scroll-area";
-import {toast} from "@/components/ui/use-toast";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Spinner } from "@/components/ui/spinner";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "@/components/ui/use-toast";
 
 interface LocationOption {
   value: string;
@@ -123,7 +123,7 @@ export function LocationAutocomplete({
         )}&apiKey=12a8608da7914f4c96cbbc76c7ca954c&limit=1`,
       );
 
-      console.log("Response from Geoapify:", response);
+      // console.log("Response from Geoapify:", response);
 
       if (!response.ok) throw new Error("Failed to get coordinates");
 
@@ -156,7 +156,7 @@ export function LocationAutocomplete({
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
-          const {latitude, longitude} = position.coords;
+          const { latitude, longitude } = position.coords;
 
           // Use Geoapify reverse geocoding API
           const response = await fetch(
@@ -215,7 +215,7 @@ export function LocationAutocomplete({
         });
         setGettingCurrentLocation(false);
       },
-      {enableHighAccuracy: true, timeout: 10000, maximumAge: 0},
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
     );
   };
 

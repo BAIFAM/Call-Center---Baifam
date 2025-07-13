@@ -1,13 +1,13 @@
 "use client";
 
-import {useState, useEffect, type FormEvent} from "react";
-import {AlertCircle, CheckCircle, History} from "lucide-react";
-import {useSelector} from "react-redux";
-import {useDispatch} from "react-redux";
+import { useState, useEffect, type FormEvent } from "react";
+import { AlertCircle, CheckCircle, History } from "lucide-react";
+import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 
 import apiRequest from "@/lib/apiRequest";
-import {Button} from "@/components/ui/button";
-import {Label} from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -16,12 +16,12 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import {Slider} from "@/components/ui/slider";
-import {getDefaultInstitutionId, getInstitutionById} from "@/lib/helpers";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Slider } from "@/components/ui/slider";
+import { getDefaultInstitutionId, getInstitutionById } from "@/lib/helpers";
 import { hexToHSL } from "@/lib/utils";
-import {selectSelectedInstitution} from "@/store/auth/selectors";
-import {removeThemeStart, updateThemeStart} from "@/store/auth/actions";
+import { selectSelectedInstitution } from "@/store/auth/selectors";
+import { removeThemeStart, updateThemeStart } from "@/store/auth/actions";
 
 // import updateThemeColors from "@/app/(dashboard)/layout";
 
@@ -50,28 +50,28 @@ interface StoredColorData {
 // Predefined color palettes,
 const colorPalettes = {
   modern: [
-    {name: "Deep Blue", value: "#1e40af"},
-    {name: "Forest Green", value: "#166534"},
-    {name: "Ruby Red", value: "#be123c"},
-    {name: "Royal Purple", value: "#7e22ce"},
-    {name: "Charcoal", value: "#1f2937"},
-    {name: "Teal", value: "#0d9488"},
+    { name: "Deep Blue", value: "#1e40af" },
+    { name: "Forest Green", value: "#166534" },
+    { name: "Ruby Red", value: "#be123c" },
+    { name: "Royal Purple", value: "#7e22ce" },
+    { name: "Charcoal", value: "#1f2937" },
+    { name: "Teal", value: "#0d9488" },
   ],
   pastel: [
-    {name: "Lavender", value: "#c4b5fd"},
-    {name: "Mint", value: "#a7f3d0"},
-    {name: "Peach", value: "#fed7aa"},
-    {name: "Sky Blue", value: "#bae6fd"},
-    {name: "Rose", value: "#fecdd3"},
-    {name: "Cream", value: "#fef3c7"},
+    { name: "Lavender", value: "#c4b5fd" },
+    { name: "Mint", value: "#a7f3d0" },
+    { name: "Peach", value: "#fed7aa" },
+    { name: "Sky Blue", value: "#bae6fd" },
+    { name: "Rose", value: "#fecdd3" },
+    { name: "Cream", value: "#fef3c7" },
   ],
   vibrant: [
-    {name: "Electric Blue", value: "#3b82f6"},
-    {name: "Lime Green", value: "#84cc16"},
-    {name: "Hot Pink", value: "#ec4899"},
-    {name: "Orange", value: "#f97316"},
-    {name: "Cyan", value: "#06b6d4"},
-    {name: "Amber", value: "#f59e0b"},
+    { name: "Electric Blue", value: "#3b82f6" },
+    { name: "Lime Green", value: "#84cc16" },
+    { name: "Hot Pink", value: "#ec4899" },
+    { name: "Orange", value: "#f97316" },
+    { name: "Cyan", value: "#06b6d4" },
+    { name: "Amber", value: "#f59e0b" },
   ],
 };
 
@@ -109,7 +109,7 @@ const getTextColor = (bgColor: string): string => {
 // Storage key constant
 const STORAGE_KEY = "themeColorData";
 
-export function ThemeColorForm({isOpen, onOpenChange, onColorUpdateSuccess}: ThemeColorFormProps) {
+export function ThemeColorForm({ isOpen, onOpenChange, onColorUpdateSuccess }: ThemeColorFormProps) {
   const [themeColor, setThemeColor] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -170,7 +170,7 @@ export function ThemeColorForm({isOpen, onOpenChange, onColorUpdateSuccess}: The
 
       return parsedData.colors;
     } catch (error) {
-      console.log("Error retrieving color data from local storage:", error);
+      // console.log("Error retrieving color data from local storage:", error);
 
       return [];
     }
@@ -188,7 +188,7 @@ export function ThemeColorForm({isOpen, onOpenChange, onColorUpdateSuccess}: The
         localStorage.setItem(STORAGE_KEY, JSON.stringify(colorData));
       }
     } catch (error) {
-      console.log("Error saving color data to local storage:", error);
+      // console.log("Error saving color data to local storage:", error);
     }
   };
 
@@ -218,7 +218,7 @@ export function ThemeColorForm({isOpen, onOpenChange, onColorUpdateSuccess}: The
       }
     } catch (error) {
       setErrorMessage("Failed to fetch Institution theme data");
-      console.log("Error fetching Institution theme data:", error);
+      // console.log("Error fetching Institution theme data:", error);
     }
   };
 
@@ -259,7 +259,7 @@ export function ThemeColorForm({isOpen, onOpenChange, onColorUpdateSuccess}: The
       }, 1500);
     } catch (error: any) {
       setErrorMessage(error.message || "An error occurred while resetting the theme color");
-      console.log("Error resetting theme color:", error);
+      // console.log("Error resetting theme color:", error);
     } finally {
       setIsResetting(false);
     }
@@ -308,7 +308,7 @@ export function ThemeColorForm({isOpen, onOpenChange, onColorUpdateSuccess}: The
       }, 1500);
     } catch (error: any) {
       setErrorMessage(error.message || "An error occurred while updating the theme color");
-      console.log("Error updating theme color:", error);
+      // console.log("Error updating theme color:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -403,7 +403,7 @@ export function ThemeColorForm({isOpen, onOpenChange, onColorUpdateSuccess}: The
                         <div
                           key={color.value}
                           className="h-8 rounded cursor-pointer border hover:scale-105 transition-transform"
-                          style={{backgroundColor: color.value}}
+                          style={{ backgroundColor: color.value }}
                           title={color.name}
                           onClick={() => handleColorSelection(color.value)}
                           role="color-selector"
@@ -474,7 +474,7 @@ export function ThemeColorForm({isOpen, onOpenChange, onColorUpdateSuccess}: The
                       <div key={index} className="flex flex-col items-center gap-1">
                         <div
                           className="h-12 w-12 rounded cursor-pointer border hover:scale-105 transition-transform"
-                          style={{backgroundColor: color}}
+                          style={{ backgroundColor: color }}
                           onClick={() => handleColorSelection(color)}
                         />
                         <span className="text-xs">{color}</span>
@@ -491,12 +491,12 @@ export function ThemeColorForm({isOpen, onOpenChange, onColorUpdateSuccess}: The
           <div className="space-y-2 pt-4">
             <p className="text-sm font-medium">Preview:</p>
             <div className="space-y-4">
-              <div className="rounded-md p-6" style={{backgroundColor: themeColor}}>
+              <div className="rounded-md p-6" style={{ backgroundColor: themeColor }}>
                 <div className="flex flex-col gap-2 items-center justify-center">
-                  <h3 className="font-semibold text-lg" style={{color: textColor}}>
+                  <h3 className="font-semibold text-lg" style={{ color: textColor }}>
                     Theme Preview
                   </h3>
-                  <p className="text-sm text-center" style={{color: textColor}}>
+                  <p className="text-sm text-center" style={{ color: textColor }}>
                     This is how your primary color will appear throughout your store
                   </p>
                   <button
@@ -512,16 +512,16 @@ export function ThemeColorForm({isOpen, onOpenChange, onColorUpdateSuccess}: The
               </div>
 
               <div className="grid grid-cols-4 gap-2">
-                <div className="p-2 rounded" style={{backgroundColor: themeColor, opacity: 0.25}}>
+                <div className="p-2 rounded" style={{ backgroundColor: themeColor, opacity: 0.25 }}>
                   <span className="text-xs font-medium">25%</span>
                 </div>
-                <div className="p-2 rounded" style={{backgroundColor: themeColor, opacity: 0.5}}>
+                <div className="p-2 rounded" style={{ backgroundColor: themeColor, opacity: 0.5 }}>
                   <span className="text-xs font-medium">50%</span>
                 </div>
-                <div className="p-2 rounded" style={{backgroundColor: themeColor, opacity: 0.75}}>
+                <div className="p-2 rounded" style={{ backgroundColor: themeColor, opacity: 0.75 }}>
                   <span className="text-xs font-medium">75%</span>
                 </div>
-                <div className="p-2 rounded" style={{backgroundColor: themeColor}}>
+                <div className="p-2 rounded" style={{ backgroundColor: themeColor }}>
                   <span className="text-xs font-medium">100%</span>
                 </div>
               </div>

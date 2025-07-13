@@ -1,11 +1,18 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ContactDetailsHeader } from "@/components/contacts/contacts-details-header"
 import { ContactDetailsInfo } from "@/components/contacts/contact-details-info"
 import { ContactDetailsTabs } from "@/components/contacts/contact-details-tabs"
 import { CallHistoryRecord, RecentAssignee } from "@/app/types/types.utils"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
+import { contactsAPI, institutionAPI } from "@/lib/api-helpers"
+import { ICallCenterProduct, IContact, IContactStatus } from "@/app/types/api.types"
+import { DeleteContactDialog } from "@/components/dialogs/delete-contact-dialog"
+import { EditContactDialog } from "@/components/dialogs/edit-contact-dialog"
+import { toast } from "sonner"
+import { useSelector } from "react-redux"
+import { selectSelectedInstitution } from "@/store/auth/selectors"
 
 
 
@@ -97,19 +104,113 @@ const mockRecentAssignees: RecentAssignee[] = [
 
 export default function ContactDetailsPage() {
   const params = useParams()
-  const contactId = params.id as string
-  const [activeTab, setActiveTab] = useState<"call-history" | "recent-assignees" | "documents">("call-history")
+  const contactUuid = params.id as string
+  const [activeTab, setActiveTab] = useState<"call-history" | "recent-assignees" | "documents">("call-history");
+  const [contact, setContact] = useState<IContact | null>(null);
+  const [contactToEdit, setContactToEdit] = useState<IContact | null>(null);
+  const [contactToDelete, setContactToDelete] = useState<IContact | null>(null);
+  const selectedInstitution = useSelector(selectSelectedInstitution);
+  const [products, setProducts] = useState<ICallCenterProduct[]>([]);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (contactUuid) {
+      handleFetchContact(contactUuid);
+    }
+  }, [contactUuid]);
+
+  useEffect(() => {
+    handleFetchInstitutionProducts();
+  }, [selectedInstitution]);
+
+  const handleFetchContact = async (uuid: string) => {
+    try {
+      const response = await contactsAPI.getContactDetails({ contactUuid: uuid });
+      setContact(response);
+    } catch (error) {
+
+    }
+  }
+
+  const handleUpdateContactStatus = async (newStatus: IContactStatus) => {
+    if (!contact) return;
+    try {
+      const updatedContact = await contactsAPI.updateContactStatus({
+        contactUuid: contact.uuid,
+        status: newStatus,
+      });
+      setContact(updatedContact);
+    } catch (error) {
+      console.error("Failed to update contact status:", error);
+    }
+  }
+
+  const handleFetchInstitutionProducts = async () => {
+    if (!selectedInstitution) { return }
+    try {
+      const products = await institutionAPI.getProductsByInstitution({ institutionId: selectedInstitution.id })
+      setProducts(products)
+    } catch (error) {
+      toast.error("Failed to fetch products. Please try again later.")
+    }
+  }
+
+
+
+  const handleDeleteContactSuccess = async () => {
+    if (!contact) return;
+    setContactToDelete(null);
+    try {
+      router.push("/contacts");
+    } catch (error) {
+      console.error("Failed to delete contact:", error);
+    }
+  };
+
+  const handleEditContact = ({ updatedContact }: { updatedContact: IContact }) => {
+    setContact(updatedContact);
+  };
+
+  const triggerDeleteContact = () => {
+    if (contact) {
+      setContactToDelete(contact);
+    }
+  };
+
+  const triggerEditContact = () => {
+    if (contact) {
+      setContactToEdit(contact);
+    }
+  };
 
   return (
     <div className="space-y-6">
-      <ContactDetailsHeader />
-      <ContactDetailsInfo />
+      <ContactDetailsHeader contact={contact} onTriggerDelete={triggerDeleteContact} onTriggerEdit={triggerEditContact} onArchive={() => handleUpdateContactStatus("archived")} />
+      <ContactDetailsInfo contact={contact} onMarkAsVerified={handleUpdateContactStatus} />
       <ContactDetailsTabs
         activeTab={activeTab}
         onTabChange={setActiveTab}
         callHistory={mockCallHistory}
         recentAssignees={mockRecentAssignees}
       />
+      {contactToEdit
+        && <EditContactDialog
+          isOpen={!!contactToEdit}
+          onClose={() => setContactToEdit(null)}
+          products={products}
+          contact={contactToEdit}
+          onUpdateSuccess={handleEditContact}
+        />
+      }
+
+      {contactToDelete
+        && <DeleteContactDialog
+          isOpen={!!contactToDelete}
+          onClose={() => setContactToDelete(null)}
+          contact={contactToDelete}
+          onSuccess={handleDeleteContactSuccess}
+        />
+      }
     </div>
   )
 }

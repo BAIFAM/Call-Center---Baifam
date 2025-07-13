@@ -49,6 +49,17 @@ export function CustomFieldComponent({ field, onEdit, onDelete, onValueChange }:
             className="flex-1 rounded-xl"
           />
         )
+      case "file":
+        return (
+          <Input
+            type="file"
+            onChange={(e) => {
+              if (!e.target.files || e.target.files.length === 0) return
+              onValueChange(field.id, e.target.files[0])
+            }}
+            className="flex-1 rounded-xl"
+          />
+        )
       case "checkbox":
         if (field.options && field.options.length > 0) {
           return (

@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import {fetchAndSetData, fetchInstitutionBranchesFromAPI} from "@/lib/helpers";
-import {useEffect, useState} from "react";
-import type {Branch} from "@/app/types/api.types";
+import { fetchAndSetData, fetchInstitutionBranchesFromAPI } from "@/lib/helpers";
+import { useEffect, useState } from "react";
+import type { Branch } from "@/app/types/api.types";
 
 import {
   Users,
@@ -17,11 +17,12 @@ import {
   ClipboardList,
   Palette,
   GitBranch,
+  Package,
 } from "lucide-react";
-import {Separator} from "@/components/ui/separator";
+import { Separator } from "@/components/ui/separator";
 import ProtectedComponent from "@/components/common/ProtectedComponent";
 import ProtectedPage from "@/components/common/ProtectedPage";
-import {PERMISSION_CODES} from "@/app/types/types.utils";
+import { PERMISSION_CODES } from "@/app/types/types.utils";
 
 export default function AdminPage() {
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -44,7 +45,7 @@ export default function AdminPage() {
   // Handle successful theme color update
   const handleThemeUpdateSuccess = () => {
     // We could show a success toast/notification here
-    console.log("Theme color updated successfully");
+    // console.log("Theme color updated successfully");
   };
 
   return (
@@ -178,9 +179,8 @@ export default function AdminPage() {
                       <span>{branch.branch_name}</span>
                       <div className="mt-1 ml-4">
                         <Link
-                          href={`/products-mgt/${branch.id}?branchId=${
-                            branch.id
-                          }&branchName=${encodeURIComponent(branch.branch_name)}`}
+                          href={`/products-mgt/${branch.id}?branchId=${branch.id
+                            }&branchName=${encodeURIComponent(branch.branch_name)}`}
                           className="text-blue-500 hover:underline mr-3"
                         >
                           Products
@@ -204,6 +204,22 @@ export default function AdminPage() {
                 >
                   <Store className="w-5 h-5 text-gray-500" />
                   <span>Institution Approval Steps</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Products Management Section */}
+            <div>
+              <h2 className="text-lg font-semibold mb-6">Products Management</h2>
+              <Separator className="my-6" />
+
+              <div className="space-y-4">
+                <Link
+                  href="/products"
+                  className="flex items-center gap-3 text-gray-700 hover:text-gray-900"
+                >
+                  <Package className="w-5 h-5 text-gray-500" />
+                  <span>Products</span>
                 </Link>
               </div>
             </div>

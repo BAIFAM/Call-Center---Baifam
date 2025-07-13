@@ -2,8 +2,8 @@
 
 import type React from "react";
 
-import {useState, useEffect} from "react";
-import {useRouter} from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Store,
   Building2,
@@ -19,15 +19,15 @@ import {
   Upload,
   X,
 } from "lucide-react";
-import {useSelector} from "react-redux";
-import {useDispatch} from "react-redux";
+import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 
-import {Button} from "@/components/ui/button";
-import {Card, CardContent, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
-import {Input} from "@/components/ui/input";
-import {Label} from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import apiRequest from "@/lib/apiRequest";
-import {selectRefreshToken, selectSelectedInstitution, selectUser} from "@/store/auth/selectors";
+import { selectRefreshToken, selectSelectedInstitution, selectUser } from "@/store/auth/selectors";
 import {
   logoutStart,
   setAccessToken,
@@ -38,12 +38,12 @@ import {
   setCurrentUser,
   refreshUser,
 } from "@/store/auth/actions";
-import {toast} from "sonner";
-import type {LoginResponse} from "@/utils/authUtils";
+import { toast } from "sonner";
+import type { LoginResponse } from "@/utils/authUtils";
 import axios from "axios";
-import {LocationAutocomplete} from "@/components/common/location-autocomplete";
-import {Textarea} from "@/components/ui/textarea";
-import {Progress} from "@radix-ui/react-progress";
+import { LocationAutocomplete } from "@/components/common/location-autocomplete";
+import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@radix-ui/react-progress";
 
 interface DocumentFile {
   id: string;
@@ -80,7 +80,7 @@ const STEPS = [
     title: "Location Details",
     description: "Where is your institution located",
   },
-  {id: 3, title: "Documents", description: "Upload required documents"},
+  { id: 3, title: "Documents", description: "Upload required documents" },
 ];
 
 export default function CreateOrganisationWizard() {
@@ -114,7 +114,7 @@ export default function CreateOrganisationWizard() {
         const user = userData;
         setUserId(user.id);
         if (user.email) {
-          setFormData((prev) => ({...prev, institutionEmail: user.email}));
+          setFormData((prev) => ({ ...prev, institutionEmail: user.email }));
         }
       } catch (error) {
         toast.error("Error retrieving user information. Please log out and log in again.");
@@ -137,7 +137,7 @@ export default function CreateOrganisationWizard() {
   }
 
   const updateFormData = (field: keyof OrganisationFormData, value: any) => {
-    setFormData((prev) => ({...prev, [field]: value}));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const addDocument = () => {
@@ -156,7 +156,7 @@ export default function CreateOrganisationWizard() {
   const updateDocument = (id: string, field: keyof DocumentFile, value: any) => {
     setFormData((prev) => ({
       ...prev,
-      documents: prev.documents.map((doc) => (doc.id === id ? {...doc, [field]: value} : doc)),
+      documents: prev.documents.map((doc) => (doc.id === id ? { ...doc, [field]: value } : doc)),
     }));
   };
 
@@ -272,13 +272,13 @@ export default function CreateOrganisationWizard() {
       const validDocuments = formData.documents.filter(
         (doc) => doc.file && doc.title && doc.title.trim(),
       );
-      console.log("Valid documents count:", validDocuments.length);
+      // console.log("Valid documents count:", validDocuments.length);
 
       if (validDocuments.length > 0) {
         // Append document files and titles
         validDocuments.forEach((doc) => {
           if (doc.file && doc.title) {
-            console.log(`Adding document: ${doc.title} - ${doc.file.name}`);
+            // console.log(`Adding document: ${doc.title} - ${doc.file.name}`);
             formdata.append("document_files", doc.file);
             formdata.append("document_titles", doc.title.trim());
           }
@@ -287,31 +287,31 @@ export default function CreateOrganisationWizard() {
       // Important: We don't add empty document fields at all if there are no valid documents
 
       // Log the complete form data
-      console.log("=== Complete FormData Contents ===");
+      // console.log("=== Complete FormData Contents ===");
       for (const [key, value] of formdata.entries()) {
         if (value instanceof File) {
-          console.log(`${key}: File - ${value.name} (${value.size} bytes, ${value.type})`);
+          // console.log(`${key}: File - ${value.name} (${value.size} bytes, ${value.type})`);
         } else {
-          console.log(`${key}: ${value}`);
+          // console.log(`${key}: ${value}`);
         }
       }
 
-      console.log("Making API request to create institution...");
+      // console.log("Making API request to create institution...");
 
       // Make the API request
       const response = await apiRequest.post("institution/", formdata);
 
-      console.log("API Response:", response.status, response.data);
+      // console.log("API Response:", response.status, response.data);
 
       if (response.status === 200 || response.status === 201) {
-        console.log("Institution created successfully:", response.data);
+        // console.log("Institution created successfully:", response.data);
 
         // Refresh user data to get updated institutions
         try {
-          console.log("Refreshing user data...");
+          // console.log("Refreshing user data...");
           const fetchedUserResponse = await axios.post(
             `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api"}/user/token/refresh/`,
-            {refresh: refreshToken},
+            { refresh: refreshToken },
             {
               headers: {
                 "Content-Type": "application/json",
@@ -339,8 +339,7 @@ export default function CreateOrganisationWizard() {
 
       if (error.response) {
         toast.error(
-          `Server error: ${error.response.status} - ${
-            error.response.data?.detail || "Unknown error"
+          `Server error: ${error.response.status} - ${error.response.data?.detail || "Unknown error"
           }`,
         );
 
@@ -696,9 +695,8 @@ export default function CreateOrganisationWizard() {
                       <Check className="h-3 w-3 text-primary" />
                     ) : (
                       <div
-                        className={`h-3 w-3 rounded-full ${
-                          currentStep === step.id ? "bg-primary" : "bg-muted"
-                        }`}
+                        className={`h-3 w-3 rounded-full ${currentStep === step.id ? "bg-primary" : "bg-muted"
+                          }`}
                       />
                     )}
                     <span className={currentStep === step.id ? "font-medium" : ""}>

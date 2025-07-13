@@ -79,9 +79,9 @@ export function CallsFilters({ calls, onFilteredCallsChange, totalCalls }: Calls
             </SelectTrigger>
             <SelectContent className="rounded-xl">
               <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="Complete">Complete</SelectItem>
-              <SelectItem value="Missed">Missed</SelectItem>
-              <SelectItem value="Unanswered">Unanswered</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="busy">Busy</SelectItem>
+              <SelectItem value="failed">Failed</SelectItem>
             </SelectContent>
           </Select>
 

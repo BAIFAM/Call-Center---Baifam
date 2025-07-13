@@ -9,11 +9,11 @@ import React, {
   useRef,
   useState,
 } from "react";
-import {useSelector} from "react-redux";
+import { useSelector } from "react-redux";
 
-import {selectUser} from "@/store/auth/selectors";
-import {store} from "@/store";
-import {useToast} from "@/hooks/use-toast";
+import { selectUser } from "@/store/auth/selectors";
+import { store } from "@/store";
+import { useToast } from "@/hooks/use-toast";
 
 // --- Interfaces ---
 interface Task {
@@ -54,13 +54,13 @@ const WebSocketContext = createContext<WebSocketContextType>({
   connected: false,
   tasks: null,
   error: null,
-  sendMessage: () => {},
+  sendMessage: () => { },
   notifications: [],
 });
 
 export const useWebSocket = () => useContext(WebSocketContext);
 
-export const WebSocketProvider: React.FC<{children: React.ReactNode}> = ({children}) => {
+export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [connected, setConnected] = useState(false);
   const [tasks, setTasks] = useState<Task[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -69,7 +69,7 @@ export const WebSocketProvider: React.FC<{children: React.ReactNode}> = ({childr
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const fetchTaskTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const user = useSelector(selectUser);
-  const {toast} = useToast();
+  const { toast } = useToast();
 
   const greenToastStyle = {
     className: "border-green-500 bg-green-500 text-white",
@@ -103,10 +103,10 @@ export const WebSocketProvider: React.FC<{children: React.ReactNode}> = ({childr
     socketRef.current = socket;
 
     socket.onopen = () => {
-      console.log("WebSocket connected");
+      // console.log("WebSocket connected");
       setConnected(true);
       setError(null);
-      socket.send(JSON.stringify({type: "fetch_tasks"}));
+      socket.send(JSON.stringify({ type: "fetch_tasks" }));
     };
 
     socket.onmessage = (event) => {
@@ -135,7 +135,7 @@ export const WebSocketProvider: React.FC<{children: React.ReactNode}> = ({childr
               clearTimeout(fetchTaskTimeoutRef.current);
             }
             fetchTaskTimeoutRef.current = setTimeout(() => {
-              socket.send(JSON.stringify({type: "fetch_tasks"}));
+              socket.send(JSON.stringify({ type: "fetch_tasks" }));
             }, 1000); // debounce
           }
         }
@@ -159,7 +159,7 @@ export const WebSocketProvider: React.FC<{children: React.ReactNode}> = ({childr
       // }, 5000);
     };
 
-    socket.onerror = () => {};
+    socket.onerror = () => { };
   }, [user?.id, toast]);
 
   useEffect(() => {

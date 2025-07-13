@@ -182,7 +182,7 @@ export interface CustomField {
 
 
 
-export type FieldType = "text" | "date" | "select" | "checkbox" | "number" | "textarea"
+export type FieldType = "text" | "date" | "select" | "checkbox" | "number" | "textarea" | "file"
 
 export interface AddFieldFormData {
   title: string

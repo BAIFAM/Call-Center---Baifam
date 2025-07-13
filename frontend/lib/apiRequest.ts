@@ -1,9 +1,9 @@
-import axios, {InternalAxiosRequestConfig} from "axios";
+import axios, { InternalAxiosRequestConfig } from "axios";
 
-import {CustomApiRequestError} from "@/app/types/types.utils";
-import {store} from "@/store";
-import {logoutStart, setAccessToken, setRefreshToken} from "@/store/auth/actions";
-import {LoginResponse} from "@/utils/authUtils";
+import { CustomApiRequestError } from "@/app/types/types.utils";
+import { store } from "@/store";
+import { logoutStart, setAccessToken, setRefreshToken } from "@/store/auth/actions";
+import { LoginResponse } from "@/utils/authUtils";
 
 const axiosJsonInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api",
@@ -52,7 +52,7 @@ function addSubscriber(callback: Subscriber) {
 axiosJsonInstance.interceptors.response.use(
   (response) => response,
   async (error: any) => {
-    const originalRequest = error.config as InternalAxiosRequestConfig & {_retry?: boolean};
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
@@ -82,7 +82,7 @@ axiosJsonInstance.interceptors.response.use(
       try {
         const response = await axios.post(
           `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api"}/user/token/refresh/`,
-          {refresh: refreshToken},
+          { refresh: refreshToken },
           {
             headers: {
               "Content-Type": "application/json",
@@ -90,7 +90,7 @@ axiosJsonInstance.interceptors.response.use(
           },
         );
 
-        const {access, refresh} = (response.data as LoginResponse).tokens;
+        const { access, refresh } = (response.data as LoginResponse).tokens;
 
         store.dispatch(setAccessToken(access));
         store.dispatch(setRefreshToken(refresh));
@@ -101,7 +101,7 @@ axiosJsonInstance.interceptors.response.use(
 
         return axiosJsonInstance(originalRequest);
       } catch (err) {
-        console.log("\n\nError on request : ", err);
+        // console.log("\n\nError on request : ", err);
         store.dispatch(logoutStart());
 
         return Promise.reject(err);

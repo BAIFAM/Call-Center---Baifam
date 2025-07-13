@@ -23,6 +23,7 @@ const fieldTypes: { value: FieldType; label: string }[] = [
   { value: "date", label: "Date" },
   { value: "select", label: "Select" },
   { value: "checkbox", label: "Checkbox" },
+  { value: "file", label: "File" },
 ]
 
 export function EditFieldDialog({ isOpen, onClose, onEditField, field }: EditFieldDialogProps) {
