@@ -56,6 +56,7 @@ export interface Product {
   product_image: string | null;
   is_active: boolean;
   is_approved: boolean;
+  institution: IUserInstitution;
 }
 
 
@@ -73,7 +74,7 @@ export interface ITask {
 
 export interface IApprovalProductDetails extends Product {
   id: number;
-  institution: number;
+  institution: IUserInstitution;
   status: string;
   tasks: Array<ITask>;
 }
