@@ -4,6 +4,9 @@ import { CustomField } from "@/app/types/types.utils";
 import { get } from "http";
 
 
+
+
+
 type IContactCreationData = {
     product: string;
     name: string;
@@ -227,103 +230,125 @@ export const contactsAPI = {
     },
 
     // Download Excel template for bulk contact upload
-    downloadContactTemplate: async ({ productUuid }: { productUuid: string }) => {
+    downloadContactTemplate: async ({ productUuid, token }: { productUuid: string, token: string }) => {
         try {
-            // Create a direct fetch request for file download since apiRequest might not support blob responses
-            const response = await fetch(`/api/call/contacts/${productUuid}/template/`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`, // Adjust based on your auth setup
-                    'Content-Type': 'application/json',
-                },
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+        const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL
+    
+          // Create a direct fetch request for file download
+          const response = await fetch(`${baseURL}/api/call/contacts/${productUuid}/template/`, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          })
+    
+          if (!response.ok) {
+            const errorText = await response.text()
+            console.error("Download error response:", errorText)
+            throw new Error(`HTTP error! status: ${response.status} - ${errorText}`)
+          }
+    
+          // Check if response is actually a file
+          const contentType = response.headers.get("content-type")
+          if (
+            !contentType ||
+            (!contentType.includes("application/vnd.openxmlformats") &&
+              !contentType.includes("application/vnd.ms-excel") &&
+              !contentType.includes("application/octet-stream"))
+          ) {
+            const responseText = await response.text()
+            console.error("Unexpected response type:", contentType, responseText)
+            throw new Error("Server did not return an Excel file. Please check the API endpoint.")
+          }
+    
+          // Get the blob data
+          const blob = await response.blob()
+    
+          // Create download link
+          const url = window.URL.createObjectURL(blob)
+          const link = document.createElement("a")
+          link.href = url
+    
+          // Extract filename from response headers or use default
+          const contentDisposition = response.headers.get("content-disposition")
+          let filename = `contacts_template_${productUuid}.xlsx`
+    
+          if (contentDisposition) {
+            const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)
+            if (filenameMatch && filenameMatch[1]) {
+              filename = filenameMatch[1].replace(/['"]/g, "")
             }
-            
-            // Get the blob data
-            const blob = await response.blob();
-            
-            // Create download link
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            
-            // Extract filename from response headers or use default
-            const contentDisposition = response.headers.get('content-disposition');
-            const filename = contentDisposition 
-                ? contentDisposition.split('filename=')[1]?.replace(/"/g, '')
-                : `contacts_template_${productUuid}.xlsx`;
-            
-            link.setAttribute('download', filename);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.URL.revokeObjectURL(url);
-            
-            return { success: true, filename };
+          }
+    
+          link.setAttribute("download", filename)
+          document.body.appendChild(link)
+          link.click()
+          link.remove()
+          window.URL.revokeObjectURL(url)
+    
+          return { success: true, filename }
         } catch (error) {
-            console.error("Error downloading contact template:", error);
-            throw error;
+          console.error("Error downloading contact template:", error)
+          throw error
         }
-    },
-
-    // Bulk upload contacts from CSV/Excel file
-    bulkUploadContacts: async ({
+      },
+      // Bulk upload contacts from CSV/Excel file
+      bulkUploadContacts: async ({
         productUuid,
-        file
-    }: {
-        productUuid: string;
-        file: File;
-    }) => {
+        file,
+        token,
+      }: {
+        productUuid: string
+        file: File
+        token: string
+      }) => {
         try {
-            // Validate file type
-            const allowedTypes = ['.csv', '.xlsx', '.xls'];
-            const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
-            
-            if (!allowedTypes.includes(fileExtension)) {
-                throw new Error('Invalid file type. Please upload a CSV or Excel file (.csv, .xlsx, .xls)');
-            }
-            
-            // Create FormData for file upload
-            const formData = new FormData();
-            formData.append('file', file);
-            
-            // Use fetch for multipart/form-data since apiRequest might not handle it properly
-            const response = await fetch(`/api/call/contacts/${productUuid}/bulk-upload/`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`, // Adjust based on your auth setup
-                    // Don't set Content-Type header - let the browser set it with boundary for multipart/form-data
-                },
-                body: formData,
-            });
-            
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            
-            return data as {
-                created_count: number;
-                error_count: number;
-                product_name: string;
-                created_contacts: Array<{
-                    uuid: string;
-                    name: string;
-                    phone_number: string;
-                    product_name: string;
-                }>;
-                errors?: string[];
-            };
+          // Validate file type
+          const allowedTypes = [".csv", ".xlsx", ".xls"]
+          const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf("."))
+          if (!allowedTypes.includes(fileExtension)) {
+            throw new Error("Invalid file type. Please upload a CSV or Excel file (.csv, .xlsx, .xls)")
+          }
+    
+          // Create FormData for file upload
+          const formData = new FormData()
+          formData.append("file", file)
+
+        const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL
+    
+          // Use fetch for multipart/form-data
+          const response = await fetch(`${baseURL}/api/call/contacts/${productUuid}/bulk-upload/`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            body: formData,
+          })
+    
+          if (!response.ok) {
+            const errorData = await response.json()
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
+          }
+    
+          const data = await response.json()
+          return data as {
+            created_count: number
+            error_count: number
+            product_name: string
+            created_contacts: Array<{
+              uuid: string
+              name: string
+              phone_number: string
+              product_name: string
+            }>
+            errors?: string[]
+          }
         } catch (error) {
-            console.error("Error bulk uploading contacts:", error);
-            throw error;
+          console.error("Error bulk uploading contacts:", error)
+          throw error
         }
-    },
+      },
 };
 
 export const institutionAPI = {
