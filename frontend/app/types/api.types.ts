@@ -300,8 +300,30 @@ export interface IContactFormData {
   country_code: string;
   status: IContactStatus;
   product: string;
+  email: string;
+  notes?  : string;
 }
 
+export interface ICallGroup {
+  institution: IUserInstitution
+  name: string;
+}
+
+export interface ICallGroupUserFormData {
+  uuid: string;
+  user: number;
+  call_group: number; 
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ICallGroupUser {
+  uuid: string;
+  user: IUser;
+  call_group: ICallGroup; 
+  created_at?: string;
+  updated_at?: string;
+}
 
 export interface IClientCompany {
   uuid: string;

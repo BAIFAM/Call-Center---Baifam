@@ -1,4 +1,4 @@
-import { ICall, ICallCenterProduct, ICallFormData, IContact, IContactFormData, IContactStatus } from "@/app/types/api.types";
+import { ICall, ICallCenterProduct, ICallFormData, ICallGroupUser, ICallGroupUserFormData, IContact, IContactFormData, IContactStatus } from "@/app/types/api.types";
 import apiRequest from "./apiRequest";
 import { CustomField } from "@/app/types/types.utils";
 import { get } from "http";
@@ -439,3 +439,70 @@ export const institutionAPI = {
     },
 }
 
+
+export const callGroupUserAPI = {
+    getByInstitution: async ({ institutionId }: { institutionId: number }) => {
+      try {
+        const response = await apiRequest.get(`/call/group-users/${institutionId}/`);
+        return response.data as ICallGroupUser[];
+      } catch (error) {
+        console.error("Error fetching CallGroupUsers:", error);
+        throw error;
+      }
+    },
+  
+    
+    createUser: async ({
+      institutionId,
+      userData,
+    }: {
+      institutionId: number;
+      userData: Partial<ICallGroupUserFormData>;
+    }) => {
+      try {
+        const response = await apiRequest.post(`/call/group-users/${institutionId}/`, userData);
+        return response.data as ICallGroupUser;
+      } catch (error) {
+        console.error("Error creating CallGroupUser:", error);
+        throw error;
+      }
+    },
+  
+    
+    getUserDetails: async ({ uuid }: { uuid: string }) => {
+      try {
+        const response = await apiRequest.get(`/call/group-users/detail/${uuid}/`);
+        return response.data as ICallGroupUser;
+      } catch (error) {
+        console.error("Error fetching CallGroupUser details:", error);
+        throw error;
+      }
+    },
+  
+
+    updateUser: async ({
+      uuid,
+      updates,
+    }: {
+      uuid: string;
+      updates: Partial<ICallGroupUserFormData>;
+    }) => {
+      try {
+        const response = await apiRequest.patch(`/call/group-users/detail/${uuid}/`, updates);
+        return response.data as ICallGroupUser;
+      } catch (error) {
+        console.error("Error updating CallGroupUser:", error);
+        throw error;
+      }
+    },
+  
+
+    deleteUser: async ({ uuid }: { uuid: string }) => {
+      try {
+        await apiRequest.delete(`/call/group-users/detail/${uuid}/`);
+      } catch (error) {
+        console.error("Error deleting CallGroupUser:", error);
+        throw error;
+      }
+    },
+  };

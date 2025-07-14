@@ -31,18 +31,22 @@ interface CreateContactDialogProps {
 interface ContactFormData {
   name: string
   phone_number: string
-  product_uuid: string
+  product: string // Changed from product_uuid to product
   email?: string
   notes?: string
+  country?: string
+  country_code?: string
 }
 
 export function CreateContactDialog({ isOpen, onClose, products, onCreateSuccess }: CreateContactDialogProps) {
   const [formData, setFormData] = useState<ContactFormData>({
     name: "",
     phone_number: "",
-    product_uuid: "",
+    product: "", // Changed from product_uuid to product
     email: "",
     notes: "",
+    country: "",
+    country_code: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const selectedInstitution = useSelector(selectSelectedInstitution)
@@ -59,7 +63,7 @@ export function CreateContactDialog({ isOpen, onClose, products, onCreateSuccess
       return
     }
 
-    if (!formData.name.trim() || !formData.phone_number.trim() || !formData.product_uuid) {
+    if (!formData.name.trim() || !formData.phone_number.trim() || !formData.product) {
       toast.error("Please fill in all required fields")
       return
     }
@@ -71,9 +75,11 @@ export function CreateContactDialog({ isOpen, onClose, products, onCreateSuccess
         contactData: {
           name: formData.name.trim(),
           phone_number: formData.phone_number.trim(),
-          product_uuid: formData.product_uuid,
-          email: formData.email?.trim() || undefined,
-          notes: formData.notes?.trim() || undefined,
+          product: formData.product,
+          email: formData.email?.trim() ?? "",
+          notes: formData.notes?.trim(),
+          country: formData.country?.trim() ?? "",
+          country_code: formData.country_code?.trim() ?? "",
         },
       })
 
@@ -92,9 +98,11 @@ export function CreateContactDialog({ isOpen, onClose, products, onCreateSuccess
     setFormData({
       name: "",
       phone_number: "",
-      product_uuid: "",
+      product: "", // Changed from product_uuid to product
       email: "",
       notes: "",
+      country: "",
+      country_code: "",
     })
     onClose()
   }
@@ -132,7 +140,7 @@ export function CreateContactDialog({ isOpen, onClose, products, onCreateSuccess
 
           <div className="space-y-2">
             <Label htmlFor="product">Product *</Label>
-            <Select value={formData.product_uuid} onValueChange={(value) => handleInputChange("product_uuid", value)}>
+            <Select value={formData.product} onValueChange={(value) => handleInputChange("product", value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select a product" />
               </SelectTrigger>
@@ -154,6 +162,26 @@ export function CreateContactDialog({ isOpen, onClose, products, onCreateSuccess
               value={formData.email}
               onChange={(e) => handleInputChange("email", e.target.value)}
               placeholder="Enter email address (optional)"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="country">Country</Label>
+            <Input
+              id="country"
+              value={formData.country}
+              onChange={(e) => handleInputChange("country", e.target.value)}
+              placeholder="Enter country (optional)"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="country_code">Country Code</Label>
+            <Input
+              id="country_code"
+              value={formData.country_code}
+              onChange={(e) => handleInputChange("country_code", e.target.value)}
+              placeholder="Enter country code (optional)"
             />
           </div>
 
