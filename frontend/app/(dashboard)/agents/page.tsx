@@ -1,36 +1,43 @@
 "use client"
-
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react" // Import useCallback
 import { useSelector } from "react-redux"
 import { AgentsHeader } from "@/components/agents/agents-header"
 import { AgentsList } from "@/components/agents/agents-list"
-import { callGroupUserAPI } from "@/lib/api-helpers"
+import { callGroupUserAPI } from "@/lib/api-helpers" // Assuming callGroupUserAPI is in api-helpers
 import { selectSelectedInstitution } from "@/store/auth/selectors"
-import { ICallGroupUser } from "@/app/types/api.types"
 
 export default function AgentsPage() {
   const institution = useSelector(selectSelectedInstitution)
-  const [filteredAgents, setFilteredAgents] = useState<ICallGroupUser[]>([])
-  const [allAgents, setAllAgents] = useState<ICallGroupUser[]>([])
+  const [filteredAgents, setFilteredAgents] = useState([])
+  const [allAgents, setAllAgents] = useState([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const fetchAgents = async () => {
-      try {
-        if (!institution?.id) return
-        const response = await callGroupUserAPI.getByInstitution({ institutionId: institution.id })
-
-        setAllAgents(response)
-        setFilteredAgents(response)
-      } catch (error) {
-        console.error("Failed to load agents:", error)
-      } finally {
-        setLoading(false)
+  // Wrap fetchAgents in useCallback to prevent unnecessary re-renders and ensure stable reference
+  const fetchAgents = useCallback(async () => {
+    setLoading(true)
+    try {
+      // Assuming institution.id is always available in a real scenario,
+      // or handle the case where it's not (e.g., redirect or show error)
+      if (!institution?.id) {
+        console.warn("Institution ID not available, cannot fetch agents.")
+        setAllAgents([])
+        setFilteredAgents([])
+        return
       }
+      const response = await callGroupUserAPI.getByInstitution({ institutionId: institution.id })
+      setAllAgents(response)
+      setFilteredAgents(response)
+    } catch (error) {
+      console.error("Failed to load agents:", error)
+      // Optionally show a toast or error message to the user
+    } finally {
+      setLoading(false)
     }
+  }, [institution?.id]) // Depend on institution.id
 
+  useEffect(() => {
     fetchAgents()
-  }, [institution])
+  }, [fetchAgents]) // Depend on the memoized fetchAgents
 
   if (loading) {
     return <p className="text-gray-600">Loading agents...</p>
@@ -42,6 +49,8 @@ export default function AgentsPage() {
         agents={allAgents}
         onFilteredAgentsChange={setFilteredAgents}
         totalAgents={allAgents.length}
+        onAgentCreated={fetchAgents} // Pass the refresh function
+        institutionId={institution?.id || 0} // Pass institutionId, default to 0 if not available
       />
       <AgentsList agents={filteredAgents} />
     </div>
