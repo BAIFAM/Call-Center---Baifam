@@ -33,7 +33,7 @@ class CallGroupUser(models.Model):
     )
     user = models.ForeignKey(
         "users.CustomUser",
-        related_name="call_group_users",
+        related_name="call_groups",
         on_delete=models.CASCADE
     )
     status = models.CharField(
