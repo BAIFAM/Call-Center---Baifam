@@ -5,6 +5,10 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Icon } from "@iconify/react"
 import { usePathname, useRouter } from "next/navigation"
+import { useSelector } from "react-redux"
+import { selectSidebarOpened } from "@/store/miscellaneous/selectors"
+import { useDispatch } from "react-redux"
+import { toggleSideBarAction } from "@/store/miscellaneous/actions"
 
 type NavItem = {
     name:string,
@@ -43,15 +47,20 @@ const navigation:NavItem[] = [
 
 
 export function DashboardSidebar() {
-    const [collapsed, setCollapsed] = useState(false);
+    const collapsed = useSelector(selectSidebarOpened);
     const [currentNavItem, setCurrentNavItem] = useState("Dashboard");
-    const pathName = usePathname();
 
+    const pathName = usePathname();
+    const dispatch = useDispatch();
     const router = useRouter();
+
+    const toggleNavBar = () =>{
+        dispatch(toggleSideBarAction())
+    }
 
     return (
         <div className={cn("bg-white border-r border-gray-200 transition-all duration-300 relative", collapsed ? "!w-20 !min-w-20 !max-w-20" : "!w-60 !min-w-60 !max-w-60")}>
-            <Button variant="ghost" size="sm" onClick={() => setCollapsed(!collapsed)} className="p-2 !h-8 !aspect-square rounded-full !bg-black  !text-white  !absolute top-10 -right-4">
+            <Button variant="ghost" size="sm" onClick={toggleNavBar} className="p-2 !h-8 !aspect-square rounded-full !bg-primary-700 !text-white !absolute top-10 -right-4">
                 <Icon icon={collapsed ? "hugeicons:arrow-right-01" : "hugeicons:arrow-left-01"} className="w-5 h-5" />
             </Button>
             <div className="flex flex-col h-full">

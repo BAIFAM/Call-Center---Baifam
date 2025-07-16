@@ -15,6 +15,7 @@ import {selectSelectedInstitution} from "@/store/auth/selectors";
 import {removeThemeStart, updateThemeStart} from "@/store/auth/actions";
 import {getDefaultInstitutionId, getInstitutionById} from "@/lib/helpers";
 import {handleApiError} from "@/lib/apiErrorHandler";
+import Link from "next/link";
 
 // Storage key constant
 const STORAGE_KEY = "themeColorData";
@@ -372,9 +373,9 @@ export default function ThemeColorCustomization() {
   return (
     <div className="p-6 bg-white">
       <div className="flex items-center mb-6">
-        <a aria-label="Go back" className="mr-4 p-2 rounded-full bg-white border" href="/admin">
+        <Link aria-label="Go back" className="mr-4 p-2 rounded-full bg-white border" href="/admin">
           <ArrowLeft size={20} />
-        </a>
+        </Link>
         <h1 className="text-2xl font-semibold">Customize theme color</h1>
       </div>
 

@@ -162,7 +162,7 @@ export default function AdminPage() {
             {/* Branch Management Section */}
             <div>
               <h2 className="text-lg font-semibold mb-6">Branch Management</h2>
-              <Separator className="my-6" />
+              <Separator className="my-4" />
 
               <div className="space-y-4">
                 <Link
@@ -173,7 +173,7 @@ export default function AdminPage() {
                   <span>Branches</span>
                 </Link>
                 {/* We'll keep the branch listing functionality but hide it since it's not in the image */}
-                <div className="hidden">
+                {/* <div className="hidden">
                   {branches.map((branch) => (
                     <div key={branch.id} className="ml-4">
                       <span>{branch.branch_name}</span>
@@ -188,14 +188,14 @@ export default function AdminPage() {
                       </div>
                     </div>
                   ))}
-                </div>
+                </div> */}
               </div>
             </div>
 
             {/* Institution Management Section */}
             <div>
               <h2 className="text-lg font-semibold mb-6">Institution Management</h2>
-              <Separator className="my-6" />
+              <Separator className="my-4" />
 
               <div className="space-y-4">
                 <Link
@@ -211,7 +211,7 @@ export default function AdminPage() {
             {/* Products Management Section */}
             <div>
               <h2 className="text-lg font-semibold mb-6">Products Management</h2>
-              <Separator className="my-6" />
+              <Separator className="my-4" />
 
               <div className="space-y-4">
                 <Link
@@ -220,6 +220,21 @@ export default function AdminPage() {
                 >
                   <Package className="w-5 h-5 text-gray-500" />
                   <span>Products</span>
+                </Link>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-lg font-semibold mb-6">Calls Management</h2>
+              <Separator className="my-4" />
+
+              <div className="space-y-4">
+                <Link
+                  href="/call-groups"
+                  className="flex items-center gap-3 text-gray-700 hover:text-gray-900"
+                >
+                  <Package className="w-5 h-5 text-gray-500" />
+                  <span>Call groups</span>
                 </Link>
               </div>
             </div>

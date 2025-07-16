@@ -1,6 +1,6 @@
 "use client";
 
-import type {IPaginatedResponse, UserProfile} from "@/app/types/api.types";
+import type {IPaginatedResponse, IUserProfile} from "@/app/types/api.types";
 
 import {useEffect, useState} from "react";
 import {Search, ChevronDown, Eye, Trash2, ArrowLeft, Plus} from "lucide-react";
@@ -30,7 +30,7 @@ import {handleApiError} from "@/lib/apiErrorHandler";
 export default function StaffPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [userProfiles, setUserProfiles] = useState<UserProfile[]>([]);
+  const [userProfiles, setUserProfiles] = useState<IUserProfile[]>([]);
   const [selectedBranch, setSelectedBranch] = useState("All Branches");
   const [selectedRole, setSelectedRole] = useState("All Roles");
   const [selectedStatus, setSelectedStatus] = useState("All status");
@@ -52,7 +52,7 @@ export default function StaffPage() {
         `institution/profile/${InstitutionId}/?page_size=${pageSize}`,
       );
 
-      const data = response.data as IPaginatedResponse<UserProfile>;
+      const data = response.data as IPaginatedResponse<IUserProfile>;
 
       // Check if the response is paginated
       if (data.results && data.count !== undefined) {
@@ -126,7 +126,7 @@ export default function StaffPage() {
   });
 
   // Function to get the first role name or "No Role Assigned".
-  const getUserRoleName = (userProfile: UserProfile) => {
+  const getUserRoleName = (userProfile: IUserProfile) => {
     if (userProfile.user.roles && userProfile.user.roles.length > 0) {
       return capitalizeEachWord(userProfile.user.roles[0].name);
     }

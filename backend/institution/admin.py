@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Institution, Branch, ClientCompany, Product, ClientCompanyProduct
+from .models import Institution, Branch, ClientCompany, Product, ClientCompanyProduct, UserBranch
 
 
 class InstitutionAdmin(admin.ModelAdmin):
@@ -15,8 +15,15 @@ class BranchAdmin(admin.ModelAdmin):
     ordering = ("branch_name",)
     list_per_page = 20
 
+class UserBranchAdmin(admin.ModelAdmin):
+    list_display = ("branch__branch_name", 'user', "branch__institution", "branch__branch_location")
+    search_fields = ("branch__branch_name","user",  "branch__institution_name")
+    ordering = ("branch__branch_name",)
+    list_per_page = 20
+
 
 admin.site.register(Branch, BranchAdmin)
+admin.site.register(UserBranch, UserBranchAdmin)
 admin.site.register(Institution, InstitutionAdmin)
 admin.site.register(ClientCompany)
 admin.site.register(Product)

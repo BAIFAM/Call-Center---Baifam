@@ -1,18 +1,24 @@
 "use client";
 
+import { IAgent } from "@/app/types/api.types";
 import {Badge} from "@/components/ui/badge";
 import {Icon} from "@iconify/react";
 
-export function AgentDetailsInfo() {
+interface AgentDetailsInfoProps {
+  agent:IAgent|null
+}
+
+export function AgentDetailsInfo({agent}:AgentDetailsInfoProps) {
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center space-x-3 mb-2">
-            <h2 className="text-2xl font-bold text-gray-900">Ssempala Martin</h2>
-            <Badge className="bg-green-100 text-green-800 rounded-full">Active</Badge>
+            <h2 className="text-2xl font-bold text-gray-900">{agent?.user.fullname}</h2>
+            <Badge variant={ agent?.status === "active" ? "default":"secondary"} className="bg-green-100 text-green-800 rounded-full">{agent?.status}</Badge>
           </div>
-          <p className="text-gray-600 text-sm mb-4">ssempalamartin@gmail.com • +256752139437</p>
+          <p className="text-gray-600 text-sm mb-4">{agent?.user.email} • +25670000000</p>
 
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">

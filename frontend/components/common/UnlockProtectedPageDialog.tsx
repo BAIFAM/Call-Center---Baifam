@@ -28,7 +28,7 @@ import { extractRequiredPermissions, hasAnyRequiredPermissions } from "@/lib/hel
 import { loginWithEmailAndPassword, setTemporaryPermissionsWithTimeout } from "@/utils/authUtils";
 import { IPaginatedResponse } from "@/app/types/api.types";
 
-interface UserProfile {
+interface IUserProfile {
   id: number;
   user: IUser;
   institution: number;
@@ -75,7 +75,7 @@ export default function UnlockDialog({
 }: UnlockDialogProps) {
   const dispatch = useDispatch();
   const [step, setStep] = useState<"loading" | "select-user" | "enter-password">("loading");
-  const [userProfiles, setUserProfiles] = useState<UserProfile[]>([]);
+  const [userProfiles, setUserProfiles] = useState<IUserProfile[]>([]);
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -100,7 +100,7 @@ export default function UnlockDialog({
       setError("");
 
       const response = await apiRequest.get(`institution/profile/${selectedInstitution.id}/`);
-      const data = response.data as IPaginatedResponse<UserProfile>;
+      const data = response.data as IPaginatedResponse<IUserProfile>;
 
       if (data.results && data.count !== undefined) {
         setUserProfiles(data.results);

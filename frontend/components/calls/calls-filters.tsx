@@ -9,6 +9,8 @@ import type { Call } from "@/app/types/types.utils"
 import Link from "next/link"
 import { ICall, ICallCenterProduct } from "@/app/types/api.types"
 import { institutionAPI } from "@/lib/api-helpers"
+import { useSelector } from "react-redux"
+import { selectSelectedInstitution } from "@/store/auth/selectors"
 
 interface CallsFiltersProps {
   calls: ICall[]
@@ -22,6 +24,8 @@ export function CallsFilters({ calls, onFilteredCallsChange, totalCalls }: Calls
   const [directionFilter, setDirectionFilter] = useState("all")
   const [productFilter, setProductFilter] = useState("all");
   const [products, setProducts] = useState<ICallCenterProduct[]>([]);
+  const selectedInstitution = useSelector(selectSelectedInstitution)
+
 
 
   useEffect(() => {
@@ -29,9 +33,10 @@ export function CallsFilters({ calls, onFilteredCallsChange, totalCalls }: Calls
   }, []);
 
   const handleFetchProducts = async () => {
+    if(!selectedInstitution){return}
     try {
       const fetchedProducts = await institutionAPI.getProductsByInstitution({
-        institutionId: 1,
+        institutionId: selectedInstitution.id,
       });
       setProducts(fetchedProducts);
     } catch (error) {

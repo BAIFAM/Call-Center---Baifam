@@ -6,8 +6,8 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { ICallGroup, ICallGroupUserFormData, IUser } from "@/app/types/api.types"
-import { callGroupAPI, callGroupUserAPI, userAPI } from "@/lib/api-helpers"
+import type { ICallGroup, ICallGroupUserFormData, IUser, IUserProfile } from "@/app/types/api.types"
+import { callGroupAPI, agentsAPI, institutionAPI, userAPI } from "@/lib/api-helpers"
 import { Icon } from "@iconify/react"
 import { CreateUserDialog } from "./create-user-dialog"
 import { CreateCallGroupDialog } from "./create-call-group-dialog"
@@ -20,7 +20,7 @@ interface CreateAgentFormProps {
 }
 
 export function CreateAgentForm({ institutionId, onAgentCreated, onClose }: CreateAgentFormProps) {
-  const [users, setUsers] = useState<IUser[]>([])
+  const [userProfles, setUserProfles] = useState<IUserProfile[]>([])
   const [callGroups, setCallGroups] = useState<ICallGroup[]>([])
   const [selectedUserId, setSelectedUserId] = useState<string>("")
   const [selectedCallGroupUuid, setSelectedCallGroupUuid] = useState<string>("")
@@ -34,10 +34,10 @@ export function CreateAgentForm({ institutionId, onAgentCreated, onClose }: Crea
     setLoading(true)
     try {
       const [fetchedUsers, fetchedCallGroups] = await Promise.all([
-        userAPI.getUsers(),
+        institutionAPI.getUsersProfiles({institutionId}),
         callGroupAPI.getByInstitution({ institutionId }),
       ])
-      setUsers(fetchedUsers)
+      setUserProfles(fetchedUsers)
       setCallGroups(fetchedCallGroups)
       // Pre-select first available if any
       if (fetchedUsers.length > 0 && !selectedUserId) {
@@ -62,8 +62,8 @@ export function CreateAgentForm({ institutionId, onAgentCreated, onClose }: Crea
     fetchUsersAndCallGroups()
   }, [institutionId]) 
 
-  const handleUserCreated = (newUser: IUser) => {
-    setUsers((prev) => [...prev, newUser])
+  const handleUserCreated = (newUser: IUserProfile) => {
+    setUserProfles((prev) => [...prev, newUser])
     setSelectedUserId(String(newUser.id)) 
     setIsCreatingUser(false)
   }
@@ -93,7 +93,7 @@ export function CreateAgentForm({ institutionId, onAgentCreated, onClose }: Crea
           status: status,
           uuid: ""
       }
-      await callGroupUserAPI.createUser({ institutionId, userData: payload })
+      await agentsAPI.createUser({ institutionId, userData: payload })
       console.log("Payload being sent:", payload)
       toast({
         title: "Agent Created",
@@ -127,14 +127,14 @@ export function CreateAgentForm({ institutionId, onAgentCreated, onClose }: Crea
                   <SelectValue placeholder="Select a user" />
                 </SelectTrigger>
                 <SelectContent>
-                  {users.length === 0 && (
+                  {userProfles.length === 0 && (
                     <SelectItem value="no-users" disabled>
                       No users available
                     </SelectItem>
                   )}
-                  {users.map((user) => (
-                    <SelectItem key={user.id} value={String(user.id)}>
-                      {user.fullname} ({user.email})
+                  {userProfles.map((userProfile) => (
+                    <SelectItem key={userProfile.user.id} value={String(userProfile.user.id)}>
+                      {userProfile.user.fullname} ({userProfile.user.email})
                     </SelectItem>
                   ))}
                 </SelectContent>

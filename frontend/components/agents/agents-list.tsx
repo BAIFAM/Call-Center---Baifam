@@ -1,12 +1,12 @@
 "use client"
 
-import { ICallGroupUser } from "@/app/types/api.types"
+import { IAgent } from "@/app/types/api.types"
 import { Button } from "@/components/ui/button"
 import { Icon } from "@iconify/react"
 import Link from "next/link"
 
 interface AgentsListProps {
-  agents: ICallGroupUser[]
+  agents: IAgent[]
 }
 
 export function AgentsList({ agents }: AgentsListProps) {
