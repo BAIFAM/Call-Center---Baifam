@@ -14,44 +14,49 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import type { IUser } from "@/app/types/api.types"
+import type { IUser, IUserProfile } from "@/app/types/api.types"
 import { userAPI } from "@/lib/api-helpers"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
+
 
 interface CreateUserDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onUserCreated: (user: IUser) => void
+  onUserCreated: (user: IUserProfile) => void
 }
 
 export function CreateUserDialog({ open, onOpenChange, onUserCreated }: CreateUserDialogProps) {
   const [fullname, setFullname] = useState("")
   const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
-  const { toast } = useToast()
+
+  const handleGetUserProfile = async ({userId}:{userId:number}) =>{
+    try {
+      const userProfile = await userAPI.getUserProfile({userId})
+      onUserCreated(userProfile)
+    } catch (error) {
+      toast.error("Failed to get the user's profile")
+    }
+  }
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     try {
-      const newUser: IUser = { fullname, email }
-      const createdUser = await userAPI.register(newUser)
-      onUserCreated(createdUser)
-      toast({
-        title: "User Created",
-        description: `${createdUser.fullname} has been successfully added.`,
-      })
+      const newUserData: Partial<IUser> = { fullname, email }
+      const createdUser = await userAPI.register(newUserData)
+      
+      await handleGetUserProfile({userId:createdUser.id})
+      toast.success(`User ${createdUser.fullname} has been successfully added.`)
+
       onOpenChange(false) // Close dialog
       // Reset form fields
       setFullname("")
       setEmail("")
     } catch (error) {
       console.error("Failed to create user:", error)
-      toast({
-        title: "Error",
-        description: "Failed to create user. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to create user. Please try again.")
     } finally {
       setLoading(false)
     }

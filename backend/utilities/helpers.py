@@ -197,7 +197,7 @@ def send_password_link_to_user(user, link):
             "user": user,
             "year": datetime.datetime.now().year,
         }
-        html_message = render_to_string("institution/shops/emails/signup_link_email.html", context)
+        html_message = render_to_string("shops/emails/signup_link_email.html", context)
         plain_message = strip_tags(html_message)
 
         send_mail(

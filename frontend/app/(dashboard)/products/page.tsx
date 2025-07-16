@@ -10,6 +10,8 @@ import type { Product } from "@/app/types/types.utils";
 import { institutionAPI } from "@/lib/api-helpers";
 import { ICallCenterProduct } from "@/app/types/api.types";
 import Link from "next/link";
+import { useSelector } from "react-redux";
+import { selectSelectedInstitution } from "@/store/auth/selectors";
 
 // Mock data
 // const mockProducts: Product[] = [
@@ -47,15 +49,17 @@ export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [products, setProducts] = useState<ICallCenterProduct[]>([]);
+  const selectedInstitution = useSelector(selectSelectedInstitution);
 
   useEffect(() => {
     handleFetchProducts();
   }, []);
 
   const handleFetchProducts = async () => {
+    if(!selectedInstitution){return}
     try {
       const fetchedProducts = await institutionAPI.getProductsByInstitution({
-        institutionId: 1,
+        institutionId: selectedInstitution.id,
       });
       setProducts(fetchedProducts);
     } catch (error) {

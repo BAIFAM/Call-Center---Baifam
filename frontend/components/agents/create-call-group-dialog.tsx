@@ -17,6 +17,9 @@ import { Label } from "@/components/ui/label"
 import type { ICallGroup, ICallGroupFormData } from "@/app/types/api.types"
 import { callGroupAPI } from "@/lib/api-helpers" 
 import { useToast } from "@/hooks/use-toast"
+import { useSelector } from "react-redux"
+import { selectSelectedInstitution } from "@/store/auth/selectors"
+import { toast } from "sonner"
 
 interface CreateCallGroupDialogProps {
   open: boolean
@@ -27,31 +30,25 @@ interface CreateCallGroupDialogProps {
 export function CreateCallGroupDialog({ open, onOpenChange, onCallGroupCreated }: CreateCallGroupDialogProps) {
   const [name, setName] = useState("")
   const [loading, setLoading] = useState(false)
-  const { toast } = useToast()
+  const selectedInstitution = useSelector(selectSelectedInstitution)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if(!selectedInstitution){return}
     setLoading(true)
     try {
       const newCallGroup: ICallGroupFormData = {
           name,
           institution: 0
       }
-      const createdCallGroup = await callGroupAPI.create({ institutionId: 1, groupData: newCallGroup }) // Assuming institutionId is needed for create
+      const createdCallGroup = await callGroupAPI.create({ institutionId: selectedInstitution.id, groupData: newCallGroup }) // Assuming institutionId is needed for create
       onCallGroupCreated(createdCallGroup)
-      toast({
-        title: "Call Group Created",
-        description: `${createdCallGroup.name} has been successfully added.`,
-      })
+      toast.success(`Call group ${createdCallGroup.name} has been successfully added.`)
       onOpenChange(false) // Close dialog
       setName("") // Reset form field
     } catch (error) {
       console.error("Failed to create call group:", error)
-      toast({
-        title: "Error",
-        description: "Failed to create call group. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to create call group. Please try again.")
     } finally {
       setLoading(false)
     }

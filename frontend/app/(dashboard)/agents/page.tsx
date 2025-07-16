@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from "react" // Import useCallback
 import { useSelector } from "react-redux"
 import { AgentsHeader } from "@/components/agents/agents-header"
 import { AgentsList } from "@/components/agents/agents-list"
-import { callGroupUserAPI } from "@/lib/api-helpers" // Assuming callGroupUserAPI is in api-helpers
+import { agentsAPI } from "@/lib/api-helpers" // Assuming agentsAPI is in api-helpers
 import { selectSelectedInstitution } from "@/store/auth/selectors"
 
 export default function AgentsPage() {
@@ -24,7 +24,7 @@ export default function AgentsPage() {
         setFilteredAgents([])
         return
       }
-      const response = await callGroupUserAPI.getByInstitution({ institutionId: institution.id })
+      const response = await agentsAPI.getByInstitution({ institutionId: institution.id })
       setAllAgents(response)
       setFilteredAgents(response)
     } catch (error) {

@@ -1,10 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { AgentDetailsHeader } from "@/components/agents/agent-details-header"
 import { AgentDetailsInfo } from "@/components/agents/agent-details-info"
 import { AgentDetailsTabs } from "@/components/agents/agent-details-tabs"
 import { AgentCallHistory, AssignedContact } from "@/app/types/types.utils"
+import { useParams } from "next/navigation"
+import { agentsAPI } from "@/lib/api-helpers"
+import { IAgent } from "@/app/types/api.types"
+import { toast } from "sonner"
 
 
 
@@ -142,13 +146,31 @@ const mockAssignedContacts: AssignedContact[] = [
   },
 ]
 
-export default function AgentDetailsPage({ params }: { params: { id: string } }) {
+export default function AgentDetailsPage() {
+  const params = useParams();
+  const agentUuid = params.id as string 
   const [activeTab, setActiveTab] = useState<"call-history" | "assigned-contacts">("call-history")
+  const [agent, setAgent] = useState<IAgent|null>(null);
+
+  useEffect(()=>{
+    if(!agentUuid){return}
+    handleFetchAgent({agentUuid})
+  }, [agentUuid])
+
+  const handleFetchAgent = async ({agentUuid}:{agentUuid:string}) =>{
+    try {
+      const response = await agentsAPI.getAgentDetails({agentUuid})
+      console.log("\n\n Got the agent as : ", response)
+      setAgent(response)
+    } catch (error) {
+      toast.error("Failed to fetch agent")
+    }
+  }
 
   return (
     <div className="space-y-6">
-      <AgentDetailsHeader />
-      <AgentDetailsInfo />
+      <AgentDetailsHeader agent={agent}  />
+      <AgentDetailsInfo agent={agent}  />
       <AgentDetailsTabs
         activeTab={activeTab}
         onTabChange={setActiveTab}

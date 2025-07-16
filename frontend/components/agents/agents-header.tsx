@@ -1,5 +1,5 @@
 "use client"
-import type { ICallGroupUser } from "@/app/types/api.types"
+import type { IAgent } from "@/app/types/api.types"
 import { Button } from "@/components/ui/button"
 import { Icon } from "@iconify/react"
 import { useEffect, useState } from "react"
@@ -17,8 +17,8 @@ import { CreateAgentForm } from "./create-agent-form"
 
 interface AgentsHeaderProps {
   totalAgents: number
-  agents: ICallGroupUser[]
-  onFilteredAgentsChange: (agents: ICallGroupUser[]) => void
+  agents: IAgent[]
+  onFilteredAgentsChange: (agents: IAgent[]) => void
   onAgentCreated: () => void
   institutionId: number
 }

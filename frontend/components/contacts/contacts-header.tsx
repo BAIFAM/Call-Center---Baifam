@@ -1,20 +1,25 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Icon } from "@iconify/react"
-import type { IContact, ICallCenterProduct } from "@/app/types/api.types"
-import { CreateContactDialog } from "@/components/contacts/create-contact-dialog"
-import { BulkUploadDialog } from "@/components/contacts/bulk-upload-dialog"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import {useState} from "react";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {Icon} from "@iconify/react";
+import type {IContact, ICallCenterProduct} from "@/app/types/api.types";
+import {CreateContactDialog} from "@/components/contacts/create-contact-dialog";
+import {BulkUploadDialog} from "@/components/contacts/bulk-upload-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ContactsHeaderProps {
-  contacts: IContact[]
-  onFilteredContactsChange: (filteredContacts: IContact[]) => void
-  selectedContactIds: string[]
-  onRefreshContacts: () => void
-  products: ICallCenterProduct[]
+  contacts: IContact[];
+  onFilteredContactsChange: (filteredContacts: IContact[]) => void;
+  selectedContactIds: string[];
+  onRefreshContacts: () => void;
+  products: ICallCenterProduct[];
 }
 
 export function ContactsHeader({
@@ -24,15 +29,15 @@ export function ContactsHeader({
   onRefreshContacts,
   products,
 }: ContactsHeaderProps) {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
 
   const handleSearch = (value: string) => {
-    setSearchTerm(value)
+    setSearchTerm(value);
     if (!value.trim()) {
-      onFilteredContactsChange(contacts)
-      return
+      onFilteredContactsChange(contacts);
+      return;
     }
 
     const filtered = contacts.filter(
@@ -40,14 +45,14 @@ export function ContactsHeader({
         contact.name.toLowerCase().includes(value.toLowerCase()) ||
         contact.phone_number.includes(value) ||
         contact.product.name.toLowerCase().includes(value.toLowerCase()),
-    )
-    onFilteredContactsChange(filtered)
-  }
+    );
+    onFilteredContactsChange(filtered);
+  };
 
   const handleBulkUploadSuccess = () => {
-    onRefreshContacts()
-    setIsBulkUploadDialogOpen(false)
-  }
+    onRefreshContacts();
+    setIsBulkUploadDialogOpen(false);
+  };
 
   return (
     <>
@@ -81,6 +86,15 @@ export function ContactsHeader({
           <Button variant="outline" size="sm" onClick={onRefreshContacts}>
             <Icon icon="hugeicons:refresh" className="w-4 h-4" />
           </Button>
+
+          <div className="flex items-center space-x-2">
+            <Button variant="outline" className="rounded-xl">
+              Re-Assign
+            </Button>
+            <Button variant="outline" className="rounded-xl">
+              Assign
+            </Button>
+          </div>
 
           {/* Add Contact Dropdown */}
           <DropdownMenu>
@@ -121,5 +135,5 @@ export function ContactsHeader({
         onUploadSuccess={handleBulkUploadSuccess}
       />
     </>
-  )
+  );
 }

@@ -307,22 +307,6 @@ class UserProfileDetailAPIView(APIView):
         tags=["User Management"],
     )
     def get(self, request, institution_id):
-        try:
-            institution = Institution.objects.get(id=institution_id)
-        except Institution.DoesNotExist:
-            return Response({"detail": "Institution not found."}, status=404)
-
-        user = request.user
-
-        if not user.is_staff and institution.institution_owner != user:
-            try:
-                print("User is not staff or institution owner")
-                profile = user.profile
-                if profile.institution_id != institution.id:
-                    return Response({"detail": "Access denied."}, status=403)
-            except Profile.DoesNotExist:
-                return Response({"detail": "Access denied."}, status=403)
-
         profiles = Profile.objects.filter(institution=institution_id)
         paginator = CustomPageNumberPagination()
         paginator_qs = paginator.paginate_queryset(profiles, request)
@@ -365,6 +349,28 @@ class InstitutionUserProfileAPIView(APIView):
             {"detail": "User ID is required for updating."},
             status=status.HTTP_400_BAD_REQUEST,
         )
+    
+    @extend_schema(
+        request=ProfileSerializer(partial=True),
+        responses={200: ProfileSerializer},
+        description="Get an institution user's profile.",
+        summary="Get an institution user's profile details",
+        tags=["User Management"],
+    )
+    def get(self, request, user_id):
+        if not user_id:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user = Profile.objects.get(user__id=user_id)
+            serializer = Profile(user)
+            return Response(
+                serializer.data,
+                status=status.HTTP_200_OK,
+            )
+        except Profile.DoesNotExist:
+            return Response(
+                {"detail": "Institution User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
 
 class UserBranchListCreateView(APIView):
