@@ -902,6 +902,9 @@ class ResetPasswordAPIView(APIView):
 
             # Set new password
             user = token_obj.user
+            user.is_email_verified = True
+            user.is_password_verified = True
+            user.is_active = True
             user.set_password(new_password)
             user.save()
 
