@@ -15,16 +15,22 @@ import os
 
 class CallGroupSerializer(serializers.ModelSerializer):
     institution = serializers.PrimaryKeyRelatedField(queryset=Institution.objects.all())
+    contacts = serializers.SerializerMethodField()
 
     class Meta:
         model = CallGroup
         fields = '__all__'
         read_only_fields = ['uuid', 'created_at', 'created_by']
 
+    def get_contacts(self, obj):
+        contacts = Contact.objects.filter(call_groups__call_group=obj).distinct()
+        return ContactSerializer(contacts, many=True).data
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep['institution'] = InstitutionSerializer(instance.institution).data
         return rep
+
     
 class CallGroupUserSerializer(serializers.ModelSerializer):
     call_group = serializers.PrimaryKeyRelatedField(queryset=CallGroup.objects.all())
