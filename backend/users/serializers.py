@@ -101,7 +101,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
             "roles",
             "branches",
             "roles_ids",
-            "permissions"
+            "permissions",
         ]
         read_only_fields = [
             "is_active",
@@ -110,7 +110,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
             "is_email_verified",
             "is_password_verified",
         ]
-        extra_kwargs = {"password": {"write_only": True}}
+        extra_kwargs = {"password": {"write_only": True, "required": False}}
 
     def get_roles(self, obj):
         roles = [ur.role for ur in obj.user_roles.all()]
@@ -208,6 +208,7 @@ class UserOTPVerificationSerializer(serializers.Serializer):
             raise serializers.ValidationError("OTP must contain only digits")
         return value
 
+
 class ResendOTPSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
@@ -216,12 +217,15 @@ class UserPasswordResetSerializer(serializers.Serializer):
     token = serializers.CharField()
     new_password = serializers.CharField(write_only=True, min_length=8)
 
+
 class UserResendOTPVerificationSerializer(serializers.Serializer):
     email = serializers.EmailField()
+
 
 class UserSendForgotPasswordTokenSerializer(serializers.Serializer):
     email = serializers.EmailField()
     frontend_url = serializers.CharField()
+
 
 class LoginRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()

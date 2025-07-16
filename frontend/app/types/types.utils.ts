@@ -176,6 +176,7 @@ export interface CustomField {
   description: string
   type: FieldType
   value?: any
+  is_required?: boolean
   options?: string[] // Add this for select and checkbox fields
 }
 

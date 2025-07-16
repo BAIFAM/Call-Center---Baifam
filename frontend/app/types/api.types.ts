@@ -56,6 +56,7 @@ export interface Product {
   product_image: string | null;
   is_active: boolean;
   is_approved: boolean;
+  institution: IUserInstitution;
 }
 
 
@@ -73,7 +74,7 @@ export interface ITask {
 
 export interface IApprovalProductDetails extends Product {
   id: number;
-  institution: number;
+  institution: IUserInstitution;
   status: string;
   tasks: Array<ITask>;
 }
@@ -113,13 +114,13 @@ export interface Branch {
 }
 
 export interface IUser {
-  id: number;
+  id?: number;
   fullname: string;
   email: string;
-  is_active: boolean;
-  is_staff: boolean;
-  roles: Role[];
-  branches: Branch[];
+  is_active?: boolean;
+  is_staff?: boolean;
+  roles?: Role[];
+  branches?: Branch[];
 }
 
 export interface ICustomerProfile {
@@ -299,8 +300,31 @@ export interface IContactFormData {
   country_code: string;
   status: IContactStatus;
   product: string;
+  email: string;
+  notes?  : string;
 }
 
+export interface ICallGroup {
+  institution: IUserInstitution
+  name: string;
+}
+
+export interface ICallGroupUserFormData {
+  uuid: string;
+  user: number;
+  call_group: number; 
+  created_at?: string;
+  updated_at?: string;
+  status?: string;
+}
+
+export interface ICallGroupUser {
+  uuid: string;
+  user: IUser;
+  call_group: ICallGroup; 
+  created_at?: string;
+  updated_at?: string;
+}
 
 export interface IClientCompany {
   uuid: string;
@@ -342,3 +366,21 @@ export interface IFeedbackFieldFormData {
   options?: string[];
   is_required: boolean;
 }
+
+export interface ICallGroup {
+  uuid: string;
+  name: string;
+  description: string;
+  created_by: number | null;
+  institution: IUserInstitution;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ICallGroupFormData {
+  name: string;
+  description?: string;
+  institution: number;
+}
+
+// export interface 

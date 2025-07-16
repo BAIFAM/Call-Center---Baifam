@@ -211,7 +211,6 @@ class ContactTemplateDownloadView(APIView):
                 'phone_number': [''] * 10,
                 'country': [''] * 10,
                 'country_code': [''] * 10,
-                'status': [''] * 10,
             }
             
             # Create Excel file in memory
@@ -261,7 +260,6 @@ class ContactTemplateDownloadView(APIView):
                         'Phone number with country code (required)',
                         'Country name (optional)',
                         'Country calling code (optional)',
-                        'Status: new, verified, called, archived, or flagged (defaults to new)'
                     ],
                     'Required': ['Yes', 'Yes', 'No', 'No', 'No'],
                     'Examples': [
@@ -269,7 +267,6 @@ class ContactTemplateDownloadView(APIView):
                         '+1234567890, +256701234567',
                         'Uganda, USA, UK',
                         '+256, +1, +44',
-                        'new, verified, called, archived, flagged'
                     ]
                 })
                 instructions_df.to_excel(writer, sheet_name='Instructions', index=False)
@@ -426,13 +423,8 @@ class ContactBulkUploadView(APIView):
                         'product': product.pk,  # Use the pre-selected product
                         'country': str(row.get('country', '')).strip() if pd.notna(row.get('country')) else '',
                         'country_code': str(row.get('country_code', '')).strip() if pd.notna(row.get('country_code')) else '',
-                        'status': str(row.get('status', 'new')).strip() if pd.notna(row.get('status')) else 'new'
                     }
                     
-                    # Validate status
-                    valid_statuses = ['new', 'verified', 'called', 'archived', 'flagged']
-                    if contact_data['status'] not in valid_statuses:
-                        contact_data['status'] = 'new'
                     
                     # Create contact using serializer
                     serializer = ContactSerializer(data=contact_data)
