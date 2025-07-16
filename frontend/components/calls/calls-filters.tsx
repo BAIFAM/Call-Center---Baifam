@@ -116,12 +116,7 @@ export function CallsFilters({ calls, onFilteredCallsChange, totalCalls }: Calls
             Export
           </Button>
 
-          <Button className="bg-primary-600 hover:bg-primary-700 rounded-xl" asChild>
-            <Link href="/calls/add">
-              <Icon icon="hugeicons:add-01" className="w-4 h-4 mr-2" />
-              Add Call
-            </Link>
-          </Button>
+
         </div>
       </div>
 
