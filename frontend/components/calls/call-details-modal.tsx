@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Icon } from "@iconify/react"
 import type { ICall } from "@/app/types/api.types"
 import { formatDate } from "date-fns"
+import Link from "next/link"
 
 interface CallDetailsModalProps {
   isOpen: boolean
@@ -35,9 +36,9 @@ export function CallDetailsModal({ isOpen, onClose, call }: CallDetailsModalProp
       return (
         <div className="flex items-center space-x-2">
           <Icon icon="hugeicons:file-01" className="w-4 h-4" />
-          <a href={`${process.env.NEXT_PUBLIC_BASE_URL}${value.file_url}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+          <Link href={`${process.env.NEXT_PUBLIC_BASE_URL}${value.file_url}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
             {value.file_name}
-          </a>
+          </Link>
         </div>
       )
     }

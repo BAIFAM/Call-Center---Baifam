@@ -325,7 +325,7 @@ export interface IAgent {
 
 export interface IClientCompany {
   uuid: string;
-  institution: number;
+  institution: IUserInstitution;
   company_name: string;
   contact_email: string;
   contact_phone: string;
@@ -336,6 +336,15 @@ export interface IClientCompany {
   callback_url: string;
   api_key: string;
   created_by: number;
+}
+
+export interface IClientCompanyFormData {
+  institution: number
+  company_name: string
+  contact_email: string
+  contact_phone: string
+  callback_url: string
+  api_key: string
 }
 
 

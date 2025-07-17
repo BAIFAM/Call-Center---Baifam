@@ -171,7 +171,7 @@ const handlePhoneChange = (value: string) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="country">ICountry *</Label>
+            <Label htmlFor="country">Country *</Label>
             <CountrySelect
               countries={countries}
               selectedCountry={selectedCountry}

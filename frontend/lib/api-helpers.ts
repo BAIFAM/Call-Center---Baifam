@@ -13,6 +13,8 @@ import {
   IUser,
   IUserProfile,
   ICallGroupContact,
+  IClientCompany,
+  IClientCompanyFormData,
 } from "@/app/types/api.types";
 import apiRequest from "./apiRequest";
 import {CustomField} from "@/app/types/types.utils";
@@ -639,3 +641,58 @@ export const countryAPI = {
     return await response.json();
   },
 };
+
+
+export const clientCompaniesAPI = {
+  getAll: async ({ institutionId }: { institutionId: number }) => {
+    try {
+      const response = await apiRequest.get(`institution/client-companies/${institutionId}/`)
+      return response.data as IClientCompany[]
+    } catch (error) {
+      console.error("Error fetching client companies:", error)
+      throw error
+    }
+  },
+
+  getById: async ({ uuid }: { uuid: string }) => {
+    try {
+      const response = await apiRequest.get(`institution/client-companies/detail/${uuid}/`)
+      return response.data as IClientCompany
+    } catch (error) {
+      console.error("Error fetching client company:", error)
+      throw error
+    }
+  },
+
+  create: async ({ institutionId, companyData }: { institutionId: number; companyData: IClientCompanyFormData }) => {
+    try {
+      const response = await apiRequest.post(`institution/client-companies/detail/${institutionId}/`, companyData)
+      return response.data as IClientCompany
+    } catch (error) {
+      console.error("Error creating client company:", error)
+      throw error
+    }
+  },
+
+  update: async ({ uuid, companyData }: { uuid: string; companyData: Partial<IClientCompanyFormData> }) => {
+    try {
+      const response = await apiRequest.patch(`institution/client-companies/detail/${uuid}/`, companyData)
+      return response.data as IClientCompany
+    } catch (error) {
+      console.error("Error updating client company:", error)
+      throw error
+    }
+  },
+
+  delete: async ({ uuid }: { uuid: string }) => {
+    try {
+      await apiRequest.delete(`institution/client-companies/detail/${uuid}/`)
+      return true
+    } catch (error) {
+      console.error("Error deleting client company:", error)
+      throw error
+    }
+  },
+}
+
+
