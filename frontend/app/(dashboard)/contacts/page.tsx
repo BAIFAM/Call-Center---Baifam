@@ -80,6 +80,7 @@ export default function ContactsPage() {
         selectedContactIds={selectedContactIds}
         onRefreshContacts={handleFetchContacts}
         products={products}
+        contacts={contacts}
       />
 
       <ContactsFilters

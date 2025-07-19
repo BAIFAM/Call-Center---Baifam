@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast"
 interface CreateAgentFormProps {
   institutionId: number
   onAgentCreated: () => void
-  onClose: () => void 
+  onClose: () => void
 }
 
 export function CreateAgentForm({ institutionId, onAgentCreated, onClose }: CreateAgentFormProps) {
@@ -24,7 +24,7 @@ export function CreateAgentForm({ institutionId, onAgentCreated, onClose }: Crea
   const [callGroups, setCallGroups] = useState<ICallGroup[]>([])
   const [selectedUserId, setSelectedUserId] = useState<string>("")
   const [selectedCallGroupUuid, setSelectedCallGroupUuid] = useState<string>("")
-  const [status, setStatus] = useState<string>("active")
+  const [status, setStatus] = useState<"active" | "disabled">("active")
   const [loading, setLoading] = useState(false)
   const [isCreatingUser, setIsCreatingUser] = useState(false)
   const [isCreatingCallGroup, setIsCreatingCallGroup] = useState(false)
@@ -34,7 +34,7 @@ export function CreateAgentForm({ institutionId, onAgentCreated, onClose }: Crea
     setLoading(true)
     try {
       const [fetchedUsers, fetchedCallGroups] = await Promise.all([
-        institutionAPI.getUsersProfiles({institutionId}),
+        institutionAPI.getUsersProfiles({ institutionId }),
         callGroupAPI.getByInstitution({ institutionId }),
       ])
       setUserProfles(fetchedUsers)
@@ -60,17 +60,17 @@ export function CreateAgentForm({ institutionId, onAgentCreated, onClose }: Crea
 
   useEffect(() => {
     fetchUsersAndCallGroups()
-  }, [institutionId]) 
+  }, [institutionId])
 
   const handleUserCreated = (newUser: IUserProfile) => {
     setUserProfles((prev) => [...prev, newUser])
-    setSelectedUserId(String(newUser.id)) 
+    setSelectedUserId(String(newUser.id))
     setIsCreatingUser(false)
   }
 
   const handleCallGroupCreated = (newCallGroup: ICallGroup) => {
     setCallGroups((prev) => [...prev, newCallGroup])
-    setSelectedCallGroupUuid(newCallGroup.uuid) 
+    setSelectedCallGroupUuid(newCallGroup.uuid)
     setIsCreatingCallGroup(false)
   }
 
@@ -88,19 +88,19 @@ export function CreateAgentForm({ institutionId, onAgentCreated, onClose }: Crea
     setLoading(true)
     try {
       const payload: ICallGroupUserFormData = {
-          user: Number(selectedUserId),
-          call_group: selectedCallGroupUuid,
-          status: status,
-          uuid: ""
+        user: Number(selectedUserId),
+        call_group: selectedCallGroupUuid,
+        status: status,
+
       }
-      await agentsAPI.createUser({ institutionId, userData: payload })
+      await agentsAPI.createAgent({ institutionId, userData: payload })
       console.log("Payload being sent:", payload)
       toast({
         title: "Agent Created",
         description: "The new agent has been successfully added.",
       })
-      onAgentCreated() 
-      onClose() 
+      onAgentCreated()
+      onClose()
     } catch (error) {
       console.error("Failed to create agent:", error)
       toast({
@@ -192,15 +192,15 @@ export function CreateAgentForm({ institutionId, onAgentCreated, onClose }: Crea
               Status
             </Label>
             <div className="col-span-3">
-            <Select value={status} onValueChange={setStatus} disabled={loading}>
-              <SelectTrigger id="status-select">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
+              <Select value={status} onValueChange={(value) => setStatus(value as "active" | "disabled")} disabled={loading}>
+                <SelectTrigger id="status-select">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="disabled">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>

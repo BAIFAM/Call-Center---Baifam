@@ -15,6 +15,7 @@ import {
   ICallGroupContact,
   IClientCompany,
   IClientCompanyFormData,
+  ICallGroupContactFormData,
 } from "@/app/types/api.types";
 import apiRequest from "./apiRequest";
 import { CustomField } from "@/app/types/types.utils";
@@ -76,8 +77,8 @@ export const callsAPI = {
     callData: ICallFormData
   }) => {
     try {
-      console.log("Creating call with data:", callData);
-      console.log("Institution ID:", institutionId);
+      // console.log("Creating call with data:", callData);
+      // console.log("Institution ID:", institutionId);
 
       const formData = new FormData();
 
@@ -92,7 +93,7 @@ export const callsAPI = {
       Object.entries(callData).forEach(([key, value]) => {
         if (key !== "contact" && key !== "status" && key !== "feedback") {
           if (value instanceof File) {
-            console.log(`Appending file: ${key}`, value.name);
+            // console.log(`Appending file: ${key}`, value.name);
             formData.append(key, value);
           }
         }
@@ -361,6 +362,32 @@ export const contactsAPI = {
       throw error;
     }
   },
+
+  assignToCallGroup: async ({ institutionId, callGroupContactData }: { institutionId: number, callGroupContactData: ICallGroupContactFormData }) => {
+    try {
+      const response = await apiRequest.post(`call/group-contacts/${institutionId}/`, callGroupContactData)
+      return response as ICallGroupContact[]
+    } catch (error) {
+      throw error
+    }
+  },
+
+  getCallGroupContactsByInstitution: async ({ institutionId }: { institutionId: number }) => {
+    try {
+      const response = await apiRequest.get(`call/group-contacts/${institutionId}/`)
+      return response as ICallGroupContact[]
+    } catch (error) {
+      throw error
+    }
+  },
+  getContactCalls: async ({ contactUuid }: { contactUuid: string }) => {
+    try {
+      const response = await apiRequest.get(`call/contact-calls/${contactUuid}/`)
+      return response.data as ICall[]
+    } catch (error) {
+      throw error
+    }
+  }
 };
 
 export const institutionAPI = {
@@ -470,7 +497,7 @@ export const agentsAPI = {
     }
   },
 
-  createUser: async ({
+  createAgent: async ({
     institutionId,
     userData,
   }: {
@@ -496,7 +523,7 @@ export const agentsAPI = {
     }
   },
 
-  updateUser: async ({ uuid, updates }: { uuid: string; updates: Partial<ICallGroupUserFormData> }) => {
+  updateAgent: async ({ uuid, updates }: { uuid: string; updates: Partial<ICallGroupUserFormData> }) => {
     try {
       const response = await apiRequest.patch(`/call/group-users/detail/${uuid}/`, updates);
       return response.data as IAgent;
@@ -506,7 +533,7 @@ export const agentsAPI = {
     }
   },
 
-  deleteUser: async ({ uuid }: { uuid: string }) => {
+  deleteAgent: async ({ uuid }: { uuid: string }) => {
     try {
       await apiRequest.delete(`/call/group-users/detail/${uuid}/`);
     } catch (error) {
@@ -523,6 +550,16 @@ export const callGroupAPI = {
       return response.data as ICallGroup[];
     } catch (error) {
       console.error("Error fetching CallGroups:", error);
+      throw error;
+    }
+  },
+
+  getByCurrentUser: async ({ institutionId }: { institutionId: number }) => {
+    try {
+      const response = await apiRequest.get(`/call/groups/my-groups/${institutionId}`);
+      return response.data as ICallGroup[];
+    } catch (error) {
+      console.error("Error fetching CallGroups for current user:", error);
       throw error;
     }
   },

@@ -3,25 +3,36 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Icon } from "@iconify/react"
-import type { ICallCenterProduct } from "@/app/types/api.types"
+import type { ICallCenterProduct, IContact, ICallGroup } from "@/app/types/api.types"
 import { CreateContactDialog } from "@/components/contacts/create-contact-dialog"
 import { BulkUploadDialog } from "@/components/contacts/bulk-upload-dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { AssignContactDialog } from "@/components/contacts/assign-contact-dialog"
+import { useSelector } from "react-redux"
+import { selectSelectedInstitution } from "@/store/auth/selectors"
 
 interface ContactsHeaderProps {
   selectedContactIds: string[]
   onRefreshContacts: () => void
   products: ICallCenterProduct[]
+  contacts?: IContact[] // Add this prop to get contact details
 }
 
-export function ContactsHeader({ selectedContactIds, onRefreshContacts, products }: ContactsHeaderProps) {
+export function ContactsHeader({ selectedContactIds, onRefreshContacts, products, contacts = [] }: ContactsHeaderProps) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false)
+  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false)
+  const selectedInstitution = useSelector(selectSelectedInstitution)
+
+  const selectedContact = contacts.find(c => c.uuid === selectedContactIds[0])
 
   const handleBulkUploadSuccess = () => {
     onRefreshContacts()
     setIsBulkUploadDialogOpen(false)
   }
+
+  const canAssign = selectedContact && !selectedContact.call_group
+  const canReassign = selectedContact && !!selectedContact.call_group
 
   return (
     <>
@@ -42,12 +53,22 @@ export function ContactsHeader({ selectedContactIds, onRefreshContacts, products
             <Icon icon="hugeicons:refresh" className="w-4 h-4" />
           </Button>
 
-          {selectedContactIds.length > 0 && (
+          {selectedContactIds.length === 1 && (
             <div className="flex items-center space-x-2">
-              <Button variant="outline" className="rounded-xl bg-transparent">
+              <Button
+                variant="outline"
+                className="rounded-xl bg-transparent"
+                disabled={!canReassign}
+                onClick={() => setIsAssignDialogOpen(true)}
+              >
                 Re-Assign
               </Button>
-              <Button variant="outline" className="rounded-xl bg-transparent">
+              <Button
+                variant="outline"
+                className="rounded-xl bg-transparent"
+                disabled={!canAssign}
+                onClick={() => setIsAssignDialogOpen(true)}
+              >
                 Assign
               </Button>
             </div>
@@ -91,6 +112,16 @@ export function ContactsHeader({ selectedContactIds, onRefreshContacts, products
         products={products}
         onUploadSuccess={handleBulkUploadSuccess}
       />
+
+      {/* Assign/Re-Assign Dialog */}
+      {selectedContact && (
+        <AssignContactDialog
+          open={isAssignDialogOpen}
+          onOpenChange={setIsAssignDialogOpen}
+          contact={selectedContact}
+          onAssigned={onRefreshContacts}
+        />
+      )}
     </>
   )
 }

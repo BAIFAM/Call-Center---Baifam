@@ -65,7 +65,7 @@ export function CallDetailsModal({ isOpen, onClose, call }: CallDetailsModalProp
           <DialogTitle>Call Details</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6  max-h-[90vh] overflow-y-auto">
+        <div className="space-y-6  max-h-[85vh] overflow-y-auto py-8">
           {/* Call Information */}
           <Card>
             <CardHeader>
@@ -90,6 +90,29 @@ export function CallDetailsModal({ isOpen, onClose, call }: CallDetailsModalProp
                   <p className="text-sm">{call.made_by.email}</p>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Feedback Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Feedback</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {call.contact.product.feedback_fields.map((field) => {
+                const value = call.feedback[field['name']]
+                if (value === undefined || value === null || value === "") return null
+
+                return (
+                  <div key={field.name}>
+                    <p className="text-sm font-medium text-gray-500 mb-1">
+                      {field.name}
+                      {field.is_required && <span className="text-red-500 ml-1">*</span>}
+                    </p>
+                    <div className="text-sm">{renderFeedbackValue(field, value)}</div>
+                  </div>
+                )
+              })}
             </CardContent>
           </Card>
 
@@ -121,7 +144,7 @@ export function CallDetailsModal({ isOpen, onClose, call }: CallDetailsModalProp
           </Card>
 
           {/* Institution Information */}
-          <Card>
+          {/* <Card>
             <CardHeader>
               <CardTitle className="text-lg">Institution Information</CardTitle>
             </CardHeader>
@@ -145,30 +168,9 @@ export function CallDetailsModal({ isOpen, onClose, call }: CallDetailsModalProp
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
 
-          {/* Feedback Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Feedback</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {call.contact.product.feedback_fields.map((field) => {
-                const value = call.feedback[field['name']]
-                if (value === undefined || value === null || value === "") return null
 
-                return (
-                  <div key={field.name}>
-                    <p className="text-sm font-medium text-gray-500 mb-1">
-                      {field.name}
-                      {field.is_required && <span className="text-red-500 ml-1">*</span>}
-                    </p>
-                    <div className="text-sm">{renderFeedbackValue(field, value)}</div>
-                  </div>
-                )
-              })}
-            </CardContent>
-          </Card>
         </div>
       </DialogContent>
     </Dialog>

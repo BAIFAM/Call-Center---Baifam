@@ -291,6 +291,7 @@ export interface IContact {
   country: string;
   country_code: string;
   status: IContactStatus;
+  call_group?: string | null
 }
 
 export interface IContactFormData {
@@ -306,18 +307,17 @@ export interface IContactFormData {
 
 
 export interface ICallGroupUserFormData {
-  uuid: string;
   user: number;
   call_group: string;
   created_at?: string;
   updated_at?: string;
-  status?: string;
+  status?: "active" | "disabled";
 }
 
 export interface IAgent {
   uuid: string;
   user: IUser;
-  call_group: ICallGroup;
+  call_group?: ICallGroup;
   status: "active" | "disabled"
   created_at?: string;
   updated_at?: string;
@@ -387,7 +387,13 @@ export interface ICallGroupContact {
   uuid: string
   call_group: ICallGroup,
   contact: IContact,
-  status: "attended_to" | "not_attended" | "follow_up" | "new"
+  status: "attended_to" | "not_attended" | "follow_up"
+}
+
+export interface ICallGroupContactFormData {
+  call_group: string,
+  contact: string,
+  status: "attended_to" | "not_attended" | "follow_up"
 }
 
 export interface IUserInstitution {
