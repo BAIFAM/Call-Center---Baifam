@@ -269,7 +269,7 @@ export interface IResponse<T> {
 export interface ICall {
   uuid: string;
   contact: IContact;
-  feedback: string|any;
+  feedback: string | any;
   status: "failed" | "completed" | "busy";
   made_on: string;
   made_by: IUser
@@ -291,6 +291,7 @@ export interface IContact {
   country: string;
   country_code: string;
   status: IContactStatus;
+  call_group?: string | null
 }
 
 export interface IContactFormData {
@@ -301,31 +302,30 @@ export interface IContactFormData {
   status: IContactStatus;
   product: string;
   email: string;
-  notes?  : string;
+  notes?: string;
 }
 
 
 export interface ICallGroupUserFormData {
-  uuid: string;
   user: number;
-  call_group: string; 
+  call_group: string;
   created_at?: string;
   updated_at?: string;
-  status?: string;
+  status?: "active" | "disabled";
 }
 
 export interface IAgent {
   uuid: string;
   user: IUser;
-  call_group: ICallGroup; 
-  status:"active"|"disabled"
+  call_group?: ICallGroup;
+  status: "active" | "disabled"
   created_at?: string;
   updated_at?: string;
 }
 
 export interface IClientCompany {
   uuid: string;
-  institution: number;
+  institution: IUserInstitution;
   company_name: string;
   contact_email: string;
   contact_phone: string;
@@ -336,6 +336,15 @@ export interface IClientCompany {
   callback_url: string;
   api_key: string;
   created_by: number;
+}
+
+export interface IClientCompanyFormData {
+  institution: number
+  company_name: string
+  contact_email: string
+  contact_phone: string
+  callback_url: string
+  api_key: string
 }
 
 
@@ -375,10 +384,16 @@ export interface ICallGroup {
 }
 
 export interface ICallGroupContact {
-  uuid:string
-  call_group:ICallGroup,
-  contact:IContact,
-  status:"attended_to"|"not_attended"|"follow_up"|"new"
+  uuid: string
+  call_group: ICallGroup,
+  contact: IContact,
+  status: "attended_to" | "not_attended" | "follow_up"
+}
+
+export interface ICallGroupContactFormData {
+  call_group: string,
+  contact: string,
+  status: "attended_to" | "not_attended" | "follow_up"
 }
 
 export interface IUserInstitution {

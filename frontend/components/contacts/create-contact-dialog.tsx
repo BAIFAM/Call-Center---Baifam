@@ -74,22 +74,22 @@ export function CreateContactDialog({ isOpen, onClose, products, onCreateSuccess
   const getFlag = (cca2: string) =>
     String.fromCodePoint(...cca2.split("").map((c) => 0x1f1e6 + c.charCodeAt(0) - 65))
 
-const handlePhoneChange = (value: string) => {
-  // Remove leading zero if present
-  const sanitizedValue = value.replace(/^0+/, "")
-  setFormData(prev => ({ ...prev, phone_number: sanitizedValue }))
-  if (selectedCountry && sanitizedValue) {
-    const code = selectedCountry.cca2 as CountryCode
-    // Validate using national number and country code
-    if (!isValidPhoneNumber(sanitizedValue, code)) {
-      setPhoneError("Invalid phone number for selected country")
+  const handlePhoneChange = (value: string) => {
+    // Remove leading zero if present
+    const sanitizedValue = value.replace(/^0+/, "")
+    setFormData(prev => ({ ...prev, phone_number: sanitizedValue }))
+    if (selectedCountry && sanitizedValue) {
+      const code = selectedCountry.cca2 as CountryCode
+      // Validate using national number and country code
+      if (!isValidPhoneNumber(sanitizedValue, code)) {
+        setPhoneError("Invalid phone number for selected country")
+      } else {
+        setPhoneError(null)
+      }
     } else {
       setPhoneError(null)
     }
-  } else {
-    setPhoneError(null)
   }
-}
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -171,7 +171,7 @@ const handlePhoneChange = (value: string) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="country">ICountry *</Label>
+            <Label htmlFor="country">Country *</Label>
             <CountrySelect
               countries={countries}
               selectedCountry={selectedCountry}
@@ -205,7 +205,7 @@ const handlePhoneChange = (value: string) => {
 
           <div className="space-y-2 !z-[200]">
             <Label htmlFor="product">Product *</Label>
-            <Select  value={formData.product} onValueChange={(value) => handleInputChange("product", value)}>
+            <Select value={formData.product} onValueChange={(value) => handleInputChange("product", value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select a product" />
               </SelectTrigger>

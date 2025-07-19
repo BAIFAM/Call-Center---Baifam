@@ -156,6 +156,19 @@ class CallGroupUserDetailView(APIView):
         item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)    
 
+@extend_schema(tags=["CallGroup"])
+class UserCallGroupsListView(APIView):
+    @extend_schema(
+        summary="List call groups assigned to the authenticated user",
+        responses={200: CallGroupSerializer(many=True)}
+    )
+    def get(self, request, institution_id):
+        user = request.user
+        groups = CallGroup.objects.filter(users__user=user, institution__id=institution_id, users__status="active").distinct()
+        serializer = CallGroupSerializer(groups, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 
 @extend_schema(tags=["Contact"])
 class ContactListCreateView(APIView):
@@ -523,6 +536,19 @@ class ContactsByCallGroupContactListCreateView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 
+class ContactCallsListView(APIView):
+    @extend_schema(
+        summary="List all calls made to a specific contact",
+        parameters=[
+            OpenApiParameter(name="contact_uuid", required=True, type=str, location=OpenApiParameter.PATH),
+        ],
+        responses={200: CallSerializer(many=True)}
+    )
+    def get(self, request, contact_uuid):
+        contact = get_object_or_404(Contact, uuid=contact_uuid)
+        calls = Call.objects.filter(contact=contact)
+        serializer = CallSerializer(calls, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 @extend_schema(tags=["CallGroupContact"])
 class CallGroupContactListCreateView(APIView):

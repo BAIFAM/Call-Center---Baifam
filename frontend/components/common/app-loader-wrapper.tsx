@@ -1,7 +1,7 @@
 "use client";
 
-import {useState, useEffect} from "react";
-import {usePathname} from "next/navigation";
+import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 import FixedLoader from "./fixed-loader";
 
@@ -12,11 +12,10 @@ export default function AppLoaderWrapper() {
   useEffect(() => {
     // Trigger loader on route change
     setIsLoading(true);
-
     // Simulate loading finish after transition
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 500); // Adjust timing as needed
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [pathname]);

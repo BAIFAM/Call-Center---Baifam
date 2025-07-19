@@ -1,7 +1,7 @@
 "use client";
 
-import {useState} from "react";
-import {Input} from "@/components/ui/input";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -9,21 +9,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {Button} from "@/components/ui/button";
-import {Badge} from "@/components/ui/badge";
-import {Icon} from "@iconify/react";
-import {CallModal} from "@/components/calls/call-modal";
-import {callsAPI} from "@/lib/api-helpers";
-import {toast} from "sonner";
-import type {IContact, ICallFormData, ICall} from "@/app/types/api.types";
-import {useSelector} from "react-redux";
-import {selectSelectedInstitution} from "@/store/auth/selectors";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Icon } from "@iconify/react";
+import { CallModal } from "@/components/calls/call-modal";
+import { callsAPI } from "@/lib/api-helpers";
+import { toast } from "sonner";
+import type { IContact, ICallFormData, ICall } from "@/app/types/api.types";
+import { useSelector } from "react-redux";
+import { selectSelectedInstitution } from "@/store/auth/selectors";
+import Link from "next/link";
 
 interface CallGroupContactsTabsProps {
   contacts: IContact[];
 }
 
-export function CallGroupContactsTabs({contacts}: CallGroupContactsTabsProps) {
+export function CallGroupContactsTabs({ contacts }: CallGroupContactsTabsProps) {
   const [activeTab, setActiveTab] = useState<"call-history" | "assigned-contacts">(
     "assigned-contacts",
   );
@@ -120,7 +121,7 @@ export function CallGroupContactsTabs({contacts}: CallGroupContactsTabsProps) {
 
   // Mock call count for each contact
   const getCallCount = (contactId: string) => {
-    const counts = {"1": 21, "2": 3, "3": 5, "4": 9, "5": 10};
+    const counts = { "1": 21, "2": 3, "3": 5, "4": 9, "5": 10 };
     return counts[contactId as keyof typeof counts] || 0;
   };
 
@@ -131,21 +132,19 @@ export function CallGroupContactsTabs({contacts}: CallGroupContactsTabsProps) {
         <div className="flex space-x-8 px-6">
           <button
             onClick={() => setActiveTab("call-history")}
-            className={`py-4 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === "call-history"
+            className={`py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === "call-history"
                 ? "border-gray-900 text-gray-900"
                 : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
+              }`}
           >
             Call History
           </button>
           <button
             onClick={() => setActiveTab("assigned-contacts")}
-            className={`py-4 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === "assigned-contacts"
+            className={`py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === "assigned-contacts"
                 ? "border-gray-900 text-gray-900"
                 : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
+              }`}
           >
             Assigned Contacts
           </button>
@@ -237,7 +236,9 @@ export function CallGroupContactsTabs({contacts}: CallGroupContactsTabsProps) {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center space-x-2">
                           <Button variant="ghost" size="sm" className="p-2 rounded-lg">
-                            <Icon icon="hugeicons:view" className="w-4 h-4" />
+                            <Link href={`/contacts/${contact.uuid}`}>
+                              <Icon icon="hugeicons:view" className="w-4 h-4" />
+                            </Link>
                           </Button>
                           <Button
                             variant="ghost"

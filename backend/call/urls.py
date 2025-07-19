@@ -13,13 +13,19 @@ from .views import (
     ContactListCreateView,
     ContactTemplateDownloadView,
     ContactsByCallGroupContactListCreateView,
-)
+    UserCallGroupsListView,
+    ContactCallsListView)
 
 urlpatterns = [
     path(
         "groups/<int:institution_id>/",
         CallGroupListCreateView.as_view(),
         name="callgroup-list-create",
+    ),
+    path(
+        "groups/my-groups/<int:institution_id>/",
+        UserCallGroupsListView.as_view(),
+        name="user-call-groups-list",
     ),
     path(
         "groups/detail/<uuid:uuid>/",
@@ -73,4 +79,5 @@ urlpatterns = [
         name="call-list-create",
     ),
     path("detail/<uuid:uuid>/", CallDetailAPIView.as_view(), name="call-detail"),
+    path("contact-calls/<uuid:contact_uuid>/", ContactCallsListView.as_view(), name="contact-calls"),
 ]

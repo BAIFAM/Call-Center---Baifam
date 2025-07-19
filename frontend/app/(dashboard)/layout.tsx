@@ -1,22 +1,44 @@
 "use client";
 
 import type React from "react";
-import {DashboardSidebar} from "@/components/dashboard/sidebar";
-import {DashboardHeader} from "@/components/dashboard/header";
-import {useSelector} from "react-redux";
-import {selectSelectedInstitution} from "@/store/auth/selectors";
+import { DashboardSidebar } from "@/components/dashboard/sidebar";
+import { DashboardHeader } from "@/components/dashboard/header";
+import { useSelector } from "react-redux";
+import { selectSelectedInstitution } from "@/store/auth/selectors";
 import CreateOrganisationWizard from "./create-organisation/page";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import FixedLoader from "@/components/common/fixed-loader";
 
-export default function DashboardLayout({children}: {children: React.ReactNode}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const selectedInstitution = useSelector(selectSelectedInstitution);
+
+  const pathname = usePathname();
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    // Trigger loader on route change
+    setIsLoading(true);
+    // Simulate loading finish after transition
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [pathname]);
   return (
     <div className="min-h-screen bg-gray-50 fixed inset-0">
       <div className="flex w-full">
         <DashboardSidebar />
         <div className="flex-1 flex flex-col min-h-screen">
           <DashboardHeader />
-          <main className="flex-1 max-h-[90svh]  px-6 py-0 pt-4 overflow-y-auto">
-            {selectedInstitution ? children: <CreateOrganisationWizard /> }
+          <main className="flex-1 max-h-[90svh]  px-6 py-0 pt-4 overflow-y-auto relative">
+            {isLoading ?
+              <FixedLoader className="!bg-white/60" fixed={false} /> :
+              <>{selectedInstitution ? children : <CreateOrganisationWizard />}
+              </>
+            }
+
           </main>
         </div>
       </div>

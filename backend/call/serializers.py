@@ -58,6 +58,7 @@ class ContactSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep['product'] = ProductSerializer(instance.product).data
+        rep['call_group'] = instance.call_groups.all().values_list('call_group__uuid', flat=True).first()
         return rep       
     
 class CallGroupContactSerializer(serializers.ModelSerializer):

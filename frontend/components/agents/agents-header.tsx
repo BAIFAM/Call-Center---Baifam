@@ -14,10 +14,13 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog" // Import all Dialog components
 import { CreateAgentForm } from "./create-agent-form"
+import { AssignAgentDialog } from "./assign-agent-dialog"
 
 interface AgentsHeaderProps {
   totalAgents: number
-  agents: IAgent[]
+  agents: IAgent[],
+  selectedAgent: IAgent | null,
+  onAssignOrReassign: () => void
   onFilteredAgentsChange: (agents: IAgent[]) => void
   onAgentCreated: () => void
   institutionId: number
@@ -26,6 +29,8 @@ interface AgentsHeaderProps {
 export function AgentsHeader({
   totalAgents,
   agents,
+  selectedAgent,
+  onAssignOrReassign,
   onFilteredAgentsChange,
   onAgentCreated,
   institutionId,
@@ -34,6 +39,10 @@ export function AgentsHeader({
   const [companyFilter, setCompanyFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
   const [isCreateAgentDialogOpen, setIsCreateAgentDialogOpen] = useState(false)
+  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false)
+
+  const canAssign = selectedAgent && !selectedAgent.call_group
+  const canReassign = selectedAgent && selectedAgent.call_group
 
   useEffect(() => {
     let filtered = agents
@@ -41,16 +50,16 @@ export function AgentsHeader({
       filtered = filtered.filter(
         (agent) =>
           agent.user.fullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          agent.user.email.toLowerCase().includes(searchTerm.toLowerCase()) 
+          agent.user.email.toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
     if (companyFilter !== "all") {
-      filtered = filtered.filter((agent) => agent.call_group.name === companyFilter)
+      filtered = filtered.filter((agent) => agent.call_group?.name === companyFilter)
     }
     onFilteredAgentsChange(filtered)
   }, [searchTerm, companyFilter, statusFilter, agents, onFilteredAgentsChange])
 
-  const uniqueCallGroupNames = Array.from(new Set(agents.map((agent) => agent.call_group.name)))
+  const uniqueCallGroupNames = Array.from(new Set(agents.map((agent) => (agent.call_group && agent.call_group.name))))
 
   return (
     <div className="flex items-center justify-between bg-transparent rounded-xl p-4">
@@ -64,7 +73,7 @@ export function AgentsHeader({
             <SelectContent className="rounded-xl">
               <SelectItem value="all">All Call Groups</SelectItem>
               {uniqueCallGroupNames.map((name) => (
-                <SelectItem key={name} value={name}>
+                <SelectItem key={name} value={name as string}>
                   {name}
                 </SelectItem>
               ))}
@@ -95,6 +104,22 @@ export function AgentsHeader({
             className="pl-10 w-64 rounded-xl"
           />
         </div>
+        <div className="flex items-center gap-2">
+          <Button
+            disabled={!canAssign}
+            onClick={() => setIsAssignDialogOpen(true)}
+            className="rounded-xl"
+          >
+            Assign
+          </Button>
+          <Button
+            disabled={!canReassign}
+            onClick={() => setIsAssignDialogOpen(true)}
+            className="rounded-xl"
+          >
+            Re-assign
+          </Button>
+        </div>
         <Dialog open={isCreateAgentDialogOpen} onOpenChange={setIsCreateAgentDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-primary-700 rounded-xl text-white pl-4">
@@ -118,6 +143,13 @@ export function AgentsHeader({
           </DialogContent>
         </Dialog>
       </div>
+      <AssignAgentDialog
+        open={isAssignDialogOpen}
+        onOpenChange={setIsAssignDialogOpen}
+        agent={selectedAgent}
+        institutionId={institutionId}
+        onAssigned={onAssignOrReassign}
+      />
     </div>
   )
 }

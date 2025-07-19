@@ -4,18 +4,22 @@ import { IAgent } from "@/app/types/api.types"
 import { Button } from "@/components/ui/button"
 import { Icon } from "@iconify/react"
 import Link from "next/link"
+import { Checkbox } from "../ui/checkbox"
 
 interface AgentsListProps {
-  agents: IAgent[]
+  agents: IAgent[],
+  selectedAgent: IAgent | null,
+  onSelectAgent: (agent: IAgent | null) => void
 }
 
-export function AgentsList({ agents }: AgentsListProps) {
+export function AgentsList({ agents, selectedAgent, onSelectAgent }: AgentsListProps) {
   return (
     <div className="bg-white rounded-xl">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
               {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Number</th> */}
@@ -30,7 +34,10 @@ export function AgentsList({ agents }: AgentsListProps) {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {agents.map((agent) => (
-              <tr key={agent.uuid} className="hover:bg-gray-50">
+              <tr key={agent.uuid} className={`hover:bg-gray-50 }`}>
+                <td className="px-6 py-4">
+                  <Checkbox checked={selectedAgent?.uuid === agent.uuid} onCheckedChange={() => onSelectAgent(selectedAgent?.uuid === agent.uuid ? null : agent)} />
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">
                     {agent.user.fullname}
