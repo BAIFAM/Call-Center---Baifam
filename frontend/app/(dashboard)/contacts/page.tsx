@@ -8,24 +8,22 @@ import { ContactsFilters } from "@/components/contacts/contacts-filters"
 import { contactsAPI, institutionAPI } from "@/lib/api-helpers"
 import { useSelector } from "react-redux"
 import { selectSelectedInstitution } from "@/store/auth/selectors"
-import { ICallCenterProduct, IContact } from "@/app/types/api.types"
+import type { ICallCenterProduct, IContact } from "@/app/types/api.types"
 import { EditContactDialog } from "@/components/dialogs/edit-contact-dialog"
 import { toast } from "sonner"
 import { DeleteContactDialog } from "@/components/dialogs/delete-contact-dialog"
 
-
 export default function ContactsPage() {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list")
   const [contacts, setContacts] = useState<IContact[]>([])
-  const [filteredContacts, setFilteredContacts] = useState(contacts)
+  const [filteredContacts, setFilteredContacts] = useState<IContact[]>([])
   const [activeContactsCount, setActiveContactsCount] = useState(0)
   const [archivedContactsCount, setArchivedContactsCount] = useState(0)
-  const [selectedContactIds, setSelectedContactIds] = useState<string[]>([]);
+  const [selectedContactIds, setSelectedContactIds] = useState<string[]>([])
   const [contactToEdit, setContactToEdit] = useState<IContact | null>(null)
   const [contactToDelete, setContactToDelete] = useState<IContact | null>(null)
   const [products, setProducts] = useState<ICallCenterProduct[]>([])
-  const selectedInstitution = useSelector(selectSelectedInstitution);
-
+  const selectedInstitution = useSelector(selectSelectedInstitution)
 
   useEffect(() => {
     handleFetchContacts()
@@ -33,15 +31,15 @@ export default function ContactsPage() {
   }, [selectedInstitution])
 
   useEffect(() => {
-    setFilteredContacts(contacts)
-    setActiveContactsCount(contacts.filter(contact => contact.status === "verified").length)
-    setArchivedContactsCount(contacts.filter(contact => contact.status === "archived").length)
+    // Update counts based on all contacts
+    setActiveContactsCount(contacts.filter((contact) => contact.status !== "archived").length)
+    setArchivedContactsCount(contacts.filter((contact) => contact.status === "archived").length)
   }, [contacts])
 
-
-
   const handleFetchInstitutionProducts = async () => {
-    if (!selectedInstitution) { return }
+    if (!selectedInstitution) {
+      return
+    }
     try {
       const products = await institutionAPI.getProductsByInstitution({ institutionId: selectedInstitution.id })
       setProducts(products)
@@ -52,44 +50,47 @@ export default function ContactsPage() {
 
   const handleUpdateSuccess = ({ updatedContact }: { updatedContact: IContact }) => {
     setContacts((prevContacts) =>
-      prevContacts.map((contact) =>
-        contact.uuid === updatedContact.uuid ? updatedContact : contact
-      )
-    );
+      prevContacts.map((contact) => (contact.uuid === updatedContact.uuid ? updatedContact : contact)),
+    )
   }
 
   const triggerDeleteContact = (contactUuid: string) => {
-    const contact = contacts.find(contact => contact.uuid === contactUuid);
-    if (!contact) return;
-    setContactToDelete(contact);
+    const contact = contacts.find((contact) => contact.uuid === contactUuid)
+    if (!contact) return
+    setContactToDelete(contact)
   }
 
   const handleFetchContacts = async () => {
-    if (!selectedInstitution) { return }
+    if (!selectedInstitution) {
+      return
+    }
     try {
       const fetchedContacts = await contactsAPI.getContactsByInstitution({
         institutionId: selectedInstitution.id,
-      });
-      setContacts(fetchedContacts);
+      })
+      setContacts(fetchedContacts)
     } catch (error) {
-      console.error("Error fetching contacts:", error);
+      console.error("Error fetching contacts:", error)
     }
   }
-
-
-
-
 
   return (
     <div className="space-y-6 w-full">
       <ContactsHeader
-        contacts={contacts}
-        onFilteredContactsChange={setFilteredContacts}
         selectedContactIds={selectedContactIds}
         onRefreshContacts={handleFetchContacts}
         products={products}
       />
-      <ContactsFilters viewMode={viewMode} onViewModeChange={setViewMode} activeContactsCount={activeContactsCount} archivedContactsCount={archivedContactsCount} />
+
+      <ContactsFilters
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        activeContactsCount={activeContactsCount}
+        archivedContactsCount={archivedContactsCount}
+        contacts={contacts}
+        products={products}
+        onFilteredContactsChange={setFilteredContacts}
+      />
 
       {viewMode === "list" ? (
         <ContactsList
@@ -109,24 +110,24 @@ export default function ContactsPage() {
         />
       )}
 
-      {contactToEdit
-        && <EditContactDialog
+      {contactToEdit && (
+        <EditContactDialog
           isOpen={!!contactToEdit}
           onClose={() => setContactToEdit(null)}
           products={products}
           contact={contactToEdit}
           onUpdateSuccess={handleUpdateSuccess}
         />
-      }
+      )}
 
-      {contactToDelete
-        && <DeleteContactDialog
+      {contactToDelete && (
+        <DeleteContactDialog
           isOpen={!!contactToDelete}
           onClose={() => setContactToDelete(null)}
           contact={contactToDelete}
           onSuccess={handleFetchContacts}
         />
-      }
+      )}
     </div>
   )
 }
