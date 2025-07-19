@@ -89,7 +89,7 @@ export function ContactsList({ contacts, selectedContactIds, onSelectionChange, 
                   <div className="text-sm text-gray-900">{contact.phone_number}</div>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{contact.country_code || " No agent"}</div>
+                  <div className="text-sm text-gray-900">{"N/A"}</div>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
                   <div className="text-sm text-gray-900">{contact.product.name}</div>

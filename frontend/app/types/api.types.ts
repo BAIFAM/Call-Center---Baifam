@@ -56,6 +56,7 @@ export interface Product {
   product_image: string | null;
   is_active: boolean;
   is_approved: boolean;
+  institution: IUserInstitution;
 }
 
 
@@ -68,12 +69,12 @@ export interface ITask {
   content_object: string;
   updated_at: string;
   comment: string;
-  approved_by: UserProfile | null;
+  approved_by: IUserProfile | null;
 }
 
 export interface IApprovalProductDetails extends Product {
   id: number;
-  institution: number;
+  institution: IUserInstitution;
   status: string;
   tasks: Array<ITask>;
 }
@@ -116,10 +117,10 @@ export interface IUser {
   id: number;
   fullname: string;
   email: string;
-  is_active: boolean;
-  is_staff: boolean;
-  roles: Role[];
-  branches: Branch[];
+  is_active?: boolean;
+  is_staff?: boolean;
+  roles?: Role[];
+  branches?: Branch[];
 }
 
 export interface ICustomerProfile {
@@ -129,7 +130,7 @@ export interface ICustomerProfile {
   created_at: string;
 }
 
-export interface UserProfile {
+export interface IUserProfile {
   id: number;
   user: IUser;
   institution: number;
@@ -169,7 +170,7 @@ export interface SalesTransaction {
   id: number;
   transaction_code: string;
   transaction_date: string;
-  cashier_details: UserProfile;
+  cashier_details: IUserProfile;
   branch_details: Branch;
   payment_method?: "CARD" | "MOBILE_MONEY" | "CASH";
   payment_source?: "POS" | "ONLINE_MARKETPLACE";
@@ -203,7 +204,7 @@ export interface StoredColorData {
 
 export type ApprovalStepApprover = {
   id: number;
-  approver_user: UserProfile;
+  approver_user: IUserProfile;
 };
 
 export type ApprovalStep = {
@@ -268,7 +269,7 @@ export interface IResponse<T> {
 export interface ICall {
   uuid: string;
   contact: IContact;
-  feedback: string;
+  feedback: string | any;
   status: "failed" | "completed" | "busy";
   made_on: string;
   made_by: IUser
@@ -299,8 +300,28 @@ export interface IContactFormData {
   country_code: string;
   status: IContactStatus;
   product: string;
+  email: string;
+  notes?: string;
 }
 
+
+export interface ICallGroupUserFormData {
+  uuid: string;
+  user: number;
+  call_group: string;
+  created_at?: string;
+  updated_at?: string;
+  status?: string;
+}
+
+export interface IAgent {
+  uuid: string;
+  user: IUser;
+  call_group: ICallGroup;
+  status: "active" | "disabled"
+  created_at?: string;
+  updated_at?: string;
+}
 
 export interface IClientCompany {
   uuid: string;
@@ -320,7 +341,7 @@ export interface IClientCompany {
 
 export interface ICallCenterProduct {
   uuid: string;
-  institution: number;
+  institution: IUserInstitution;
   name: string;
   descriptions: string;
   status: "active" | "inactive";
@@ -342,3 +363,47 @@ export interface IFeedbackFieldFormData {
   options?: string[];
   is_required: boolean;
 }
+
+export interface ICallGroup {
+  uuid: string;
+  name: string;
+  description: string;
+  created_by: number | null;
+  institution: IUserInstitution;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ICallGroupContact {
+  uuid: string
+  call_group: ICallGroup,
+  contact: IContact,
+  status: "attended_to" | "not_attended" | "follow_up" | "new"
+}
+
+export interface IUserInstitution {
+  id: number;
+  institution_email: string;
+  institution_owner_id: number;
+  institution_name: string;
+  institution_logo: string | null;
+  theme_color: null | string;
+  branches?: Branch[];
+  first_phone_number: string;
+  second_phone_number: string;
+  approval_date: string | null,
+  approval_status: "pending" | "approved" | "rejected" | "under_review",
+  approval_status_display: "Pending Approval" | "Approved" | "Rejected" | "Under Review",
+  documents: string[],
+  latitude: number,
+  logitude: number,
+  location: string
+}
+
+export interface ICallGroupFormData {
+  name: string;
+  description?: string;
+  institution: number;
+}
+
+// export interface 

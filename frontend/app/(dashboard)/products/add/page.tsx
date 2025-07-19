@@ -12,6 +12,8 @@ import { EditFieldDialog } from "@/components/dialogs/edit-field-dialog"
 import { CustomFieldComponent } from "@/components/form/custom-field"
 import type { CustomField, AddFieldFormData } from "@/app/types/types.utils"
 import { institutionAPI } from "@/lib/api-helpers"
+import { selectSelectedInstitution } from "@/store/auth/selectors"
+import { useSelector } from "react-redux"
 
 export default function AddProductPage() {
   const router = useRouter()
@@ -21,6 +23,8 @@ export default function AddProductPage() {
   const [isAddFieldDialogOpen, setIsAddFieldDialogOpen] = useState(false)
   const [isEditFieldDialogOpen, setIsEditFieldDialogOpen] = useState(false)
   const [editingField, setEditingField] = useState<CustomField | null>(null)
+  const selectedInstitution = useSelector(selectSelectedInstitution);
+
 
   const handleAddField = (fieldData: AddFieldFormData) => {
     const newField: CustomField = {
@@ -77,8 +81,9 @@ export default function AddProductPage() {
   }
 
   const handleSubmit = async () => {
+    if(!selectedInstitution){return}
     await institutionAPI.createProduct({
-      institutionId: 1,
+      institutionId: selectedInstitution.id,
       name: productName,
       description: productDescription,
       feedbackFields: customFields.map((field) => ({

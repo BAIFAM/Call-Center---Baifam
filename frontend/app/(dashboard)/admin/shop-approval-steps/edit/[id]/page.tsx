@@ -1,6 +1,6 @@
 "use client";
 import type React from "react";
-import type {ApprovalStep, Role, UserProfile, WorkflowAction} from "@/app/types/api.types";
+import type {ApprovalStep, Role, IUserProfile, WorkflowAction} from "@/app/types/api.types";
 
 import {useParams, useRouter} from "next/navigation";
 import {useEffect, useState} from "react";
@@ -21,7 +21,7 @@ export default function EditApprovalStep() {
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const [actionId, setActionId] = useState<number | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
-  const [userProfiles, setUserProfiles] = useState<UserProfile[]>([]);
+  const [userProfiles, setUserProfiles] = useState<IUserProfile[]>([]);
   const [actions, setActions] = useState<WorkflowAction[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);

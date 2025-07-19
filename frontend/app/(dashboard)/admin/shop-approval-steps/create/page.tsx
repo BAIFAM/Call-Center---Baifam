@@ -1,6 +1,6 @@
 "use client";
 import type React from "react";
-import type {IPaginatedResponse, IResponse, Role, UserProfile, WorkflowAction} from "@/app/types/api.types";
+import type {IPaginatedResponse, IResponse, Role, IUserProfile, WorkflowAction} from "@/app/types/api.types";
 
 import {useRouter} from "next/navigation";
 import {useEffect, useState} from "react";
@@ -29,7 +29,7 @@ export default function CreateApprovalStep() {
   const [actionId, setActionId] = useState<number | null>(null);
   // const [level, setLevel] = useState("");
   const [roles, setRoles] = useState<Role[]>([]);
-  const [userProfiles, setUserProfiles] = useState<UserProfile[]>([]);
+  const [userProfiles, setUserProfiles] = useState<IUserProfile[]>([]);
   const [actions, setActions] = useState<WorkflowAction[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);

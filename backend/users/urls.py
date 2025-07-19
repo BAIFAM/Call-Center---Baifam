@@ -56,9 +56,9 @@ urlpatterns = [
     path(
         "verify-token", VerifyTokenAPIView.as_view(), name="verify-token"
     ),
-    path(
-        "reset-password", ResetPasswordAPIView.as_view(), name="reset-password"
-    ),
+    # path(
+    #     "reset-password", ResetPasswordAPIView.as_view(), name="reset-password"
+    # ),
 
     # Continue with Google URLs
     path('auth/google/url/', GoogleAuthURLView.as_view(), name='google_auth_url'),

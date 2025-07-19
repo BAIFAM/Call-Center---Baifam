@@ -15,16 +15,22 @@ import os
 
 class CallGroupSerializer(serializers.ModelSerializer):
     institution = serializers.PrimaryKeyRelatedField(queryset=Institution.objects.all())
+    contacts = serializers.SerializerMethodField()
 
     class Meta:
         model = CallGroup
         fields = '__all__'
         read_only_fields = ['uuid', 'created_at', 'created_by']
 
+    def get_contacts(self, obj):
+        contacts = Contact.objects.filter(call_groups__call_group=obj).distinct()
+        return ContactSerializer(contacts, many=True).data
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep['institution'] = InstitutionSerializer(instance.institution).data
         return rep
+
     
 class CallGroupUserSerializer(serializers.ModelSerializer):
     call_group = serializers.PrimaryKeyRelatedField(queryset=CallGroup.objects.all())
@@ -188,11 +194,8 @@ class CallSerializer(serializers.ModelSerializer):
     def _validate_feedback(self, data):
         contact = data.get('contact')
         feedback_data = data.get('feedback', {})
-
-        print("\n\n Feedback data in _validate_feedback method :  ", feedback_data)
         
         if not contact:
-            # If updating existing call, get contact from instance
             if self.instance:
                 contact = self.instance.contact
             else:
@@ -273,12 +276,8 @@ class CallSerializer(serializers.ModelSerializer):
         if 'feedback' not in validated_data:
             validated_data['feedback'] = {}
 
-        print("\n\n File fields extracted in create method :  ", file_fields, "\n\n\n\n  With Validated data after extracting file fields : ", validated_data, "\n\n\n")
-        # Create the call instance
         call = super().create(validated_data)
 
-        print("\n\n Call created from parent class create method :  ", call)
-        
         # Handle file uploads if present
         if file_fields:
             self._handle_file_uploads(call, file_fields)

@@ -76,7 +76,7 @@ export default function DashboardPage() {
 
   const stats = [
     {
-      title: "Calls Today",
+      title: "Total Calls",
       value: calls.length.toString(),
       icon: "hugeicons:call-outgoing-02",
       color: "text-blue-600",

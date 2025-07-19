@@ -205,17 +205,18 @@ class ContactTemplateDownloadView(APIView):
         product = get_object_or_404(Product, uuid=product_uuid)
         
         try:
+            print("\n\nTemplate generation started ...")
             # Create template with empty rows and wider columns
             template_data = {
                 'name': [''] * 10,  # 10 empty rows
                 'phone_number': [''] * 10,
                 'country': [''] * 10,
                 'country_code': [''] * 10,
-                'status': [''] * 10,
             }
             
             # Create Excel file in memory
             output = io.BytesIO()
+            print("\n\nCreating excel file in memory ...")
             
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
                 # Main template sheet
@@ -234,6 +235,7 @@ class ContactTemplateDownloadView(APIView):
                     'D': 15,  # country_code
                     'E': 12,  # status
                 }
+
                 
                 for col, width in column_widths.items():
                     worksheet.column_dimensions[col].width = width
@@ -261,7 +263,7 @@ class ContactTemplateDownloadView(APIView):
                         'Phone number with country code (required)',
                         'Country name (optional)',
                         'Country calling code (optional)',
-                        'Status: new, verified, called, archived, or flagged (defaults to new)'
+                        'Contact status (optional)'
                     ],
                     'Required': ['Yes', 'Yes', 'No', 'No', 'No'],
                     'Examples': [
@@ -269,7 +271,7 @@ class ContactTemplateDownloadView(APIView):
                         '+1234567890, +256701234567',
                         'Uganda, USA, UK',
                         '+256, +1, +44',
-                        'new, verified, called, archived, flagged'
+                        'Active, Inactive'
                     ]
                 })
                 instructions_df.to_excel(writer, sheet_name='Instructions', index=False)
@@ -426,13 +428,8 @@ class ContactBulkUploadView(APIView):
                         'product': product.pk,  # Use the pre-selected product
                         'country': str(row.get('country', '')).strip() if pd.notna(row.get('country')) else '',
                         'country_code': str(row.get('country_code', '')).strip() if pd.notna(row.get('country_code')) else '',
-                        'status': str(row.get('status', 'new')).strip() if pd.notna(row.get('status')) else 'new'
                     }
                     
-                    # Validate status
-                    valid_statuses = ['new', 'verified', 'called', 'archived', 'flagged']
-                    if contact_data['status'] not in valid_statuses:
-                        contact_data['status'] = 'new'
                     
                     # Create contact using serializer
                     serializer = ContactSerializer(data=contact_data)
@@ -508,8 +505,25 @@ class ContactDetailView(APIView):
         contact = self.get_object(uuid)
         contact.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@extend_schema(tags=["CallGroupContact"])    
+class ContactsByCallGroupContactListCreateView(APIView):
+    @extend_schema(
+        summary="List contacts assigned to a specific call group",
+        parameters=[
+            OpenApiParameter(name="call_group_uuid", required=True, type=int, location=OpenApiParameter.PATH),
+        ],
+        responses={200: CallGroupContactSerializer(many=True)}
+    )
+    def get(self, request, call_group_uuid):
+        group = get_object_or_404(CallGroup, uuid=call_group_uuid)
+        contacts = CallGroupContact.objects.filter(call_group=group)
+        serializer = CallGroupContactSerializer(contacts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
-    
+
+
 @extend_schema(tags=["CallGroupContact"])
 class CallGroupContactListCreateView(APIView):
 
