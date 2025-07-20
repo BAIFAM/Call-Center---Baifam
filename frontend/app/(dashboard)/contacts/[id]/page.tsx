@@ -7,7 +7,7 @@ import { ContactDetailsTabs } from "@/components/contacts/contact-details-tabs"
 import { CallHistoryRecord, RecentAssignee } from "@/app/types/types.utils"
 import { useParams, useRouter } from "next/navigation"
 import { contactsAPI, institutionAPI } from "@/lib/api-helpers"
-import { ICallCenterProduct, IContact, IContactStatus } from "@/app/types/api.types"
+import { ICall, ICallCenterProduct, IContact, IContactStatus } from "@/app/types/api.types"
 import { DeleteContactDialog } from "@/components/dialogs/delete-contact-dialog"
 import { EditContactDialog } from "@/components/dialogs/edit-contact-dialog"
 import { toast } from "sonner"
@@ -111,6 +111,7 @@ export default function ContactDetailsPage() {
   const [contactToDelete, setContactToDelete] = useState<IContact | null>(null);
   const selectedInstitution = useSelector(selectSelectedInstitution);
   const [products, setProducts] = useState<ICallCenterProduct[]>([]);
+  const [contactCalls, setContactCalls] = useState<ICall[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -126,7 +127,9 @@ export default function ContactDetailsPage() {
   const handleFetchContact = async (uuid: string) => {
     try {
       const response = await contactsAPI.getContactDetails({ contactUuid: uuid });
+      const calls = await contactsAPI.getContactCalls({ contactUuid: uuid });
       setContact(response);
+      setContactCalls(calls);
     } catch (error) {
 
     }
@@ -190,7 +193,7 @@ export default function ContactDetailsPage() {
       <ContactDetailsTabs
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        callHistory={mockCallHistory}
+        callHistory={contactCalls}
         recentAssignees={mockRecentAssignees}
       />
       {contactToEdit
