@@ -73,7 +73,7 @@ export function DashboardSidebar() {
         variant="ghost"
         size="sm"
         onClick={toggleNavBar}
-        className="p-2 !h-8 !aspect-square rounded-full !bg-primary-700 !text-white !absolute top-10 -right-4"
+        className="p-2 !h-8 !aspect-square rounded-full !bg-primary-700 !text-white !absolute top-10 -right-4 !z-[70]"
       >
         <Icon
           icon={collapsed ? "hugeicons:arrow-right-01" : "hugeicons:arrow-left-01"}

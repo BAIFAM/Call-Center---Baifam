@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { ContactDetailsHeader } from "@/components/contacts/contacts-details-header"
 import { ContactDetailsInfo } from "@/components/contacts/contact-details-info"
 import { ContactDetailsTabs } from "@/components/contacts/contact-details-tabs"
-import { CallHistoryRecord, RecentAssignee } from "@/app/types/types.utils"
+import { RecentAssignee } from "@/app/types/types.utils"
 import { useParams, useRouter } from "next/navigation"
 import { contactsAPI, institutionAPI } from "@/lib/api-helpers"
 import { ICall, ICallCenterProduct, IContact, IContactStatus } from "@/app/types/api.types"
@@ -14,66 +14,6 @@ import { toast } from "sonner"
 import { useSelector } from "react-redux"
 import { selectSelectedInstitution } from "@/store/auth/selectors"
 
-
-
-const mockCallHistory: CallHistoryRecord[] = [
-  {
-    id: "1",
-    date: "May 12, 2025 - 12:32 pm",
-    direction: "Outgoing",
-    duration: "13:22",
-    agent: "Matovu Mark",
-    status: "Complete",
-  },
-  {
-    id: "2",
-    date: "May 12, 2025 - 11:22 am",
-    direction: "Outgoing",
-    duration: "8:54",
-    agent: "Matovu Mark",
-    status: "Complete",
-  },
-  {
-    id: "3",
-    date: "Apr 11, 2025 - 8:12 am",
-    direction: "Incoming",
-    duration: "00:00",
-    agent: "Matovu Markt",
-    status: "Missed",
-  },
-  {
-    id: "4",
-    date: "Apr 11, 2025 - 9:45 am",
-    direction: "Outgoing",
-    duration: "15:30",
-    agent: "Matovu Mark",
-    status: "Complete",
-  },
-  {
-    id: "5",
-    date: "mar 10, 2025 - 3:00 pm",
-    direction: "Incoming",
-    duration: "50:12",
-    agent: "Nabukenya Sarah",
-    status: "Complete",
-  },
-  {
-    id: "6",
-    date: "Mar 10, 2025 - 10:15 am",
-    direction: "Outgoing",
-    duration: "00:00",
-    agent: "Muwanga Isaac",
-    status: "Missed",
-  },
-  {
-    id: "7",
-    date: "Mar 10, 2025 - 4:30 pm",
-    direction: "Outgoing",
-    duration: "20:45",
-    agent: "Nabukenya Sarah",
-    status: "Complete",
-  },
-]
 
 const mockRecentAssignees: RecentAssignee[] = [
   {
@@ -112,6 +52,7 @@ export default function ContactDetailsPage() {
   const selectedInstitution = useSelector(selectSelectedInstitution);
   const [products, setProducts] = useState<ICallCenterProduct[]>([]);
   const [contactCalls, setContactCalls] = useState<ICall[]>([]);
+  const [callToEdit, setCallToEdit] = useState<ICall|null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -189,11 +130,12 @@ export default function ContactDetailsPage() {
   return (
     <div className="space-y-6">
       <ContactDetailsHeader contact={contact} onTriggerDelete={triggerDeleteContact} onTriggerEdit={triggerEditContact} onArchive={() => handleUpdateContactStatus("archived")} />
-      <ContactDetailsInfo contact={contact} onMarkAsVerified={handleUpdateContactStatus} />
+      <ContactDetailsInfo clearCallToEdit={()=> setCallToEdit(null)} onRefreshContactDetails={()=>{handleFetchContact(contactUuid)}} callToEdit={callToEdit} contact={contact} onMarkAsVerified={handleUpdateContactStatus} />
       <ContactDetailsTabs
         activeTab={activeTab}
         onTabChange={setActiveTab}
         callHistory={contactCalls}
+        updateCallToEdit={setCallToEdit}
         recentAssignees={mockRecentAssignees}
       />
       {contactToEdit

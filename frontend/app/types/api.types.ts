@@ -357,12 +357,6 @@ export interface ICallCenterProduct {
   feedback_fields: Omit<CustomField, 'id'>[];
 }
 
-// name: string;
-//             type: FieldType;
-//             min_length?: number;
-//             max_length?: number;
-//             options?: string[];
-//             is_required: boolean;
 
 export interface IFeedbackFieldFormData {
   name: string;
@@ -383,17 +377,19 @@ export interface ICallGroup {
   updated_at: string;
 }
 
+export type ICallGroupContactStatus = "attended_to" | "not_attended" | "follow_up"|"new"|"assigned"|"exported"|"ready_to_export"
+
 export interface ICallGroupContact {
   uuid: string
   call_group: ICallGroup,
   contact: IContact,
-  status: "attended_to" | "not_attended" | "follow_up"
+  status: ICallGroupContactStatus
 }
 
 export interface ICallGroupContactFormData {
   call_group: string,
   contact: string,
-  status: "attended_to" | "not_attended" | "follow_up"
+  status: ICallGroupContactStatus
 }
 
 export interface IUserInstitution {

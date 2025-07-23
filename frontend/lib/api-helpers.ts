@@ -106,7 +106,7 @@ export const callsAPI = {
       }
 
       const response = await apiRequest.post(`call/institution/${institutionId}/`, formData);
-      return response.data;
+      return response.data as ICall;
     } catch (error) {
       console.error("Error creating call:", error);
       throw error;

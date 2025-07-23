@@ -12,6 +12,7 @@ import {SearchableSelect, type SearchableSelectItem} from "@/components/common/s
 import apiRequest from "@/lib/apiRequest";
 import {fetchInstitutionRoles, getDefaultInstitutionId} from "@/lib/helpers";
 import {handleApiError} from "@/lib/apiErrorHandler";
+import { ArrowLeft } from "lucide-react";
 
 export default function EditApprovalStep() {
   const params = useParams();
@@ -197,13 +198,9 @@ export default function EditApprovalStep() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => router.push("/admin/Institution-approval-steps")}
-          >
-            Back to Approval Steps
-          </Button>
+          <Button size="sm" variant="outline" className="!rounded-full" onClick={() => router.push("/admin/Institution-approval-steps")}>
+              <ArrowLeft/>
+            </Button>
           <h1 className="text-2xl font-bold tracking-tight">Edit Approval Step</h1>
         </div>
       </div>

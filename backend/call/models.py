@@ -95,6 +95,10 @@ class CallGroupContact(models.Model):
             ('attended_to', 'Attended to'),
             ('not_attended', 'Not attended'),
             ('follow_up', 'Follow up'),
+            ('new', 'New'),
+            ('exported', 'Exported'),
+            ('asigned', 'Assigned'),
+            ('ready_to_export', 'Ready to export'),
         ],
         default='new'
     )

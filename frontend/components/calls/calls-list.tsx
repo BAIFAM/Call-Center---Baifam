@@ -115,7 +115,7 @@ export function CallsList({ calls, onEdit, onDelete }: CallsListProps) {
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
+        {/* <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
           <p className="text-sm text-gray-500">
             Showing 1-{calls.length} of {calls.length}
           </p>
@@ -144,7 +144,7 @@ export function CallsList({ calls, onEdit, onDelete }: CallsListProps) {
               <Icon icon="hugeicons:arrow-right-01" className="w-4 h-4" />
             </Button>
           </div>
-        </div>
+        </div> */}
       </div>
 
       <CallDetailsModal isOpen={isDetailsModalOpen} onClose={() => setIsDetailsModalOpen(false)} call={selectedCall} />

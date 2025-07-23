@@ -1,7 +1,7 @@
 "use client";
 import type {Role} from "@/app/types/api.types";
 
-import {Search, Plus, Pen, Eye, Trash2} from "lucide-react";
+import {Search, Plus, Pen, Eye, Trash2, ArrowLeft} from "lucide-react";
 import {useEffect, useState} from "react";
 import {useRouter} from "next/navigation";
 
@@ -123,9 +123,9 @@ export default function RolesPage() {
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={() => router.push("/admin")}>
-              Back to Admin
-            </Button>
+            <Button size="sm" variant="outline" className="!rounded-full" onClick={() => router.push("/admin")}>
+            <ArrowLeft/>
+          </Button>
             <h1 className="text-2xl font-bold tracking-tight">Staff Roles</h1>
           </div>
           <Button onClick={() => router.push("/users/roles/add")}>

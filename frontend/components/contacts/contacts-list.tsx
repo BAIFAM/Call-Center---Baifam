@@ -6,6 +6,8 @@ import { Icon } from "@iconify/react"
 import Link from "next/link"
 import { IContact } from "@/app/types/api.types"
 import { getContactStatusColor } from "@/lib/utils"
+import { useRouter } from "next/navigation"
+import { CALL_INTENTS } from "@/app/types/types.utils"
 
 interface ContactsListProps {
   contacts: IContact[]
@@ -17,6 +19,7 @@ interface ContactsListProps {
 
 export function ContactsList({ contacts, selectedContactIds, onSelectionChange, onEditContact, onDeleteContact }: ContactsListProps) {
 
+  const router = useRouter();
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -33,6 +36,10 @@ export function ContactsList({ contacts, selectedContactIds, onSelectionChange, 
       onSelectionChange(selectedContactIds.filter((id) => id !== contactId))
     }
   }
+
+  const handleCallContact = (contactUuuid:string) =>{
+    router.push(`/contacts/${contactUuuid}?intent=${CALL_INTENTS.LAUNCH_CALL}`)
+  } 
 
   const isAllSelected = contacts.length > 0 && selectedContactIds.length === contacts.length
   const isIndeterminate = selectedContactIds.length > 0 && selectedContactIds.length < contacts.length
@@ -104,7 +111,7 @@ export function ContactsList({ contacts, selectedContactIds, onSelectionChange, 
                         <Icon icon="hugeicons:view" className="w-4 h-4" />
                       </Button>
                     </Link>
-                    <Button variant="ghost" size="sm" className="p-2 rounded-lg">
+                    <Button onClick={()=> handleCallContact(contact.uuid)} variant="ghost" size="sm" className="p-2 rounded-lg">
                       <Icon icon="hugeicons:call" className="w-4 h-4" />
                     </Button>
                     <Button onClick={() => onEditContact(contact)} variant="ghost" size="sm" className="p-2 rounded-lg">

@@ -8,16 +8,18 @@ import { Icon } from "@iconify/react"
 import { RecentAssignee } from "@/app/types/types.utils"
 import { ICall } from "@/app/types/api.types"
 import { CallDetailsModal } from "@/components/calls/call-details-modal"
+import { Edit } from "lucide-react"
 
 
 interface ContactDetailsTabsProps {
   activeTab: "call-history" | "recent-assignees" | "documents"
   onTabChange: (tab: "call-history" | "recent-assignees" | "documents") => void
   callHistory: ICall[]
-  recentAssignees: RecentAssignee[]
+  recentAssignees: RecentAssignee[],
+  updateCallToEdit:(call:ICall|null) => void
 }
 
-export function ContactDetailsTabs({ activeTab, onTabChange, callHistory, recentAssignees }: ContactDetailsTabsProps) {
+export function ContactDetailsTabs({ activeTab, onTabChange, callHistory, recentAssignees, updateCallToEdit }: ContactDetailsTabsProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCall, setSelectedCall] = useState<ICall | null>(null)
   const [isCallModalOpen, setIsCallModalOpen] = useState(false)
@@ -89,7 +91,7 @@ export function ContactDetailsTabs({ activeTab, onTabChange, callHistory, recent
                   className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4"
                 />
                 <Input
-                  placeholder="Search by contact or agent"
+                  placeholder="Search by agent"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 w-64 rounded-xl"
@@ -117,7 +119,9 @@ export function ContactDetailsTabs({ activeTab, onTabChange, callHistory, recent
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Feedback
                     </th>
-                    <th className="px-6 py-3"></th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -125,10 +129,10 @@ export function ContactDetailsTabs({ activeTab, onTabChange, callHistory, recent
                     <tr
                       key={call.uuid}
                       className="hover:bg-gray-50 cursor-pointer"
-                      onClick={() => {
-                        setSelectedCall(call)
-                        setIsCallModalOpen(true)
-                      }}
+                      // onClick={() => {
+                      //   setSelectedCall(call)
+                      //   setIsCallModalOpen(true)
+                      // }}
                     >
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {new Date(call.made_on).toLocaleString()}
@@ -158,7 +162,7 @@ export function ContactDetailsTabs({ activeTab, onTabChange, callHistory, recent
                         </Button>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {/* Optionally, more actions */}
+                          <Edit className="!w-4 !h-4" onClick={() => updateCallToEdit(call)} />
                       </td>
                     </tr>
                   ))}
@@ -232,7 +236,7 @@ export function ContactDetailsTabs({ activeTab, onTabChange, callHistory, recent
         )}
 
         {/* Pagination */}
-        <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+        {/* <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
           <p className="text-sm text-gray-500">Showing 1-7 of 70</p>
           <div className="flex items-center space-x-2">
             <Button variant="ghost" size="sm" className="p-2">
@@ -259,7 +263,7 @@ export function ContactDetailsTabs({ activeTab, onTabChange, callHistory, recent
               <Icon icon="hugeicons:arrow-right-01" className="w-4 h-4" />
             </Button>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   )

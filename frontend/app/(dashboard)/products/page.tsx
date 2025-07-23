@@ -170,7 +170,7 @@ export default function ProductsPage() {
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between mt-6">
+      {/* <div className="flex items-center justify-between mt-6">
         <p className="text-sm text-gray-600">
           Showing 1-{Math.min(7, totalProducts)} of {totalProducts}
         </p>
@@ -195,7 +195,7 @@ export default function ProductsPage() {
             Next
           </Button>
         </div>
-      </div>
+      </div> */}
       {/* </div> */}
     </div>
   );

@@ -36,7 +36,11 @@ export default function StaffPage() {
   const [selectedStatus, setSelectedStatus] = useState("All status");
   const [pageSize, setPageSize] = useState(10);
   const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState<{next:string|null, previous:string|null, count:number}>({
+  const [pagination, setPagination] = useState<{
+    next: string | null;
+    previous: string | null;
+    count: number;
+  }>({
     next: null,
     previous: null,
     count: 0,
@@ -138,8 +142,8 @@ export default function StaffPage() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" onClick={() => router.push("/admin")}>
-            Back to Admin
+          <Button size="sm" variant="outline" className="!rounded-full" onClick={() => router.push("/admin")}>
+            <ArrowLeft/>
           </Button>
           <h1 className="text-2xl font-bold tracking-tight">Staff</h1>
         </div>
@@ -206,13 +210,21 @@ export default function StaffPage() {
                     new Set(
                       userProfiles
                         .filter((profile) => profile.user.roles && profile.user.roles.length > 0)
-                        .map((profile) => capitalizeEachWord(profile.user.roles[0].name)),
+                        .map((profile) => {
+                          if (profile.user.roles?.length) {
+                            return capitalizeEachWord(profile.user.roles[0].name);
+                          }
+                        }),
                     ),
-                  ).map((role) => (
-                    <DropdownMenuItem key={role} onClick={() => setSelectedRole(role)}>
-                      {role}
-                    </DropdownMenuItem>
-                  ))}
+                  ).map((role) => {
+                    if (role) {
+                      return (
+                        <DropdownMenuItem key={role} onClick={() => setSelectedRole(role)}>
+                          {role}
+                        </DropdownMenuItem>
+                      );
+                    }
+                  })}
                 </DropdownMenuContent>
               </DropdownMenu>
 

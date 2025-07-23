@@ -194,8 +194,13 @@ export default function EditRolePage() {
   return (
     <div className="container mx-auto py-6 max-w-full bg-white-50 min-h-screen">
       <div className="flex items-center mb-6 gap-2">
-        <Button variant="outline" onClick={() => router.push("/users/roles")}>
-          Back to Roles
+        <Button
+          size="sm"
+          variant="outline"
+          className="!rounded-full"
+          onClick={() => router.push("/users/roles")}
+        >
+          <ArrowLeft />
         </Button>
         <h1 className="text-2xl font-bold">Edit Role</h1>
       </div>

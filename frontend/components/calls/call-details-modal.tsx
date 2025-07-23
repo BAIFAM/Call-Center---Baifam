@@ -11,7 +11,7 @@ import Link from "next/link"
 interface CallDetailsModalProps {
   isOpen: boolean
   onClose: () => void
-  call: ICall | null
+  call: ICall | null;
 }
 
 export function CallDetailsModal({ isOpen, onClose, call }: CallDetailsModalProps) {

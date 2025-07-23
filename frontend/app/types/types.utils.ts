@@ -47,6 +47,10 @@ export enum PERMISSION_CODES {
 }
 
 
+export enum CALL_INTENTS {
+  LAUNCH_CALL="launch_call"
+}
+
 
 export type IContact = {
   id: string

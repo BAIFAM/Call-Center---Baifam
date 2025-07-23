@@ -3,13 +3,12 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Icon } from "@iconify/react"
-import type { ICallCenterProduct, IContact, ICallGroup } from "@/app/types/api.types"
+import type { ICallCenterProduct, IContact } from "@/app/types/api.types"
 import { CreateContactDialog } from "@/components/contacts/create-contact-dialog"
 import { BulkUploadDialog } from "@/components/contacts/bulk-upload-dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { AssignContactDialog } from "@/components/contacts/assign-contact-dialog"
-import { useSelector } from "react-redux"
-import { selectSelectedInstitution } from "@/store/auth/selectors"
+
 
 interface ContactsHeaderProps {
   selectedContactIds: string[]
@@ -21,14 +20,22 @@ interface ContactsHeaderProps {
 export function ContactsHeader({ selectedContactIds, onRefreshContacts, products, contacts = [] }: ContactsHeaderProps) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false)
-  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false)
-  const selectedInstitution = useSelector(selectSelectedInstitution)
+  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const selectedContact = contacts.find(c => c.uuid === selectedContactIds[0])
 
   const handleBulkUploadSuccess = () => {
     onRefreshContacts()
     setIsBulkUploadDialogOpen(false)
+  }
+
+  const handleRefresh = () =>{
+    setIsRefreshing(true);
+    setTimeout(()=>{
+      onRefreshContacts();
+      setIsRefreshing(false)
+    }, 2000)
   }
 
   const canAssign = selectedContact && !selectedContact.call_group
@@ -49,8 +56,8 @@ export function ContactsHeader({ selectedContactIds, onRefreshContacts, products
 
         <div className="flex items-center gap-3">
           {/* Refresh */}
-          <Button variant="outline" size="sm" onClick={onRefreshContacts}>
-            <Icon icon="hugeicons:refresh" className="w-4 h-4" />
+          <Button disabled={isRefreshing} variant="outline" size="sm" onClick={handleRefresh}>
+            <Icon icon="hugeicons:refresh" className={` w-4 h-4 ${isRefreshing ? "!animate-spin":""}`} />
           </Button>
 
           {selectedContactIds.length === 1 && (

@@ -77,7 +77,7 @@ export function AddFieldDialog({ isOpen, onClose, onAddField, initialFieldValues
       confirmText="Add Field"
       confirmDisabled={!isFormValid}
     >
-      <div className="space-y-4">
+      <div className="space-y-4 h-full !w-full !max-w-xl max-h-[40svh] overflow-y-auto my-6 mx-4">
         <div>
           <Label htmlFor="title" className="text-sm font-medium">
             Title
