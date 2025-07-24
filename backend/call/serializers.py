@@ -31,7 +31,8 @@ class CallGroupSerializer(serializers.ModelSerializer):
         read_only_fields = ["uuid", "created_at", "created_by"]
 
     def get_contacts(self, obj):
-        contacts = Contact.objects.filter(call_groups__call_group=obj).distinct()
+        contact_products = CallGroupContact.objects.filter(call_group=obj).values_list('contact__contact', flat=True)
+        contacts = Contact.objects.filter(pk__in=contact_products).distinct()
         return ContactSerializer(contacts, many=True).data
 
     def to_representation(self, instance):
@@ -42,7 +43,7 @@ class CallGroupSerializer(serializers.ModelSerializer):
 
 class CallGroupAgentSerializer(serializers.ModelSerializer):
     call_group = serializers.PrimaryKeyRelatedField(queryset=CallGroup.objects.all())
-    user = serializers.PrimaryKeyRelatedField(queryset=Agent.objects.all())
+    agent = serializers.PrimaryKeyRelatedField(queryset=Agent.objects.all())
 
     class Meta:
         model = CallGroupAgent
@@ -52,7 +53,7 @@ class CallGroupAgentSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["call_group"] = CallGroupSerializer(instance.call_group).data
-        rep["user"] = AgentSerializer(instance.user).data
+        rep["agent"] = AgentSerializer(instance.agent).data
         return rep
     
 
@@ -545,17 +546,6 @@ class ContactProductSerializer(serializers.ModelSerializer):
         )
         return rep
 
-    def validate(self, attrs):
-        contact = attrs.get("contact")
-        product = attrs.get("product")
-        if contact and product:
-            # Assuming Contact has a ForeignKey to Profile or Institution
-            contact_institution = getattr(contact.user, "institution", None)
-            if contact_institution and contact_institution != product.institution:
-                raise serializers.ValidationError(
-                    "Contact and Product must belong to the same institution."
-                )
-        return attrs
 
 
 class AgentSerializer(serializers.ModelSerializer):

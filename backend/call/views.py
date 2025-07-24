@@ -738,12 +738,12 @@ class ContactProductListCreateView(APIView):
     def post(self, request, institution_id):
         institution = get_object_or_404(Institution, id=institution_id)
         data = request.data.copy()
-        data['created_by'] = request.user.id if request.user.is_authenticated else None
 
         contact_id = data.get('contact')
         product_id = data.get('product')
-        contact = get_object_or_404(Contact, id=contact_id)
-        product = get_object_or_404(Product, id=product_id, institution=institution)
+        # Use uuid for both Contact and Product
+        contact = get_object_or_404(Contact, uuid=contact_id)
+        product = get_object_or_404(Product, uuid=product_id, institution=institution)
 
         serializer = ContactProductSerializer(data=data, context={'request': request})
         if serializer.is_valid():

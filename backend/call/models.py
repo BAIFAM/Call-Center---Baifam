@@ -33,7 +33,7 @@ class Agent(models.Model):
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"{self.user.user.full_name}"    
+        return f"{self.user.user.fullname}"    
 
 class CallGroupAgent(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
