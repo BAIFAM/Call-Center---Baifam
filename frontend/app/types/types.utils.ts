@@ -47,6 +47,10 @@ export enum PERMISSION_CODES {
 }
 
 
+export enum CALL_INTENTS {
+  LAUNCH_CALL="launch_call"
+}
+
 
 export type IContact = {
   id: string
@@ -190,4 +194,10 @@ export interface AddFieldFormData {
   description: string
   fieldType: FieldType
   options?: string[] // Add this for select and checkbox fields
+}
+
+export interface ICountry {
+  name: { common: string }
+  cca2: string
+  idd?: { root?: string; suffixes?: string[] }
 }

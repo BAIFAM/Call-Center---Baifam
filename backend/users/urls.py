@@ -28,7 +28,7 @@ urlpatterns = [
     path("institutions/", UserInstitutionsListAPIView.as_view(), name="user-attached-institutions"),
     path("verify-otp/", VerifyOTPAPIView.as_view(), name="verify-otp"),
     # path("resend-otp/", ResendOTPView.as_view(), name="resend-otp"),
-    # path("reset-password/", VerifyPasswordResetAPIView.as_view(), name="reset-password"),
+    path("reset-password/", VerifyPasswordResetAPIView.as_view(), name="reset-password"),
     path("resend-otp/", ResendOTPAPIView.as_view(), name="resend-otp"),
     path("login/", LoginView.as_view(), name="user-login"),
     path("token/refresh/", CustomTokenRefreshView.as_view(), name="token-refresh"),
@@ -56,9 +56,9 @@ urlpatterns = [
     path(
         "verify-token", VerifyTokenAPIView.as_view(), name="verify-token"
     ),
-    path(
-        "reset-password", ResetPasswordAPIView.as_view(), name="reset-password"
-    ),
+    # path(
+    #     "reset-password", ResetPasswordAPIView.as_view(), name="reset-password"
+    # ),
 
     # Continue with Google URLs
     path('auth/google/url/', GoogleAuthURLView.as_view(), name='google_auth_url'),

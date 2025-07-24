@@ -95,7 +95,7 @@ export default function RoleDetailsPage() {
 
   if (error || !role) {
     return (
-      <div className="container mx-auto py-6 max-w-7xl bg-gray-50 min-h-screen">
+      <div className="mx-auto py-6 bg-gray-50 min-h-screen">
         <div className="flex items-center mb-6 gap-2">
           <Button variant="outline" onClick={() => router.push("/users/roles")}>
             Back to Roles
@@ -121,10 +121,10 @@ export default function RoleDetailsPage() {
   }
 
   return (
-    <div className="container mx-auto py-6 max-w-full bg-white-50 min-h-screen">
+    <div className="py-6 max-w-full bg-white-50 min-h-screen">
       <div className="flex items-center mb-6">
-        <Button variant="outline" onClick={() => router.push("/users/roles")}>
-          Back to Roles
+        <Button variant="outline" size={"sm"}  className="!rounded-full mr-2" onClick={() => router.push("/users/roles")}>
+          <ArrowLeft/>
         </Button>
         <h1 className="text-2xl font-bold">Role Details</h1>
       </div>

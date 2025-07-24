@@ -42,9 +42,10 @@ export function AddCallForm() {
   }, [selectedProduct]);
 
   const handleFetchProducts = async () => {
+    if(!selectedInstitution){return}
     try {
       const fetchedProducts = await institutionAPI.getProductsByInstitution({
-        institutionId: 1,
+        institutionId: selectedInstitution.id,
       });
       setProducts(fetchedProducts);
     } catch (error) {

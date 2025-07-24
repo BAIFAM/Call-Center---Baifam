@@ -156,6 +156,19 @@ class CallGroupUserDetailView(APIView):
         item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)    
 
+@extend_schema(tags=["CallGroup"])
+class UserCallGroupsListView(APIView):
+    @extend_schema(
+        summary="List call groups assigned to the authenticated user",
+        responses={200: CallGroupSerializer(many=True)}
+    )
+    def get(self, request, institution_id):
+        user = request.user
+        groups = CallGroup.objects.filter(users__user=user, institution__id=institution_id, users__status="active").distinct()
+        serializer = CallGroupSerializer(groups, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 
 @extend_schema(tags=["Contact"])
 class ContactListCreateView(APIView):
@@ -205,6 +218,7 @@ class ContactTemplateDownloadView(APIView):
         product = get_object_or_404(Product, uuid=product_uuid)
         
         try:
+            print("\n\nTemplate generation started ...")
             # Create template with empty rows and wider columns
             template_data = {
                 'name': [''] * 10,  # 10 empty rows
@@ -215,6 +229,7 @@ class ContactTemplateDownloadView(APIView):
             
             # Create Excel file in memory
             output = io.BytesIO()
+            print("\n\nCreating excel file in memory ...")
             
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
                 # Main template sheet
@@ -233,6 +248,7 @@ class ContactTemplateDownloadView(APIView):
                     'D': 15,  # country_code
                     'E': 12,  # status
                 }
+
                 
                 for col, width in column_widths.items():
                     worksheet.column_dimensions[col].width = width
@@ -260,6 +276,7 @@ class ContactTemplateDownloadView(APIView):
                         'Phone number with country code (required)',
                         'Country name (optional)',
                         'Country calling code (optional)',
+                        'Contact status (optional)'
                     ],
                     'Required': ['Yes', 'Yes', 'No', 'No', 'No'],
                     'Examples': [
@@ -267,6 +284,7 @@ class ContactTemplateDownloadView(APIView):
                         '+1234567890, +256701234567',
                         'Uganda, USA, UK',
                         '+256, +1, +44',
+                        'Active, Inactive'
                     ]
                 })
                 instructions_df.to_excel(writer, sheet_name='Instructions', index=False)
@@ -500,8 +518,38 @@ class ContactDetailView(APIView):
         contact = self.get_object(uuid)
         contact.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@extend_schema(tags=["CallGroupContact"])    
+class ContactsByCallGroupContactListCreateView(APIView):
+    @extend_schema(
+        summary="List contacts assigned to a specific call group",
+        parameters=[
+            OpenApiParameter(name="call_group_uuid", required=True, type=int, location=OpenApiParameter.PATH),
+        ],
+        responses={200: CallGroupContactSerializer(many=True)}
+    )
+    def get(self, request, call_group_uuid):
+        group = get_object_or_404(CallGroup, uuid=call_group_uuid)
+        contacts = CallGroupContact.objects.filter(call_group=group)
+        serializer = CallGroupContactSerializer(contacts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
-    
+
+class ContactCallsListView(APIView):
+    @extend_schema(
+        summary="List all calls made to a specific contact",
+        parameters=[
+            OpenApiParameter(name="contact_uuid", required=True, type=str, location=OpenApiParameter.PATH),
+        ],
+        responses={200: CallSerializer(many=True)}
+    )
+    def get(self, request, contact_uuid):
+        contact = get_object_or_404(Contact, uuid=contact_uuid)
+        calls = Call.objects.filter(contact=contact)
+        serializer = CallSerializer(calls, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 @extend_schema(tags=["CallGroupContact"])
 class CallGroupContactListCreateView(APIView):
 

@@ -6,8 +6,8 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { ICallGroup, ICallGroupUserFormData, IUser } from "@/app/types/api.types"
-import { callGroupAPI, callGroupUserAPI, userAPI } from "@/lib/api-helpers"
+import type { ICallGroup, ICallGroupUserFormData, IUser, IUserProfile } from "@/app/types/api.types"
+import { callGroupAPI, agentsAPI, institutionAPI, userAPI } from "@/lib/api-helpers"
 import { Icon } from "@iconify/react"
 import { CreateUserDialog } from "./create-user-dialog"
 import { CreateCallGroupDialog } from "./create-call-group-dialog"
@@ -16,15 +16,15 @@ import { useToast } from "@/hooks/use-toast"
 interface CreateAgentFormProps {
   institutionId: number
   onAgentCreated: () => void
-  onClose: () => void 
+  onClose: () => void
 }
 
 export function CreateAgentForm({ institutionId, onAgentCreated, onClose }: CreateAgentFormProps) {
-  const [users, setUsers] = useState<IUser[]>([])
+  const [userProfles, setUserProfles] = useState<IUserProfile[]>([])
   const [callGroups, setCallGroups] = useState<ICallGroup[]>([])
   const [selectedUserId, setSelectedUserId] = useState<string>("")
   const [selectedCallGroupUuid, setSelectedCallGroupUuid] = useState<string>("")
-  const [status, setStatus] = useState<string>("active")
+  const [status, setStatus] = useState<"active" | "disabled">("active")
   const [loading, setLoading] = useState(false)
   const [isCreatingUser, setIsCreatingUser] = useState(false)
   const [isCreatingCallGroup, setIsCreatingCallGroup] = useState(false)
@@ -34,10 +34,10 @@ export function CreateAgentForm({ institutionId, onAgentCreated, onClose }: Crea
     setLoading(true)
     try {
       const [fetchedUsers, fetchedCallGroups] = await Promise.all([
-        userAPI.getUsers(),
+        institutionAPI.getUsersProfiles({ institutionId }),
         callGroupAPI.getByInstitution({ institutionId }),
       ])
-      setUsers(fetchedUsers)
+      setUserProfles(fetchedUsers)
       setCallGroups(fetchedCallGroups)
       // Pre-select first available if any
       if (fetchedUsers.length > 0 && !selectedUserId) {
@@ -60,17 +60,17 @@ export function CreateAgentForm({ institutionId, onAgentCreated, onClose }: Crea
 
   useEffect(() => {
     fetchUsersAndCallGroups()
-  }, [institutionId]) 
+  }, [institutionId])
 
-  const handleUserCreated = (newUser: IUser) => {
-    setUsers((prev) => [...prev, newUser])
-    setSelectedUserId(String(newUser.id)) 
+  const handleUserCreated = (newUser: IUserProfile) => {
+    setUserProfles((prev) => [...prev, newUser])
+    setSelectedUserId(String(newUser.id))
     setIsCreatingUser(false)
   }
 
   const handleCallGroupCreated = (newCallGroup: ICallGroup) => {
     setCallGroups((prev) => [...prev, newCallGroup])
-    setSelectedCallGroupUuid(newCallGroup.uuid) 
+    setSelectedCallGroupUuid(newCallGroup.uuid)
     setIsCreatingCallGroup(false)
   }
 
@@ -88,19 +88,19 @@ export function CreateAgentForm({ institutionId, onAgentCreated, onClose }: Crea
     setLoading(true)
     try {
       const payload: ICallGroupUserFormData = {
-          user: Number(selectedUserId),
-          call_group: selectedCallGroupUuid,
-          status: status,
-          uuid: ""
+        user: Number(selectedUserId),
+        call_group: selectedCallGroupUuid,
+        status: status,
+
       }
-      await callGroupUserAPI.createUser({ institutionId, userData: payload })
+      await agentsAPI.createAgent({ institutionId, userData: payload })
       console.log("Payload being sent:", payload)
       toast({
         title: "Agent Created",
         description: "The new agent has been successfully added.",
       })
-      onAgentCreated() 
-      onClose() 
+      onAgentCreated()
+      onClose()
     } catch (error) {
       console.error("Failed to create agent:", error)
       toast({
@@ -127,14 +127,14 @@ export function CreateAgentForm({ institutionId, onAgentCreated, onClose }: Crea
                   <SelectValue placeholder="Select a user" />
                 </SelectTrigger>
                 <SelectContent>
-                  {users.length === 0 && (
+                  {userProfles.length === 0 && (
                     <SelectItem value="no-users" disabled>
                       No users available
                     </SelectItem>
                   )}
-                  {users.map((user) => (
-                    <SelectItem key={user.id} value={String(user.id)}>
-                      {user.fullname} ({user.email})
+                  {userProfles.map((userProfile) => (
+                    <SelectItem key={userProfile.user.id} value={String(userProfile.user.id)}>
+                      {userProfile.user.fullname} ({userProfile.user.email})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -192,15 +192,15 @@ export function CreateAgentForm({ institutionId, onAgentCreated, onClose }: Crea
               Status
             </Label>
             <div className="col-span-3">
-            <Select value={status} onValueChange={setStatus} disabled={loading}>
-              <SelectTrigger id="status-select">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
+              <Select value={status} onValueChange={(value) => setStatus(value as "active" | "disabled")} disabled={loading}>
+                <SelectTrigger id="status-select">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="disabled">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>

@@ -36,7 +36,7 @@ export function DashboardHeader() {
       return;
     }
     let role = "";
-    if (selectedInstitution.institution_owner_id === currentUser.id) {
+    if (selectedInstitution && selectedInstitution.institution_owner_id === currentUser.id) {
       role = "Owner";
     } else if (Array.isArray(currentUser.roles) && currentUser.roles.length > 0) {
       const matchingRole = currentUser.roles.find((r: {name: string}) => !!r.name);
@@ -48,15 +48,17 @@ export function DashboardHeader() {
     if (role.trim()) {
       setUserRole(role);
     }
+  }, [currentUser, selectedInstitution]);
 
+  useEffect(()=>{
+    if(!currentUser){return}
     const nameParts = currentUser.fullname.split(" ");
-
     if (nameParts.length > 1) {
       setUserInitials(`${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase());
     } else if (nameParts.length === 1) {
       setUserInitials(nameParts[0][0].toUpperCase());
     }
-  }, [currentUser, selectedInstitution]);
+  }, [currentUser])
 
   return (
     <>

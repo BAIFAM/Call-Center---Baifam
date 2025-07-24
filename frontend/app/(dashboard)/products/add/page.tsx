@@ -12,6 +12,8 @@ import { EditFieldDialog } from "@/components/dialogs/edit-field-dialog"
 import { CustomFieldComponent } from "@/components/form/custom-field"
 import type { CustomField, AddFieldFormData } from "@/app/types/types.utils"
 import { institutionAPI } from "@/lib/api-helpers"
+import { selectSelectedInstitution } from "@/store/auth/selectors"
+import { useSelector } from "react-redux"
 
 export default function AddProductPage() {
   const router = useRouter()
@@ -21,6 +23,8 @@ export default function AddProductPage() {
   const [isAddFieldDialogOpen, setIsAddFieldDialogOpen] = useState(false)
   const [isEditFieldDialogOpen, setIsEditFieldDialogOpen] = useState(false)
   const [editingField, setEditingField] = useState<CustomField | null>(null)
+  const selectedInstitution = useSelector(selectSelectedInstitution);
+
 
   const handleAddField = (fieldData: AddFieldFormData) => {
     const newField: CustomField = {
@@ -77,8 +81,9 @@ export default function AddProductPage() {
   }
 
   const handleSubmit = async () => {
+    if(!selectedInstitution){return}
     await institutionAPI.createProduct({
-      institutionId: 1,
+      institutionId: selectedInstitution.id,
       name: productName,
       description: productDescription,
       feedbackFields: customFields.map((field) => ({
@@ -93,10 +98,10 @@ export default function AddProductPage() {
 
   return (
     <div className="min-h-screen bg-white p-6">
-      <div className="max-w-4xl mx-auto">
+      <div className="w-full mx-auto">
         {/* Header */}
         <div className="flex items-center space-x-4 mb-8">
-          <Button variant="ghost" size="sm" onClick={() => router.back()} className="h-8 w-8 p-0">
+          <Button variant="ghost" size="sm" onClick={() => router.back()} className="h-8 w-8 p-0 !rounded-full">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <h1 className="text-2xl font-semibold">Add Product</h1>
@@ -133,7 +138,17 @@ export default function AddProductPage() {
 
         {/* Custom Fields Section */}
         <div className="mb-8">
-          <h2 className="text-lg font-medium mb-4">Feedback Fields</h2>
+          <div className="flex items-center justify-start gap-6 mb-4">
+          <h2 className="text-lg font-medium">Feedback Fields</h2>
+          <Button
+            onClick={() => setIsAddFieldDialogOpen(true)}
+            variant={"outline"}
+            size={"sm"}
+            className=" text-black  !bg-gray-50 shadow-sm shadow-black/40"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+          </div>
 
           <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4 items-start place-items-start place-content-start">
             {customFields.map((field) => (
@@ -147,14 +162,7 @@ export default function AddProductPage() {
             ))}
           </div>
 
-          <Button
-            onClick={() => setIsAddFieldDialogOpen(true)}
-            size={"lg"}
-            className="w-full mt-4 max-w-[50%] bg-gray-800 hover:bg-gray-900 text-white !rounded-xl py-3"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Field
-          </Button>
+          
         </div>
 
         {/* Submit Button */}

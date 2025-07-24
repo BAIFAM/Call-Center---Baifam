@@ -1,18 +1,83 @@
 from django.urls import path
-from .views import CallDetailAPIView, CallGroupContactDetailView, CallGroupContactListCreateView, CallGroupListCreateView, CallGroupDetailView, CallGroupUserDetailView, CallGroupUserListCreateView, CallListCreateAPIView, ContactBulkUploadView, ContactDetailView, ContactListCreateView, ContactTemplateDownloadView
+from .views import (
+    CallDetailAPIView,
+    CallGroupContactDetailView,
+    CallGroupContactListCreateView,
+    CallGroupListCreateView,
+    CallGroupDetailView,
+    CallGroupUserDetailView,
+    CallGroupUserListCreateView,
+    CallListCreateAPIView,
+    ContactBulkUploadView,
+    ContactDetailView,
+    ContactListCreateView,
+    ContactTemplateDownloadView,
+    ContactsByCallGroupContactListCreateView,
+    UserCallGroupsListView,
+    ContactCallsListView)
 
 urlpatterns = [
-    path("groups/<int:institution_id>/", CallGroupListCreateView.as_view(), name="callgroup-list-create"),
-    path("groups/detail/<uuid:uuid>/", CallGroupDetailView.as_view(), name="callgroup-detail"),
-    path("group-users/<int:institution_id>/", CallGroupUserListCreateView.as_view(), name="callgroupuser-list-create"),
-    path("group-users/detail/<uuid:uuid>/", CallGroupUserDetailView.as_view(), name="callgroupuser-detail"),
-    path("contacts/institution/<int:institution_id>/", ContactListCreateView.as_view(), name="contact-list-create"),
-    path('contacts/<uuid:product_uuid>/template/', ContactTemplateDownloadView.as_view(), name='contact-template-download'),
-    path("contacts/detail/<uuid:uuid>/", ContactDetailView.as_view(), name="contact-detail"),
-    path('contacts/<uuid:product_uuid>/bulk-upload/', ContactBulkUploadView.as_view(), name='contact-bulk-upload'),
-    path("group-contacts/<int:institution_id>/", CallGroupContactListCreateView.as_view(), name="callgroupcontact-list-create"),
-    path("group-contacts/detail/<uuid:uuid>/", CallGroupContactDetailView.as_view(), name="callgroupcontact-detail"),
-    path("institution/<int:institution_id>/", CallListCreateAPIView.as_view(), name="call-list-create"),
+    path(
+        "groups/<int:institution_id>/",
+        CallGroupListCreateView.as_view(),
+        name="callgroup-list-create",
+    ),
+    path(
+        "groups/my-groups/<int:institution_id>/",
+        UserCallGroupsListView.as_view(),
+        name="user-call-groups-list",
+    ),
+    path(
+        "groups/detail/<uuid:uuid>/",
+        CallGroupDetailView.as_view(),
+        name="callgroup-detail",
+    ),
+    path("groups/contacts/<uuid:call_group_uuid>/", ContactsByCallGroupContactListCreateView.as_view(), name="call-group-contacts"),
+    path(
+        "group-users/<int:institution_id>/",
+        CallGroupUserListCreateView.as_view(),
+        name="callgroupuser-list-create",
+    ),
+    path(
+        "group-users/detail/<uuid:uuid>/",
+        CallGroupUserDetailView.as_view(),
+        name="callgroupuser-detail",
+    ),
+    path(
+        "contacts/institution/<int:institution_id>/",
+        ContactListCreateView.as_view(),
+        name="contact-list-create",
+    ),
+    path(
+        "contacts/<uuid:product_uuid>/template/",
+        ContactTemplateDownloadView.as_view(),
+        name="contact-template-download",
+    ),
+    path(
+        "contacts/detail/<uuid:uuid>/",
+        ContactDetailView.as_view(),
+        name="contact-detail",
+    ),
+    path(
+        "contacts/<uuid:product_uuid>/bulk-upload/",
+        ContactBulkUploadView.as_view(),
+        name="contact-bulk-upload",
+    ),
+    path(
+        "group-contacts/<int:institution_id>/",
+        CallGroupContactListCreateView.as_view(),
+        name="callgroupcontact-list-create",
+    ),
+    path(
+        "group-contacts/detail/<uuid:uuid>/",
+        CallGroupContactDetailView.as_view(),
+        name="callgroupcontact-detail",
+    ),
+    path(
+        "institution/<int:institution_id>/",
+        CallListCreateAPIView.as_view(),
+        name="call-list-create",
+    ),
     path("detail/<uuid:uuid>/", CallDetailAPIView.as_view(), name="call-detail"),
-
+    path("contact-calls/<uuid:contact_uuid>/", ContactCallsListView.as_view(), name="contact-calls"),
 ]

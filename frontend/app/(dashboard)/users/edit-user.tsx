@@ -1,6 +1,6 @@
 "use client";
 
-import type {Role, UserProfile} from "@/app/types/api.types";
+import type {Role, IUserProfile} from "@/app/types/api.types";
 
 import {useState, useEffect} from "react";
 import {Pencil} from "lucide-react";
@@ -22,7 +22,7 @@ import apiRequest, {apiPost} from "@/lib/apiRequest";
 import {getDefaultInstitutionId} from "@/lib/helpers";
 
 interface EditUserFormProps {
-  user: UserProfile;
+  user: IUserProfile;
 }
 
 export function EditUserForm({user}: EditUserFormProps) {

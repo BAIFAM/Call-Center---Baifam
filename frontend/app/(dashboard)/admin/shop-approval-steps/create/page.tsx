@@ -1,6 +1,6 @@
 "use client";
 import type React from "react";
-import type {IPaginatedResponse, IResponse, Role, UserProfile, WorkflowAction} from "@/app/types/api.types";
+import type {IPaginatedResponse, IResponse, Role, IUserProfile, WorkflowAction} from "@/app/types/api.types";
 
 import {useRouter} from "next/navigation";
 import {useEffect, useState} from "react";
@@ -21,6 +21,7 @@ import {fetchInstitutionRoles, getDefaultInstitutionId} from "@/lib/helpers";
 import ProtectedPage from "@/components/common/ProtectedPage";
 import {PERMISSION_CODES} from "@/app/types/types.utils";
 import {handleApiError} from "@/lib/apiErrorHandler";
+import { ArrowLeft } from "lucide-react";
 
 export default function CreateApprovalStep() {
   const [stepName, setStepName] = useState("");
@@ -29,7 +30,7 @@ export default function CreateApprovalStep() {
   const [actionId, setActionId] = useState<number | null>(null);
   // const [level, setLevel] = useState("");
   const [roles, setRoles] = useState<Role[]>([]);
-  const [userProfiles, setUserProfiles] = useState<UserProfile[]>([]);
+  const [userProfiles, setUserProfiles] = useState<IUserProfile[]>([]);
   const [actions, setActions] = useState<WorkflowAction[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -125,8 +126,8 @@ export default function CreateApprovalStep() {
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={() => router.push("/admin")}>
-              Back to Admin
+            <Button size="sm" variant="outline" className="!rounded-full" onClick={() => router.push("/admin")}>
+              <ArrowLeft/>
             </Button>
             <h1 className="text-2xl font-bold tracking-tight">Create Approval Step</h1>
           </div>

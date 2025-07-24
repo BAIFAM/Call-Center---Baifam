@@ -6,9 +6,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 interface DialogSkeletonProps {
   isOpen: boolean
-  onClose: () => void
+  onClose: () => void,
   title: string
-  children: React.ReactNode
+  children: React.ReactNode,
+  className?:string,
   onConfirm: () => void
   onCancel?: () => void
   confirmText?: string
@@ -21,11 +22,13 @@ export function DialogSkeleton({
   onClose,
   title,
   children,
+  className = "",
   onConfirm,
   onCancel,
   confirmText = "Confirm",
   cancelText = "Cancel",
   confirmDisabled = false,
+  
 }: DialogSkeletonProps) {
   const handleCancel = () => {
     if (onCancel) {
@@ -41,7 +44,7 @@ export function DialogSkeleton({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className={`sm:max-w-lg ${className}`}>
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <DialogTitle className="text-lg font-semibold">{title}</DialogTitle>
         </DialogHeader>

@@ -260,6 +260,7 @@ export default function BranchDetailPage() {
           <Button className="mt-2" onClick={() => router.push("/branches")}>
             Back to Branches
           </Button>
+          
         </div>
       </div>
     );

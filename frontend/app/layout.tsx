@@ -1,19 +1,19 @@
 import type React from "react";
-import type {Metadata} from "next";
+import type { Metadata } from "next";
 
-import {Inter} from "next/font/google";
+import { Inter } from "next/font/google";
 
 import "@/styles/globals.css";
-import {Toaster} from "sonner";
+import { Toaster } from "sonner";
 
-import {Providers} from "./providers";
+import { Providers } from "./providers";
 
-import {ThemeProvider} from "@/components/common/theme-provider";
+import { ThemeProvider } from "@/components/common/theme-provider";
 import AppLoaderWrapper from "@/components/common/app-loader-wrapper";
-import {WebSocketProvider} from "@/lib/WebSocketProvider";
-import {cn} from "@/lib/utils";
+import { WebSocketProvider } from "@/lib/WebSocketProvider";
+import { cn } from "@/lib/utils";
 
-const inter = Inter({subsets: ["latin"]});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: process.env.APPLICATION_NAME || "APPLICATION NAME",
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   generator: "v0.dev",
 };
 
-export default function RootLayout({children}: {children: React.ReactNode}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html suppressHydrationWarning lang="en">
       <body
@@ -35,7 +35,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
           defaultTheme="light"
         >
           <Providers>
-            <AppLoaderWrapper />
+            {/* <AppLoaderWrapper /> */}
             <WebSocketProvider>{children}</WebSocketProvider>
             <Toaster />
           </Providers>

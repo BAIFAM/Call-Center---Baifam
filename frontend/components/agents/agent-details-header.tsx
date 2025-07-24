@@ -1,10 +1,15 @@
 "use client"
 
+import { IAgent } from "@/app/types/api.types"
 import { Button } from "@/components/ui/button"
 import { Icon } from "@iconify/react"
 import { useRouter } from "next/navigation"
 
-export function AgentDetailsHeader() {
+interface AgentDetailsHeaderProps  {
+  agent:IAgent|null
+}
+
+export function AgentDetailsHeader({agent}:AgentDetailsHeaderProps) {
 
   const router = useRouter()
 

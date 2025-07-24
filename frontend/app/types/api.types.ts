@@ -69,7 +69,7 @@ export interface ITask {
   content_object: string;
   updated_at: string;
   comment: string;
-  approved_by: UserProfile | null;
+  approved_by: IUserProfile | null;
 }
 
 export interface IApprovalProductDetails extends Product {
@@ -114,7 +114,7 @@ export interface Branch {
 }
 
 export interface IUser {
-  id?: number;
+  id: number;
   fullname: string;
   email: string;
   is_active?: boolean;
@@ -130,7 +130,7 @@ export interface ICustomerProfile {
   created_at: string;
 }
 
-export interface UserProfile {
+export interface IUserProfile {
   id: number;
   user: IUser;
   institution: number;
@@ -170,7 +170,7 @@ export interface SalesTransaction {
   id: number;
   transaction_code: string;
   transaction_date: string;
-  cashier_details: UserProfile;
+  cashier_details: IUserProfile;
   branch_details: Branch;
   payment_method?: "CARD" | "MOBILE_MONEY" | "CASH";
   payment_source?: "POS" | "ONLINE_MARKETPLACE";
@@ -204,7 +204,7 @@ export interface StoredColorData {
 
 export type ApprovalStepApprover = {
   id: number;
-  approver_user: UserProfile;
+  approver_user: IUserProfile;
 };
 
 export type ApprovalStep = {
@@ -269,7 +269,7 @@ export interface IResponse<T> {
 export interface ICall {
   uuid: string;
   contact: IContact;
-  feedback: string;
+  feedback: string | any;
   status: "failed" | "completed" | "busy";
   made_on: string;
   made_by: IUser
@@ -291,6 +291,7 @@ export interface IContact {
   country: string;
   country_code: string;
   status: IContactStatus;
+  call_group?: string | null
 }
 
 export interface IContactFormData {
@@ -301,34 +302,30 @@ export interface IContactFormData {
   status: IContactStatus;
   product: string;
   email: string;
-  notes?  : string;
+  notes?: string;
 }
 
-export interface ICallGroup {
-  institution: IUserInstitution
-  name: string;
-}
 
 export interface ICallGroupUserFormData {
-  uuid: string;
   user: number;
-  call_group: number; 
+  call_group: string;
   created_at?: string;
   updated_at?: string;
-  status?: string;
+  status?: "active" | "disabled";
 }
 
-export interface ICallGroupUser {
+export interface IAgent {
   uuid: string;
   user: IUser;
-  call_group: ICallGroup; 
+  call_group?: ICallGroup;
+  status: "active" | "disabled"
   created_at?: string;
   updated_at?: string;
 }
 
 export interface IClientCompany {
   uuid: string;
-  institution: number;
+  institution: IUserInstitution;
   company_name: string;
   contact_email: string;
   contact_phone: string;
@@ -341,22 +338,25 @@ export interface IClientCompany {
   created_by: number;
 }
 
+export interface IClientCompanyFormData {
+  institution: number
+  company_name: string
+  contact_email: string
+  contact_phone: string
+  callback_url: string
+  api_key: string
+}
+
 
 export interface ICallCenterProduct {
   uuid: string;
-  institution: number;
+  institution: IUserInstitution;
   name: string;
   descriptions: string;
   status: "active" | "inactive";
   feedback_fields: Omit<CustomField, 'id'>[];
 }
 
-// name: string;
-//             type: FieldType;
-//             min_length?: number;
-//             max_length?: number;
-//             options?: string[];
-//             is_required: boolean;
 
 export interface IFeedbackFieldFormData {
   name: string;
@@ -375,6 +375,40 @@ export interface ICallGroup {
   institution: IUserInstitution;
   created_at: string;
   updated_at: string;
+}
+
+export type ICallGroupContactStatus = "attended_to" | "not_attended" | "follow_up"|"new"|"assigned"|"exported"|"ready_to_export"
+
+export interface ICallGroupContact {
+  uuid: string
+  call_group: ICallGroup,
+  contact: IContact,
+  status: ICallGroupContactStatus
+}
+
+export interface ICallGroupContactFormData {
+  call_group: string,
+  contact: string,
+  status: ICallGroupContactStatus
+}
+
+export interface IUserInstitution {
+  id: number;
+  institution_email: string;
+  institution_owner_id: number;
+  institution_name: string;
+  institution_logo: string | null;
+  theme_color: null | string;
+  branches?: Branch[];
+  first_phone_number: string;
+  second_phone_number: string;
+  approval_date: string | null,
+  approval_status: "pending" | "approved" | "rejected" | "under_review",
+  approval_status_display: "Pending Approval" | "Approved" | "Rejected" | "Under Review",
+  documents: string[],
+  latitude: number,
+  logitude: number,
+  location: string
 }
 
 export interface ICallGroupFormData {

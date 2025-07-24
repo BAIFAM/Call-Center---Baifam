@@ -1,9 +1,9 @@
-import axios, { InternalAxiosRequestConfig } from "axios";
+import axios, {AxiosError, AxiosResponse, InternalAxiosRequestConfig} from "axios";
 
-import { CustomApiRequestError } from "@/app/types/types.utils";
-import { store } from "@/store";
-import { logoutStart, setAccessToken, setRefreshToken } from "@/store/auth/actions";
-import { LoginResponse } from "@/utils/authUtils";
+import {CustomApiRequestError} from "@/app/types/types.utils";
+import {store} from "@/store";
+import {logoutStart, setAccessToken, setRefreshToken} from "@/store/auth/actions";
+import {LoginResponse} from "@/utils/authUtils";
 
 const axiosJsonInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api",
@@ -51,30 +51,39 @@ function addSubscriber(callback: Subscriber) {
 
 axiosJsonInstance.interceptors.response.use(
   (response) => response,
-  async (error: any) => {
-    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+  async (error) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & {_retry?: boolean};
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       const refreshToken = store.getState().auth.refreshToken;
 
-      if (!refreshToken || originalRequest.url?.endsWith("/user/token/refresh")) {
+      if (!refreshToken || originalRequest.url?.endsWith("/user/token/refresh") || originalRequest.url?.endsWith("/user/login/")) {
         if (typeof window !== "undefined") {
           store.dispatch(logoutStart());
+        }
+        if (originalRequest.url?.endsWith("user/login/")) {
+          return Promise.reject(
+            (error.response as AxiosResponse<{detail: string; custom_code: string}>).data,
+          );
         }
 
         return Promise.reject(error);
       }
 
       if (isRefreshing) {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
           addSubscriber((token: string) => {
-            if (!originalRequest.headers) {
-              originalRequest.headers = new axios.AxiosHeaders();
+            try {
+              if (!originalRequest.headers) {
+                originalRequest.headers = new axios.AxiosHeaders();
+              }
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+              resolve(axiosJsonInstance(originalRequest));
+            } catch (error) {
+              reject(error);
             }
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-            resolve(axiosJsonInstance(originalRequest));
           });
         });
       }
@@ -82,7 +91,7 @@ axiosJsonInstance.interceptors.response.use(
       try {
         const response = await axios.post(
           `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api"}/user/token/refresh/`,
-          { refresh: refreshToken },
+          {refresh: refreshToken},
           {
             headers: {
               "Content-Type": "application/json",
@@ -90,7 +99,7 @@ axiosJsonInstance.interceptors.response.use(
           },
         );
 
-        const { access, refresh } = (response.data as LoginResponse).tokens;
+        const {access, refresh} = (response.data as LoginResponse).tokens;
 
         store.dispatch(setAccessToken(access));
         store.dispatch(setRefreshToken(refresh));
@@ -101,7 +110,6 @@ axiosJsonInstance.interceptors.response.use(
 
         return axiosJsonInstance(originalRequest);
       } catch (err) {
-        // console.log("\n\nError on request : ", err);
         store.dispatch(logoutStart());
 
         return Promise.reject(err);
@@ -147,7 +155,6 @@ export const apiRequest = async (
       custom_code: response.data?.custom_code || null,
     };
 
-    // console.log("\nThrowing apiRequest error", err)
     throw err;
   }
 };

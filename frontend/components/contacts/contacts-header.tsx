@@ -2,52 +2,44 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Icon } from "@iconify/react"
-import type { IContact, ICallCenterProduct } from "@/app/types/api.types"
+import type { ICallCenterProduct, IContact } from "@/app/types/api.types"
 import { CreateContactDialog } from "@/components/contacts/create-contact-dialog"
 import { BulkUploadDialog } from "@/components/contacts/bulk-upload-dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { AssignContactDialog } from "@/components/contacts/assign-contact-dialog"
+
 
 interface ContactsHeaderProps {
-  contacts: IContact[]
-  onFilteredContactsChange: (filteredContacts: IContact[]) => void
   selectedContactIds: string[]
   onRefreshContacts: () => void
   products: ICallCenterProduct[]
+  contacts?: IContact[] // Add this prop to get contact details
 }
 
-export function ContactsHeader({
-  contacts,
-  onFilteredContactsChange,
-  selectedContactIds,
-  onRefreshContacts,
-  products,
-}: ContactsHeaderProps) {
-  const [searchTerm, setSearchTerm] = useState("")
+export function ContactsHeader({ selectedContactIds, onRefreshContacts, products, contacts = [] }: ContactsHeaderProps) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false)
+  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const handleSearch = (value: string) => {
-    setSearchTerm(value)
-    if (!value.trim()) {
-      onFilteredContactsChange(contacts)
-      return
-    }
-
-    const filtered = contacts.filter(
-      (contact) =>
-        contact.name.toLowerCase().includes(value.toLowerCase()) ||
-        contact.phone_number.includes(value) ||
-        contact.product.name.toLowerCase().includes(value.toLowerCase()),
-    )
-    onFilteredContactsChange(filtered)
-  }
+  const selectedContact = contacts.find(c => c.uuid === selectedContactIds[0])
 
   const handleBulkUploadSuccess = () => {
     onRefreshContacts()
     setIsBulkUploadDialogOpen(false)
   }
+
+  const handleRefresh = () =>{
+    setIsRefreshing(true);
+    setTimeout(()=>{
+      onRefreshContacts();
+      setIsRefreshing(false)
+    }, 2000)
+  }
+
+  const canAssign = selectedContact && !selectedContact.call_group
+  const canReassign = selectedContact && !!selectedContact.call_group
 
   return (
     <>
@@ -63,24 +55,31 @@ export function ContactsHeader({
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Search */}
-          <div className="relative">
-            <Icon
-              icon="hugeicons:search-01"
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4"
-            />
-            <Input
-              placeholder="Search contacts..."
-              value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="pl-10 w-64"
-            />
-          </div>
-
           {/* Refresh */}
-          <Button variant="outline" size="sm" onClick={onRefreshContacts}>
-            <Icon icon="hugeicons:refresh" className="w-4 h-4" />
+          <Button disabled={isRefreshing} variant="outline" size="sm" onClick={handleRefresh}>
+            <Icon icon="hugeicons:refresh" className={` w-4 h-4 ${isRefreshing ? "!animate-spin":""}`} />
           </Button>
+
+          {selectedContactIds.length === 1 && (
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                className="rounded-xl bg-transparent"
+                disabled={!canReassign}
+                onClick={() => setIsAssignDialogOpen(true)}
+              >
+                Re-Assign
+              </Button>
+              <Button
+                variant="outline"
+                className="rounded-xl bg-transparent"
+                disabled={!canAssign}
+                onClick={() => setIsAssignDialogOpen(true)}
+              >
+                Assign
+              </Button>
+            </div>
+          )}
 
           {/* Add Contact Dropdown */}
           <DropdownMenu>
@@ -120,6 +119,16 @@ export function ContactsHeader({
         products={products}
         onUploadSuccess={handleBulkUploadSuccess}
       />
+
+      {/* Assign/Re-Assign Dialog */}
+      {selectedContact && (
+        <AssignContactDialog
+          open={isAssignDialogOpen}
+          onOpenChange={setIsAssignDialogOpen}
+          contact={selectedContact}
+          onAssigned={onRefreshContacts}
+        />
+      )}
     </>
   )
 }

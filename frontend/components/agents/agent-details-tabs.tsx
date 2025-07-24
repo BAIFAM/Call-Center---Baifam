@@ -259,7 +259,7 @@ export function AgentDetailsTabs({ activeTab, onTabChange, callHistory, assigned
         )}
 
         {/* Pagination */}
-        <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+        {/* <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
           <p className="text-sm text-gray-500">Showing 1-7 of 70</p>
           <div className="flex items-center space-x-2">
             <Button variant="ghost" size="sm" className="p-2">
@@ -286,7 +286,7 @@ export function AgentDetailsTabs({ activeTab, onTabChange, callHistory, assigned
               <Icon icon="hugeicons:arrow-right-01" className="w-4 h-4" />
             </Button>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   )
