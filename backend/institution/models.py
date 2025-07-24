@@ -1,6 +1,8 @@
 from django.db import models
 from datetime import time
 import uuid
+import secrets
+import string
 
 class Institution(models.Model):
     APPROVAL_STATUS_CHOICES = [
@@ -198,7 +200,23 @@ class ClientCompany(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     has_system = models.BooleanField(default=False)
     callback_url = models.URLField(max_length=500, blank=True, null=True)
-    api_key = models.CharField(max_length=255, blank=True, null=True)
+    api_key = models.CharField(max_length=255, blank=True, null=True, unique=True)
+
+    def generate_api_key(self):
+        """Generate a secure random API key."""
+        alphabet = string.ascii_letters + string.digits
+        return ''.join(secrets.choice(alphabet) for _ in range(32))  # 32-character key
+
+    def save(self, *args, **kwargs):
+        """Override save method to autogenerate API key if not set."""
+        if not self.api_key:
+            # Ensure the generated API key is unique
+            while True:
+                api_key = self.generate_api_key()
+                if not ClientCompany.objects.filter(api_key=api_key).exists():
+                    self.api_key = api_key
+                    break
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.company_name} - {self.institution.institution_name}"

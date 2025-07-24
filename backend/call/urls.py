@@ -1,16 +1,20 @@
 from django.urls import path
 from .views import (
+    AgentDetailView,
+    AgentListCreateView,
     CallDetailAPIView,
     CallGroupContactDetailView,
     CallGroupContactListCreateView,
     CallGroupListCreateView,
     CallGroupDetailView,
-    CallGroupUserDetailView,
-    CallGroupUserListCreateView,
+    CallGroupAgentDetailView,
+    CallGroupAgentListCreateView,
     CallListCreateAPIView,
     ContactBulkUploadView,
     ContactDetailView,
     ContactListCreateView,
+    ContactProductDetailView,
+    ContactProductListCreateView,
     ContactTemplateDownloadView,
     ContactsByCallGroupContactListCreateView,
     UserCallGroupsListView,
@@ -35,13 +39,13 @@ urlpatterns = [
     path("groups/contacts/<uuid:call_group_uuid>/", ContactsByCallGroupContactListCreateView.as_view(), name="call-group-contacts"),
     path(
         "group-users/<int:institution_id>/",
-        CallGroupUserListCreateView.as_view(),
-        name="callgroupuser-list-create",
+        CallGroupAgentListCreateView.as_view(),
+        name="CallGroupAgent-list-create",
     ),
     path(
         "group-users/detail/<uuid:uuid>/",
-        CallGroupUserDetailView.as_view(),
-        name="callgroupuser-detail",
+        CallGroupAgentDetailView.as_view(),
+        name="CallGroupAgent-detail",
     ),
     path(
         "contacts/institution/<int:institution_id>/",
@@ -80,4 +84,9 @@ urlpatterns = [
     ),
     path("detail/<uuid:uuid>/", CallDetailAPIView.as_view(), name="call-detail"),
     path("contact-calls/<uuid:contact_uuid>/", ContactCallsListView.as_view(), name="contact-calls"),
+    path('institutions/<int:institution_id>/contact-products/', ContactProductListCreateView.as_view(), name='contact-product-list-create'),
+    path('contact-products/<int:id>/', ContactProductDetailView.as_view(), name='contact-product-detail'),
+    path('institutions/<int:institution_id>/agents/', AgentListCreateView.as_view(), name='agent-list-create'),
+    path('agents/<int:id>/', AgentDetailView.as_view(), name='agent-detail'),
 ]
+

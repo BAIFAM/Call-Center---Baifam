@@ -703,7 +703,7 @@ export const clientCompaniesAPI = {
 
   create: async ({ institutionId, companyData }: { institutionId: number; companyData: IClientCompanyFormData }) => {
     try {
-      const response = await apiRequest.post(`institution/client-companies/detail/${institutionId}/`, companyData)
+      const response = await apiRequest.post(`institution/client-companies/${institutionId}/`, companyData)
       return response.data as IClientCompany
     } catch (error) {
       console.error("Error creating client company:", error)
