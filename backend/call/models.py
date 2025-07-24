@@ -66,13 +66,16 @@ class Contact(models.Model):
         max_length=20,
         choices=[
             ('new', 'New'),
-            ('verified', 'Verified'),
-            ('called', 'Called'),
+            ('assigned', 'Assigned'),
+            ('attended_to', 'Attended To'),
             ('archived', 'Archived'),
             ('flagged', 'Flagged'),
+            ('ready_to_export', 'Ready To Export'),
+            ('exported', 'Exported'),
         ],
         default='new'
     )
+    remarks = models.TextField()
     
     def __str__(self):
         return f"{self.name} - {self.phone_number} ({self.product.name})"
