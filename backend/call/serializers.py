@@ -181,7 +181,7 @@ class BulkContactSerializer(serializers.ModelSerializer):
 
 class CallGroupContactSerializer(serializers.ModelSerializer):
     call_group = serializers.PrimaryKeyRelatedField(queryset=CallGroup.objects.all())
-    contact = serializers.PrimaryKeyRelatedField(queryset=Contact.objects.all())
+    contact = serializers.PrimaryKeyRelatedField(queryset=ContactProduct.objects.all())
 
     class Meta:
         model = CallGroupContact
@@ -191,7 +191,7 @@ class CallGroupContactSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["call_group"] = CallGroupSerializer(instance.call_group).data
-        rep["contact"] = ContactSerializer(instance.contact).data
+        rep["contact"] = ContactProductSerializer(instance.contact).data
         return rep
 
 

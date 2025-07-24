@@ -148,7 +148,7 @@ class CallGroupContact(models.Model):
         unique_together = ('call_group', 'contact')
     
     def __str__(self):
-        return f"{self.contact.name} in {self.call_group.name}"
+        return f"{self.contact.contact.name} in {self.call_group.name}"
     
     
 class Call(models.Model):
