@@ -57,15 +57,15 @@ class CallGroupAgentSerializer(serializers.ModelSerializer):
         return rep
     
 
-
 class ContactSerializer(serializers.ModelSerializer):
     product = serializers.UUIDField(write_only=True, required=False, allow_null=True)
     institution = serializers.PrimaryKeyRelatedField(queryset=Institution.objects.all(), required=True)
+    call_count = serializers.IntegerField(read_only=True)  # Add call_count field
 
     class Meta:
         model = Contact
-        fields = ['uuid', 'name', 'phone_number', 'country', 'country_code', 'status', 'remarks', 'product', 'institution']
-        read_only_fields = ['uuid']
+        fields = ['uuid', 'name', 'phone_number', 'country', 'country_code', 'status', 'remarks', 'product', 'institution', 'call_count']
+        read_only_fields = ['uuid', 'call_count']
 
     def validate_product(self, value):
         if value:

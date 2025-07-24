@@ -60,7 +60,7 @@ class CallGroupAgent(models.Model):
         unique_together = ('call_group', 'agent')
     
     def __str__(self):
-        return f"{self.user.fullname} in {self.call_group.name}"    
+        return f"{self.agent.user.user.fullname} in {self.call_group.name}"    
 
 class Contact(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -87,6 +87,11 @@ class Contact(models.Model):
         default='new'
     )
     remarks = models.TextField(null=True, blank=True)
+
+    @property
+    def call_count(self):
+        """Returns the total number of calls made to this contact."""
+        return self.calls.count()
 
     def __str__(self):
         return f"{self.name} - {self.phone_number}"
@@ -182,7 +187,7 @@ class Call(models.Model):
     made_on = models.DateTimeField(default=timezone.now)
     
     def __str__(self):
-        return f"Call to {self.contact.name} - {self.status} (self.made_by.fullname)"
+        return f"Call to {self.contact.name} - {self.status} by {self.made_by.agent.user.user.fullname}"
     
     
 
