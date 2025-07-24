@@ -4,9 +4,11 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 from django.shortcuts import get_object_or_404
-from .models import CallGroup, CallGroupContact, CallGroupUser, Contact, Call
+
+from users.models import Profile
+from .models import Agent, CallGroup, CallGroupContact, CallGroupAgent, Contact, Call, ContactProduct
 from institution.models import Institution, Product
-from .serializers import CallGroupContactSerializer, CallGroupSerializer, CallGroupUserSerializer, CallSerializer, ContactSerializer
+from .serializers import AgentSerializer, CallGroupContactSerializer, CallGroupSerializer, CallGroupAgentSerializer, CallSerializer, ContactProductSerializer, ContactSerializer
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 import pandas as pd
 from django.http import HttpResponse
@@ -84,26 +86,26 @@ class CallGroupDetailView(APIView):
         group.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
-@extend_schema(tags=["CallGroupUser"])
-class CallGroupUserListCreateView(APIView):
+@extend_schema(tags=["CallGroupAgent"])
+class CallGroupAgentListCreateView(APIView):
 
     @extend_schema(
         summary="List users assigned to call groups of a specific institution",
         parameters=[
             OpenApiParameter(name="institution_id", required=True, type=int, location=OpenApiParameter.PATH),
         ],
-        responses={200: CallGroupUserSerializer(many=True)}
+        responses={200: CallGroupAgentSerializer(many=True)}
     )
     def get(self, request, institution_id):
         institution = get_object_or_404(Institution, id=institution_id)
-        users = CallGroupUser.objects.filter(call_group__institution=institution)
-        serializer = CallGroupUserSerializer(users, many=True)
+        users = CallGroupAgent.objects.filter(call_group__institution=institution)
+        serializer = CallGroupAgentSerializer(users, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(
         summary="Assign a user to a call group (within specified institution)",
-        request=CallGroupUserSerializer,
-        responses={201: CallGroupUserSerializer}
+        request=CallGroupAgentSerializer,
+        responses={201: CallGroupAgentSerializer}
     )
     def post(self, request, institution_id):
         institution = get_object_or_404(Institution, id=institution_id)
@@ -112,43 +114,43 @@ class CallGroupUserListCreateView(APIView):
         call_group_uuid = data.get('call_group')
         call_group = get_object_or_404(CallGroup, uuid=call_group_uuid, institution=institution)
 
-        serializer = CallGroupUserSerializer(data=data)
+        serializer = CallGroupAgentSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@extend_schema(tags=["CallGroupUser"])
-class CallGroupUserDetailView(APIView):
+@extend_schema(tags=["CallGroupAgent"])
+class CallGroupAgentDetailView(APIView):
 
     def get_object(self, uuid):
-        return get_object_or_404(CallGroupUser, uuid=uuid)
+        return get_object_or_404(CallGroupAgent, uuid=uuid)
 
     @extend_schema(
-        summary="Retrieve a CallGroupUser by UUID",
-        responses={200: CallGroupUserSerializer}
+        summary="Retrieve a CallGroupAgent by UUID",
+        responses={200: CallGroupAgentSerializer}
     )
     def get(self, request, uuid):
         item = self.get_object(uuid)
-        serializer = CallGroupUserSerializer(item)
+        serializer = CallGroupAgentSerializer(item)
         return Response(serializer.data)
 
     @extend_schema(
-        summary="Partially update a CallGroupUser by UUID",
-        request=CallGroupUserSerializer,
-        responses={200: CallGroupUserSerializer}
+        summary="Partially update a CallGroupAgent by UUID",
+        request=CallGroupAgentSerializer,
+        responses={200: CallGroupAgentSerializer}
     )
     def patch(self, request, uuid):
         item = self.get_object(uuid)
-        serializer = CallGroupUserSerializer(item, data=request.data, partial=True)
+        serializer = CallGroupAgentSerializer(item, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
-        summary="Delete a CallGroupUser by UUID",
+        summary="Delete a CallGroupAgent by UUID",
         responses={204: OpenApiResponse(description="Deleted successfully")}
     )
     def delete(self, request, uuid):
@@ -172,9 +174,9 @@ class UserCallGroupsListView(APIView):
 
 @extend_schema(tags=["Contact"])
 class ContactListCreateView(APIView):
-    # Keep existing GET and POST methods unchanged
+
     @extend_schema(
-        summary="List contacts for products under a specific institution",
+        summary="List Contacts for a specific institution",
         parameters=[
             OpenApiParameter(name="institution_id", required=True, type=int, location=OpenApiParameter.PATH),
         ],
@@ -182,23 +184,21 @@ class ContactListCreateView(APIView):
     )
     def get(self, request, institution_id):
         institution = get_object_or_404(Institution, id=institution_id)
-        contacts = Contact.objects.filter(product__institution=institution)
+        contacts = Contact.objects.filter(institution=institution).prefetch_related('contact_products__product__institution')
         serializer = ContactSerializer(contacts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(
-        summary="Create a new contact for a product under an institution",
+        summary="Create a Contact (within specified institution)",
         request=ContactSerializer,
         responses={201: ContactSerializer}
     )
     def post(self, request, institution_id):
         institution = get_object_or_404(Institution, id=institution_id)
         data = request.data.copy()
+        data['institution'] = institution.id
 
-        product_uuid = data.get("product")
-        product = get_object_or_404(Product, uuid=product_uuid, institution=institution)
-
-        serializer = ContactSerializer(data=data)
+        serializer = ContactSerializer(data=data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -489,34 +489,37 @@ class ContactDetailView(APIView):
         return get_object_or_404(Contact, uuid=uuid)
 
     @extend_schema(
-        summary="Retrieve a contact by UUID",
+        summary="Retrieve a Contact by UUID",
+        parameters=[
+            OpenApiParameter(name="uuid", required=True, type=str, location=OpenApiParameter.PATH),
+        ],
         responses={200: ContactSerializer}
     )
     def get(self, request, uuid):
-        contact = self.get_object(uuid)
-        serializer = ContactSerializer(contact)
+        item = self.get_object(uuid)
+        serializer = ContactSerializer(item)
         return Response(serializer.data)
 
     @extend_schema(
-        summary="Partially update a contact by UUID",
+        summary="Partially update a Contact by UUID",
         request=ContactSerializer,
         responses={200: ContactSerializer}
     )
     def patch(self, request, uuid):
-        contact = self.get_object(uuid)
-        serializer = ContactSerializer(contact, data=request.data, partial=True)
+        item = self.get_object(uuid)
+        serializer = ContactSerializer(item, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
-        summary="Delete a contact by UUID",
+        summary="Delete a Contact by UUID",
         responses={204: OpenApiResponse(description="Deleted successfully")}
     )
     def delete(self, request, uuid):
-        contact = self.get_object(uuid)
-        contact.delete()
+        item = self.get_object(uuid)
+        item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -718,4 +721,154 @@ class CallDetailAPIView(APIView):
         call = self.get_object(uuid)
         call.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
+
+@extend_schema(tags=["ContactProduct"])
+class ContactProductListCreateView(APIView):
+
+    @extend_schema(
+        summary="List ContactProduct associations for a specific institution",
+        parameters=[
+            OpenApiParameter(name="institution_id", required=True, type=int, location=OpenApiParameter.PATH),
+        ],
+        responses={200: ContactProductSerializer(many=True)}
+    )
+    def get(self, request, institution_id):
+        institution = get_object_or_404(Institution, id=institution_id)
+        contact_products = ContactProduct.objects.filter(product__institution=institution).select_related('contact', 'product__institution', 'created_by')
+        serializer = ContactProductSerializer(contact_products, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="Create a ContactProduct association (within specified institution)",
+        request=ContactProductSerializer,
+        responses={201: ContactProductSerializer}
+    )
+    def post(self, request, institution_id):
+        institution = get_object_or_404(Institution, id=institution_id)
+        data = request.data.copy()
+        data['created_by'] = request.user.id if request.user.is_authenticated else None
+
+        contact_id = data.get('contact')
+        product_id = data.get('product')
+        contact = get_object_or_404(Contact, id=contact_id)
+        product = get_object_or_404(Product, id=product_id, institution=institution)
+
+        serializer = ContactProductSerializer(data=data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@extend_schema(tags=["ContactProduct"])
+class ContactProductDetailView(APIView):
+
+    def get_object(self, id):
+        return get_object_or_404(ContactProduct, id=id)
+
+    @extend_schema(
+        summary="Retrieve a ContactProduct by ID",
+        parameters=[
+            OpenApiParameter(name="id", required=True, type=int, location=OpenApiParameter.PATH),
+        ],
+        responses={200: ContactProductSerializer}
+    )
+    def get(self, request, id):
+        item = self.get_object(id)
+        serializer = ContactProductSerializer(item)
+        return Response(serializer.data)
+
+    @extend_schema(
+        summary="Partially update a ContactProduct by ID",
+        request=ContactProductSerializer,
+        responses={200: ContactProductSerializer}
+    )
+    def patch(self, request, id):
+        item = self.get_object(id)
+        serializer = ContactProductSerializer(item, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        summary="Delete a ContactProduct by ID",
+        responses={204: OpenApiResponse(description="Deleted successfully")}
+    )
+    def delete(self, request, id):
+        item = self.get_object(id)
+        item.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+@extend_schema(tags=["Agent"])
+class AgentListCreateView(APIView):
+
+    @extend_schema(
+        summary="List Agents for a specific institution",
+        parameters=[
+            OpenApiParameter(name="institution_id", required=True, type=int, location=OpenApiParameter.PATH),
+        ],
+        responses={200: AgentSerializer(many=True)}
+    )
+    def get(self, request, institution_id):
+        institution = get_object_or_404(Institution, id=institution_id)
+        agents = Agent.objects.filter(user__institution=institution).select_related('user__user', 'user__institution')
+        serializer = AgentSerializer(agents, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="Create an Agent (within specified institution)",
+        request=AgentSerializer,
+        responses={201: AgentSerializer}
+    )
+    def post(self, request, institution_id):
+        institution = get_object_or_404(Institution, id=institution_id)
+        data = request.data.copy()
+
+        user_id = data.get('user')
+        user = get_object_or_404(Profile, id=user_id, institution=institution)
+
+        serializer = AgentSerializer(data=data, context={'request': request, 'view': {'kwargs': {'institution_id': institution_id}}})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@extend_schema(tags=["Agent"])
+class AgentDetailView(APIView):
+
+    def get_object(self, id):
+        return get_object_or_404(Agent, id=id)
+
+    @extend_schema(
+        summary="Retrieve an Agent by ID",
+        parameters=[
+            OpenApiParameter(name="id", required=True, type=int, location=OpenApiParameter.PATH),
+        ],
+        responses={200: AgentSerializer}
+    )
+    def get(self, request, id):
+        item = self.get_object(id)
+        serializer = AgentSerializer(item)
+        return Response(serializer.data)
+
+    @extend_schema(
+        summary="Partially update an Agent by ID",
+        request=AgentSerializer,
+        responses={200: AgentSerializer}
+    )
+    def patch(self, request, id):
+        item = self.get_object(id)
+        serializer = AgentSerializer(item, data=request.data, partial=True, context={'request': request, 'view': {'kwargs': {'institution_id': item.user.institution_id}}})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        summary="Delete an Agent by ID",
+        responses={204: OpenApiResponse(description="Deleted successfully")}
+    )
+    def delete(self, request, id):
+        item = self.get_object(id)
+        item.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)    
