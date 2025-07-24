@@ -8,13 +8,14 @@ from django.shortcuts import get_object_or_404
 from users.models import Profile
 from .models import Agent, CallGroup, CallGroupContact, CallGroupAgent, Contact, Call, ContactProduct
 from institution.models import Institution, Product
-from .serializers import AgentSerializer, CallGroupContactSerializer, CallGroupSerializer, CallGroupAgentSerializer, CallSerializer, ContactProductSerializer, ContactSerializer
+from .serializers import AgentSerializer, BulkContactSerializer, CallGroupContactSerializer, CallGroupSerializer, CallGroupAgentSerializer, CallSerializer, ContactProductSerializer, ContactSerializer
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 import pandas as pd
 from django.http import HttpResponse
 import io
 import uuid as uuid_module
 import logging
+from openpyxl.styles import Font, PatternFill, Alignment
 
 logger = logging.getLogger(__name__)
 @extend_schema(tags=["CallGroup"])
@@ -218,50 +219,46 @@ class ContactTemplateDownloadView(APIView):
         product = get_object_or_404(Product, uuid=product_uuid)
         
         try:
-            print("\n\nTemplate generation started ...")
-            # Create template with empty rows and wider columns
+            # Create template with empty rows
             template_data = {
-                'name': [''] * 10,  # 10 empty rows
+                'name': [''] * 10,
                 'phone_number': [''] * 10,
                 'country': [''] * 10,
                 'country_code': [''] * 10,
+                'status': [''] * 10,
+                'remarks': [''] * 10,
             }
             
             # Create Excel file in memory
             output = io.BytesIO()
-            print("\n\nCreating excel file in memory ...")
             
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
                 # Main template sheet
                 df = pd.DataFrame(template_data)
                 df.to_excel(writer, sheet_name='Contacts', index=False)
                 
-                # Get the workbook and worksheet objects
+                # Get workbook and worksheet
                 workbook = writer.book
                 worksheet = writer.sheets['Contacts']
                 
-                # Set column widths (make them bigger)
+                # Set column widths
                 column_widths = {
                     'A': 25,  # name
                     'B': 20,  # phone_number
                     'C': 15,  # country
                     'D': 15,  # country_code
-                    'E': 12,  # status
+                    'E': 15,  # status
+                    'F': 30,  # remarks
                 }
-
                 
                 for col, width in column_widths.items():
                     worksheet.column_dimensions[col].width = width
-                
-                # Add some formatting to headers
-                from openpyxl.styles import Font, PatternFill, Alignment
                 
                 # Header styling
                 header_font = Font(bold=True, color="FFFFFF")
                 header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
                 center_alignment = Alignment(horizontal="center", vertical="center")
                 
-                # Apply styling to header row
                 for col in range(1, len(df.columns) + 1):
                     cell = worksheet.cell(row=1, column=col)
                     cell.font = header_font
@@ -270,31 +267,31 @@ class ContactTemplateDownloadView(APIView):
                 
                 # Instructions sheet
                 instructions_df = pd.DataFrame({
-                    'Field': ['name', 'phone_number', 'country', 'country_code', 'status'],
+                    'Field': ['name', 'phone_number', 'country', 'country_code', 'status', 'remarks'],
                     'Description': [
-                        'Full name of the contact (required)',
-                        'Phone number with country code (required)',
+                        'Full name of the contact',
+                        'Phone number with country code',
                         'Country name (optional)',
                         'Country calling code (optional)',
-                        'Contact status (optional)'
+                        'Contact status (optional, default: new)',
+                        'Additional remarks (optional)'
                     ],
-                    'Required': ['Yes', 'Yes', 'No', 'No', 'No'],
+                    'Required': ['Yes', 'Yes', 'No', 'No', 'No', 'No'],
                     'Examples': [
-                        'John Doe, Jane Smith',
-                        '+1234567890, +256701234567',
-                        'Uganda, USA, UK',
-                        '+256, +1, +44',
-                        'Active, Inactive'
+                        'John Doe',
+                        '+256701234567',
+                        'Uganda',
+                        '+256',
+                        'new, assigned, attended_to, archived, flagged, ready_to_export, exported',
+                        'Met at conference'
                     ]
                 })
                 instructions_df.to_excel(writer, sheet_name='Instructions', index=False)
                 
-                # Style instructions sheet
                 instructions_sheet = writer.sheets['Instructions']
                 for col in ['A', 'B', 'C', 'D']:
-                    instructions_sheet.column_dimensions[col].width = 25
+                    instructions_sheet.column_dimensions[col].width = 30
                 
-                # Apply header styling to instructions
                 for col in range(1, len(instructions_df.columns) + 1):
                     cell = instructions_sheet.cell(row=1, column=col)
                     cell.font = header_font
@@ -304,15 +301,15 @@ class ContactTemplateDownloadView(APIView):
                 # Product Info sheet
                 product_info_df = pd.DataFrame({
                     'Product Information': [
-                        'Selected Product:',
-                        'Product Name:',
-                        'Institution:',
-                        'Upload Instructions:',
+                        'Selected Product',
+                        'Product Name',
+                        'Institution',
+                        'Upload Instructions',
                         '',
-                        '1. Fill in the contact details in the "Contacts" sheet',
+                        '1. Fill in the Contacts sheet',
                         '2. Save the file',
                         '3. Upload using the bulk upload feature',
-                        '4. All contacts will be automatically assigned to the selected product'
+                        '4. Contacts will be linked to the selected product'
                     ],
                     'Details': [
                         '',
@@ -328,12 +325,10 @@ class ContactTemplateDownloadView(APIView):
                 })
                 product_info_df.to_excel(writer, sheet_name='Product_Info', index=False)
                 
-                # Style product info sheet
                 product_info_sheet = writer.sheets['Product_Info']
                 product_info_sheet.column_dimensions['A'].width = 30
                 product_info_sheet.column_dimensions['B'].width = 30
                 
-                # Apply header styling to product info
                 for col in range(1, len(product_info_df.columns) + 1):
                     cell = product_info_sheet.cell(row=1, column=col)
                     cell.font = header_font
@@ -344,14 +339,14 @@ class ContactTemplateDownloadView(APIView):
             
             # Create response
             response = HttpResponse(
-                output.read(),
-                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                content=output.read()
             )
-            response['Content-Disposition'] = f'attachment; filename="contacts_template_{product.name.replace(" ", "_")}.xlsx"'
+            response['Content-Disposition'] = f'attachment; filename="contacts_template_{product.name.replace(' ', '_')}.xlsx"'
             return response
             
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': f'Failed to generate template: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @extend_schema(tags=["Contact"])
@@ -370,7 +365,7 @@ class ContactBulkUploadView(APIView):
                     'file': {
                         'type': 'string',
                         'format': 'binary',
-                        'description': 'CSV or Excel file with contact data'
+                        'description': 'Excel or CSV file with contact data'
                     }
                 }
             }
@@ -385,7 +380,7 @@ class ContactBulkUploadView(APIView):
         
         if 'file' not in request.FILES:
             return Response(
-                {'error': 'No file provided'}, 
+                {'error': 'No file provided'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
@@ -394,15 +389,14 @@ class ContactBulkUploadView(APIView):
         # Validate file type
         if not file.name.endswith(('.xlsx', '.xls', '.csv')):
             return Response(
-                {'error': 'Invalid file type. Please upload a CSV or Excel file (.csv, .xlsx, .xls)'}, 
+                {'error': 'Invalid file type. Please upload a CSV or Excel file (.csv, .xlsx, .xls)'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
         try:
-            # Read file based on extension
+            # Read file
             if file.name.endswith('.csv'):
                 df = pd.read_csv(file)
-                # Remove comment lines
                 df = df[~df.iloc[:, 0].astype(str).str.startswith('#')]
             else:
                 df = pd.read_excel(file, sheet_name='Contacts')
@@ -415,44 +409,43 @@ class ContactBulkUploadView(APIView):
             missing_columns = [col for col in required_columns if col not in df.columns]
             if missing_columns:
                 return Response(
-                    {'error': f'Missing required columns: {", ".join(missing_columns)}'}, 
+                    {'error': f'Missing required columns: {", ".join(missing_columns)}'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Process each row
             created_contacts = []
             errors = []
             
             for index, row in df.iterrows():
                 try:
-                    # Skip if name is empty
+                    # Skip empty rows
                     if pd.isna(row['name']) or str(row['name']).strip() == '':
                         continue
                     
-                    # Skip if phone_number is empty
                     if pd.isna(row['phone_number']) or str(row['phone_number']).strip() == '':
                         errors.append(f'Row {index + 2}: Phone number is required')
                         continue
                     
-                    # Prepare contact data (product is pre-selected)
+                    # Prepare contact data
                     contact_data = {
                         'name': str(row['name']).strip(),
                         'phone_number': str(row['phone_number']).strip(),
-                        'product': product.pk,  # Use the pre-selected product
                         'country': str(row.get('country', '')).strip() if pd.notna(row.get('country')) else '',
                         'country_code': str(row.get('country_code', '')).strip() if pd.notna(row.get('country_code')) else '',
+                        'status': str(row.get('status', 'new')).strip() if pd.notna(row.get('status')) else 'new',
+                        'remarks': str(row.get('remarks', '')).strip() if pd.notna(row.get('remarks')) else '',
+                        'product': str(product.uuid)
                     }
                     
-                    
-                    # Create contact using serializer
-                    serializer = ContactSerializer(data=contact_data)
+                    # Create contact using BulkContactSerializer
+                    serializer = BulkContactSerializer(data=contact_data, context={'request': request})
                     if serializer.is_valid():
                         contact = serializer.save()
                         created_contacts.append({
                             'uuid': str(contact.uuid),
                             'name': contact.name,
                             'phone_number': contact.phone_number,
-                            'product_name': contact.product.name
+                            'product_name': product.name
                         })
                     else:
                         errors.append(f'Row {index + 2}: {serializer.errors}')
@@ -460,11 +453,11 @@ class ContactBulkUploadView(APIView):
                 except Exception as e:
                     errors.append(f'Row {index + 2}: {str(e)}')
             
-            # Prepare response
             response_data = {
                 'created_count': len(created_contacts),
                 'error_count': len(errors),
                 'product_name': product.name,
+                'institution': product.institution.institution_name,
                 'created_contacts': created_contacts
             }
             
@@ -476,10 +469,9 @@ class ContactBulkUploadView(APIView):
             
         except Exception as e:
             return Response(
-                {'error': f'Error processing file: {str(e)}'}, 
+                {'error': f'Error processing file: {str(e)}'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
 
 
 @extend_schema(tags=["Contact"])

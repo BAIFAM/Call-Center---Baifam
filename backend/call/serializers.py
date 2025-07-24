@@ -54,15 +54,68 @@ class CallGroupAgentSerializer(serializers.ModelSerializer):
         rep["call_group"] = CallGroupSerializer(instance.call_group).data
         rep["user"] = AgentSerializer(instance.user).data
         return rep
+    
 
 
 class ContactSerializer(serializers.ModelSerializer):
-    institution = serializers.PrimaryKeyRelatedField(queryset=Institution.objects.all())
+    product = serializers.UUIDField(write_only=True, required=False, allow_null=True)
+    institution = serializers.PrimaryKeyRelatedField(queryset=Institution.objects.all(), required=True)
 
     class Meta:
         model = Contact
-        fields = "__all__"
-        read_only_fields = ["uuid"]
+        fields = ['uuid', 'name', 'phone_number', 'country', 'country_code', 'status', 'remarks', 'product', 'institution']
+        read_only_fields = ['uuid']
+
+    def validate_product(self, value):
+        if value:
+            try:
+                product = Product.objects.get(uuid=value)
+                return product
+            except ObjectDoesNotExist:
+                raise serializers.ValidationError("Invalid product UUID")
+        return None
+
+    def validate_phone_number(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Phone number is required")
+        # Add regex or other validation if needed
+        return value
+
+    def validate_name(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Name is required")
+        return value
+
+    def validate(self, data):
+        # Ensure either product or institution is provided
+        if not data.get('product') and not data.get('institution'):
+            raise serializers.ValidationError("Either 'product' or 'institution' must be provided.")
+        return data
+
+    def create(self, validated_data):
+        # Extract product and institution from validated_data
+        product = validated_data.pop('product', None)
+        institution = validated_data.pop('institution', None)
+
+        # If product is provided, use its institution (e.g., for bulk uploads)
+        if product:
+            institution = product.institution
+
+        # Ensure institution is set (either from product or validated_data)
+        if not institution:
+            raise serializers.ValidationError("Institution is required")
+
+        # Create contact with the institution
+        contact = Contact.objects.create(institution=institution, **validated_data)
+
+        # Create ContactProduct instance only if product is provided
+        if product:
+            ContactProduct.objects.create(
+                contact=contact,
+                product=product,
+                created_by=self.context.get('request').user.profile if self.context.get('request').user.is_authenticated else None
+            )
+        return contact
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -73,6 +126,56 @@ class ContactSerializer(serializers.ModelSerializer):
             )
         )
         return rep
+    
+class BulkContactSerializer(serializers.ModelSerializer):
+    product = serializers.UUIDField(write_only=True, required=True)
+
+    class Meta:
+        model = Contact
+        fields = ['uuid', 'name', 'phone_number', 'country', 'country_code', 'status', 'remarks', 'product']
+        read_only_fields = ['uuid']
+
+    def validate_product(self, value):
+        try:
+            product = Product.objects.get(uuid=value)
+            return product
+        except ObjectDoesNotExist:
+            raise serializers.ValidationError("Invalid product UUID")
+
+    def validate_phone_number(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Phone number is required")
+        # Add regex or other validation if needed
+        return value
+
+    def validate_name(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Name is required")
+        return value
+
+    def create(self, validated_data):
+        product = validated_data.pop('product')
+        institution = product.institution
+
+        contact = Contact.objects.create(institution=institution, **validated_data)
+
+        # Create ContactProduct instance
+        ContactProduct.objects.create(
+            contact=contact,
+            product=product,
+            created_by=self.context.get('request').user.profile if self.context.get('request').user.is_authenticated else None
+        )
+        return contact
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep["institution"] = InstitutionSerializer(instance.institution).data
+        rep["call_groups"] = list(
+            CallGroupContact.objects.filter(contact__contact=instance).values_list(
+                "call_group__uuid", flat=True
+            )
+        )
+        return rep    
 
 
 class CallGroupContactSerializer(serializers.ModelSerializer):
