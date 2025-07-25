@@ -159,7 +159,7 @@ class CallGroupContact(models.Model):
 class Call(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     contact = models.ForeignKey(
-        Contact,
+        ContactProduct,
         related_name="calls",
         on_delete=models.PROTECT
     )
@@ -187,7 +187,7 @@ class Call(models.Model):
     made_on = models.DateTimeField(default=timezone.now)
     
     def __str__(self):
-        return f"Call to {self.contact.name} - {self.status} by {self.made_by.agent.user.user.fullname}"
+        return f"Call to {self.contact.contact.name} - {self.status}"
     
     
 
