@@ -130,7 +130,7 @@ export default function ClientCompaniesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-white border rounded-xl p-4 border-gray-200 min-h-[85svh]">
       <ClientCompaniesHeader onAddClick={() => setIsAddModalOpen(true)} />
       <ClientCompaniesList clientCompanies={clientCompanies} onEdit={handleEdit} onDelete={handleDelete} />
 

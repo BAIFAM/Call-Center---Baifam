@@ -13,7 +13,6 @@ interface CallGroupsHeaderProps {
 
 export function CallGroupsHeader({ onCallGroupCreated }: CallGroupsHeaderProps) {
   const [open, setOpen] = useState(false)
-  const router = useRouter()
 
   return (
     <div className="flex items-center justify-between">
@@ -21,14 +20,6 @@ export function CallGroupsHeader({ onCallGroupCreated }: CallGroupsHeaderProps) 
         <h1 className="text-2xl font-bold text-gray-900">Call Groups</h1>
       </div>
       <div className="flex items-center justify-end gap-8">
-        <Button
-          variant="outline"
-          className="rounded-xl"
-          onClick={() => router.push("/call-groups/my")}
-        >
-          <Icon icon="hugeicons:user-square" className="w-4 h-4 mr-2" />
-          My Call Groups
-        </Button>
         <Button
           className="bg-primary-600 hover:bg-primary-700 rounded-xl"
           onClick={() => setOpen(true)}

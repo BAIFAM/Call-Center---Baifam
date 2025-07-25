@@ -1,117 +1,95 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { ICallGroup, ICallGroupUserFormData, IUser, IUserProfile } from "@/app/types/api.types"
-import { callGroupAPI, agentsAPI, institutionAPI, userAPI } from "@/lib/api-helpers"
-import { Icon } from "@iconify/react"
-import { CreateUserDialog } from "./create-user-dialog"
-import { CreateCallGroupDialog } from "./create-call-group-dialog"
-import { useToast } from "@/hooks/use-toast"
+import {useState, useEffect} from "react";
+import {Button} from "@/components/ui/button";
+import {Label} from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type {
+  IAgentFormData,
+
+  IUserProfile,
+} from "@/app/types/api.types";
+import { agentsAPI, institutionAPI} from "@/lib/api-helpers";
+import {Icon} from "@iconify/react";
+import {CreateUserDialog} from "./create-user-dialog";
+import {toast} from "sonner";
+import { Input } from "../ui/input";
 
 interface CreateAgentFormProps {
-  institutionId: number
-  onAgentCreated: () => void
-  onClose: () => void
+  institutionId: number;
+  onAgentCreated: () => void;
+  onClose: () => void;
 }
 
-export function CreateAgentForm({ institutionId, onAgentCreated, onClose }: CreateAgentFormProps) {
-  const [userProfles, setUserProfles] = useState<IUserProfile[]>([])
-  const [callGroups, setCallGroups] = useState<ICallGroup[]>([])
-  const [selectedUserId, setSelectedUserId] = useState<string>("")
-  const [selectedCallGroupUuid, setSelectedCallGroupUuid] = useState<string>("")
-  const [status, setStatus] = useState<"active" | "disabled">("active")
-  const [loading, setLoading] = useState(false)
-  const [isCreatingUser, setIsCreatingUser] = useState(false)
-  const [isCreatingCallGroup, setIsCreatingCallGroup] = useState(false)
-  const { toast } = useToast()
+export function CreateAgentForm({institutionId, onAgentCreated, onClose}: CreateAgentFormProps) {
+  const [userProfles, setUserProfles] = useState<IUserProfile[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState<string>("");
+  const [status, setStatus] = useState<"active" | "disabled">("active");
+  const [loading, setLoading] = useState(false);
+  const [isCreatingUser, setIsCreatingUser] = useState(false);
+  const [extension, setExtension] = useState("");
+  const [deviceId, setDeviceId] = useState("");
 
   const fetchUsersAndCallGroups = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const [fetchedUsers, fetchedCallGroups] = await Promise.all([
-        institutionAPI.getUsersProfiles({ institutionId }),
-        callGroupAPI.getByInstitution({ institutionId }),
-      ])
-      setUserProfles(fetchedUsers)
-      setCallGroups(fetchedCallGroups)
-      // Pre-select first available if any
+      const fetchedUsers = await  institutionAPI.getUsersProfiles({institutionId})
+      setUserProfles(fetchedUsers);
       if (fetchedUsers.length > 0 && !selectedUserId) {
-        setSelectedUserId(String(fetchedUsers[0].id))
-      }
-      if (fetchedCallGroups.length > 0 && !selectedCallGroupUuid) {
-        setSelectedCallGroupUuid(fetchedCallGroups[0].uuid)
+        setSelectedUserId(String(fetchedUsers[0].id));
       }
     } catch (error) {
-      console.error("Failed to fetch users or call groups:", error)
-      toast({
-        title: "Error",
-        description: "Failed to load users or call groups.",
-        variant: "destructive",
-      })
+      toast.error("Failed to fetch users. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchUsersAndCallGroups()
-  }, [institutionId])
+    fetchUsersAndCallGroups();
+  }, [institutionId]);
 
   const handleUserCreated = (newUser: IUserProfile) => {
-    setUserProfles((prev) => [...prev, newUser])
-    setSelectedUserId(String(newUser.id))
-    setIsCreatingUser(false)
-  }
-
-  const handleCallGroupCreated = (newCallGroup: ICallGroup) => {
-    setCallGroups((prev) => [...prev, newCallGroup])
-    setSelectedCallGroupUuid(newCallGroup.uuid)
-    setIsCreatingCallGroup(false)
-  }
+    setUserProfles((prev) => [...prev, newUser]);
+    setSelectedUserId(String(newUser.id));
+    setIsCreatingUser(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedUserId || !selectedCallGroupUuid) {
-      toast({
-        title: "Validation Error",
-        description: "Please select a user and a call group.",
-        variant: "destructive",
-      })
-      return
+    e.preventDefault();
+    if (!selectedUserId ) {
+      toast.info("Please select a user to create an agent for.");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
     try {
-      const payload: ICallGroupUserFormData = {
+      const payload: IAgentFormData = {
         user: Number(selectedUserId),
-        call_group: selectedCallGroupUuid,
-        status: status,
-
-      }
-      await agentsAPI.createAgent({ institutionId, userData: payload })
-      console.log("Payload being sent:", payload)
-      toast({
-        title: "Agent Created",
-        description: "The new agent has been successfully added.",
-      })
-      onAgentCreated()
-      onClose()
+        is_active: true,
+        extension: extension.trim(),
+        device_id: deviceId.trim(),
+      };
+      await agentsAPI.createAgent({institutionId, userData: payload});
+      console.log("Payload being sent:", payload);
+      toast.success("Agent created successfully");
+      onAgentCreated();
+      onClose();
     } catch (error) {
-      console.error("Failed to create agent:", error)
-      toast({
-        title: "Error",
-        description: "Failed to create agent. Please try again.",
-        variant: "destructive",
-      })
+      console.error("Failed to create agent:", error);
+      toast.error("Failed to create agent. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <>
@@ -153,38 +131,28 @@ export function CreateAgentForm({ institutionId, onAgentCreated, onClose }: Crea
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="call-group-select" className="text-right">
-              Call Group
+            <Label htmlFor="name" className="text-right">
+              Extension
             </Label>
-            <div className="col-span-3 flex items-center gap-2">
-              <Select value={selectedCallGroupUuid} onValueChange={setSelectedCallGroupUuid} disabled={loading}>
-                <SelectTrigger id="call-group-select" className="flex-1">
-                  <SelectValue placeholder="Select a call group" />
-                </SelectTrigger>
-                <SelectContent>
-                  {callGroups.length === 0 && (
-                    <SelectItem value="no-groups" disabled>
-                      No call groups available
-                    </SelectItem>
-                  )}
-                  {callGroups.map((group) => (
-                    <SelectItem key={group.uuid} value={group.uuid}>
-                      {group.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                type="button"
-                size="icon"
-                variant="outline"
-                onClick={() => setIsCreatingCallGroup(true)}
-                disabled={loading}
-              >
-                <Icon icon="hugeicons:add-01" className="w-4 h-4" />
-                <span className="sr-only">Create New Call Group</span>
-              </Button>
-            </div>
+            <Input
+              id="extension"
+              value={extension}
+              onChange={(e) => setExtension(e.target.value)}
+              className="col-span-3"
+              required
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="device-id" className="text-right">
+              Device ID
+            </Label>
+            <Input
+              id="device-id"
+              value={deviceId}
+              onChange={(e) => setDeviceId(e.target.value)}
+              className="col-span-3"
+              required
+            />
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
@@ -192,7 +160,11 @@ export function CreateAgentForm({ institutionId, onAgentCreated, onClose }: Crea
               Status
             </Label>
             <div className="col-span-3">
-              <Select value={status} onValueChange={(value) => setStatus(value as "active" | "disabled")} disabled={loading}>
+              <Select
+                value={status}
+                onValueChange={(value) => setStatus(value as "active" | "disabled")}
+                disabled={loading}
+              >
                 <SelectTrigger id="status-select">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
@@ -203,20 +175,19 @@ export function CreateAgentForm({ institutionId, onAgentCreated, onClose }: Crea
               </Select>
             </div>
           </div>
-        </div>
         <div className="flex justify-end">
           <Button type="submit" disabled={loading}>
             {loading ? "Creating Agent..." : "Create Agent"}
           </Button>
         </div>
+        </div>
       </form>
 
-      <CreateUserDialog open={isCreatingUser} onOpenChange={setIsCreatingUser} onUserCreated={handleUserCreated} />
-      <CreateCallGroupDialog
-        open={isCreatingCallGroup}
-        onOpenChange={setIsCreatingCallGroup}
-        onCallGroupCreated={handleCallGroupCreated}
+      <CreateUserDialog
+        open={isCreatingUser}
+        onOpenChange={setIsCreatingUser}
+        onUserCreated={handleUserCreated}
       />
     </>
-  )
+  );
 }

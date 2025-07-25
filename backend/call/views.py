@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiTypes
 from django.shortcuts import get_object_or_404
 
 from users.models import Profile
@@ -159,17 +160,17 @@ class CallGroupAgentDetailView(APIView):
         item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)    
 
-@extend_schema(tags=["CallGroup"])
-class UserCallGroupsListView(APIView):
-    @extend_schema(
-        summary="List call groups assigned to the authenticated user",
-        responses={200: CallGroupSerializer(many=True)}
-    )
-    def get(self, request, institution_id):
-        user = request.user
-        groups = CallGroup.objects.filter(users__user=user, institution__id=institution_id, users__status="active").distinct()
-        serializer = CallGroupSerializer(groups, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+# @extend_schema(tags=["CallGroup"])
+# class UserCallGroupsListView(APIView):
+#     @extend_schema(
+#         summary="List call groups assigned to the authenticated user",
+#         responses={200: CallGroupSerializer(many=True)}
+#     )
+#     def get(self, request, institution_id):
+#         user = request.user
+#         groups = CallGroup.objects.filter(users__user=user, institution__id=institution_id, users__status="active").distinct()
+#         serializer = CallGroupSerializer(groups, many=True)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 
@@ -545,6 +546,37 @@ class ContactCallsListView(APIView):
         serializer = CallSerializer(calls, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+class AgentCallsListView(APIView):
+    @extend_schema(
+        summary="List all calls made by a specific agent",
+        parameters=[
+            OpenApiParameter(name="agent_uuid", required=True, type=str, location=OpenApiParameter.PATH),
+        ],
+        responses={200: CallSerializer(many=True)}  
+    )
+    def get(self, request, agent_uuid):
+        agent = get_object_or_404(Agent, uuid=agent_uuid)
+        calls = Call.objects.filter(made_by__agent=agent)
+        serializer = CallSerializer(calls, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class AgentCallGroupsListView(APIView):
+    @extend_schema(
+        summary="List all call groups assigned to a specific agent",
+        parameters=[
+            OpenApiParameter(name="agent_uuid", required=True, type=str, location=OpenApiParameter.PATH),
+        ],
+        responses={200: CallGroupSerializer(many=True)}
+    )
+    def get(self, request, agent_uuid):
+        agent = get_object_or_404(Agent, uuid=agent_uuid)
+        call_groups = CallGroup.objects.filter(users__agent=agent, users__status="active")
+        serializer = CallGroupSerializer(call_groups, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 @extend_schema(tags=["CallGroupContact"])
 class CallGroupContactListCreateView(APIView):
 
@@ -630,7 +662,7 @@ class CallListCreateAPIView(APIView):
         responses={200: CallSerializer(many=True)}
     )
     def get(self, request, institution_id):
-        calls = Call.objects.filter(contact__product__institution__id=institution_id)
+        calls = Call.objects.filter(contact__institution__id=institution_id)
         serializer = CallSerializer(calls, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 

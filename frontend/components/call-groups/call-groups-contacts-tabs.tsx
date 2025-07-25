@@ -197,7 +197,7 @@ export function CallGroupContactsTabs({ contacts }: CallGroupContactsTabsProps) 
                       PHONE NUMBER
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      PRODUCT
+                      COUNTRY
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       CALL
@@ -223,7 +223,7 @@ export function CallGroupContactsTabs({ contacts }: CallGroupContactsTabsProps) 
                         {contact.phone_number}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {contact.product.name}
+                        {contact.country}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {getCallCount(contact.uuid)}

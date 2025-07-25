@@ -178,7 +178,7 @@ export function ContactDetailsInfo({contact,callToEdit, onMarkAsVerified, onRefr
           <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-2">
               <Icon icon="hugeicons:package" className="w-5 h-5 text-gray-500" />
-              <span className="text-gray-900">Product: {localContact.product.name}</span>
+              <span className="text-gray-900">Country: {localContact.country}</span>
             </div>
             <div className="flex items-center space-x-2">
               <Icon icon="hugeicons:call" className="w-5 h-5 text-gray-500" />

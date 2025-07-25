@@ -5,6 +5,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Icon } from "@iconify/react"
 import type { ICallGroup } from "@/app/types/api.types"
 import Link from "next/link"
+import { EditCallGroupDialog } from "./edit-call-group-dialog"
+import { callGroupAPI } from "@/lib/api-helpers"
+import { useEffect, useState } from "react"
+import { DeleteConfirmationDialog } from "@/components/common/delete-confirmation-dialog"
 
 interface CallGroupsListProps {
   callGroups: ICallGroup[]
@@ -17,6 +21,42 @@ export function CallGroupsList({ callGroups }: CallGroupsListProps) {
       month: "short",
       day: "numeric",
     })
+  }
+
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [selectedGroup, setSelectedGroup] = useState<ICallGroup | null>(null)
+  const [deletingGroup, setDeletingGroup] = useState<ICallGroup | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [groups, setGroups] = useState(callGroups)
+
+  useEffect(()=>{
+    setGroups(callGroups)
+  }, [callGroups])
+
+  const handleEditClick = (group: ICallGroup) => {
+    setSelectedGroup(group)
+    setEditDialogOpen(true)
+  }
+
+  const handleCallGroupUpdated = (updatedGroup: ICallGroup) => {
+    setGroups((prev) => prev.map(g => g.uuid === updatedGroup.uuid ? updatedGroup : g))
+  }
+
+  const handleDeleteClick = (group: ICallGroup) => {
+    setDeletingGroup(group)
+  }
+
+  const handleDeleteConfirmed = async (group: ICallGroup) => {
+    setIsDeleting(true)
+    try {
+      await callGroupAPI.delete({ uuid: group.uuid })
+      setGroups((prev) => prev.filter(g => g.uuid !== group.uuid))
+    } catch (error) {
+      alert("Failed to delete call group. Please try again.")
+    } finally {
+      setIsDeleting(false)
+      setDeletingGroup(null)
+    }
   }
 
   return (
@@ -41,16 +81,16 @@ export function CallGroupsList({ callGroups }: CallGroupsListProps) {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {callGroups.map((group) => (
+            {groups.map((group) => (
               <tr key={group.uuid} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">{group.name}</div>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900 max-w-xs truncate">{group.description}</div>
+                  {/* <div className="text-sm text-gray-900 max-w-xs truncate">{group.description}</div> */}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{formatDate(group.created_at)}</div>
+                  <div className="text-sm text-gray-900">{group?.created_at ? formatDate(group.created_at):""}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">{group.institution.institution_name}</div>
@@ -69,13 +109,13 @@ export function CallGroupsList({ callGroups }: CallGroupsListProps) {
                           View Details
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleEditClick(group)}>
                         <Icon icon="hugeicons:edit-02" className="w-4 h-4 mr-2" />
                         Edit Group
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-600">
+                      <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteClick(group)} disabled={isDeleting && deletingGroup?.uuid === group.uuid}>
                         <Icon icon="hugeicons:delete-02" className="w-4 h-4 mr-2" />
-                        Delete Group
+                        {isDeleting && deletingGroup?.uuid === group.uuid ? "Deleting..." : "Delete Group"}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -85,6 +125,20 @@ export function CallGroupsList({ callGroups }: CallGroupsListProps) {
           </tbody>
         </table>
       </div>
+      <EditCallGroupDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        callGroup={selectedGroup}
+        onCallGroupUpdated={handleCallGroupUpdated}
+      />
+      <DeleteConfirmationDialog
+        isOpen={!!deletingGroup}
+        onClose={() => setDeletingGroup(null)}
+        onConfirm={() => deletingGroup && handleDeleteConfirmed(deletingGroup)}
+        title="Delete Call Group"
+        description={deletingGroup ? `Are you sure you want to delete call group '${deletingGroup.name}'? This action cannot be undone.` : ""}
+        isDeleting={isDeleting}
+      />
     </div>
   )
 }

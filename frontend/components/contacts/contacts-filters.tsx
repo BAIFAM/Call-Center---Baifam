@@ -45,17 +45,16 @@ export function ContactsFilters({
     }
 
     // Filter by product
-    if (selectedProductId !== "all") {
-      filtered = filtered.filter((contact) => contact.product.uuid === selectedProductId)
-    }
+    // if (selectedProductId !== "all") {
+    //   filtered = filtered.filter((contact) => contact.product.uuid === selectedProductId)
+    // }
 
     // Filter by search term
     if (searchTerm.trim()) {
       filtered = filtered.filter(
         (contact) =>
           contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          contact.phone_number.includes(searchTerm) ||
-          contact.product.name.toLowerCase().includes(searchTerm.toLowerCase()),
+          contact.phone_number.includes(searchTerm)
       )
     }
 

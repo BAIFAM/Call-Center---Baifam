@@ -30,7 +30,6 @@ interface CreateCallGroupDialogProps {
 
 export function CreateCallGroupDialog({ open, onOpenChange, onCallGroupCreated }: CreateCallGroupDialogProps) {
   const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false)
   const selectedInstitution = useSelector(selectSelectedInstitution)
 
@@ -41,8 +40,7 @@ export function CreateCallGroupDialog({ open, onOpenChange, onCallGroupCreated }
     try {
       const newCallGroup: ICallGroupFormData = {
         name,
-        institution: selectedInstitution.id,
-        description
+        institution: selectedInstitution.id
       }
       const createdCallGroup = await callGroupAPI.create({ institutionId: selectedInstitution.id, groupData: newCallGroup }) // Assuming institutionId is needed for create
       onCallGroupCreated(createdCallGroup)
@@ -72,12 +70,7 @@ export function CreateCallGroupDialog({ open, onOpenChange, onCallGroupCreated }
               </Label>
               <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" required />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="description" className="text-right">
-                Description
-              </Label>
-              <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} className="col-span-3" required />
-            </div>
+
           </div>
           <DialogFooter>
             <Button type="submit" disabled={loading}>

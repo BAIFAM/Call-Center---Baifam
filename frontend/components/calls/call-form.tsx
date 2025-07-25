@@ -262,7 +262,7 @@ export function CallForm({ call, contacts, onSubmit, onCancel, isLoading, select
                 <div className="flex items-center justify-between w-full">
                   <span>{contact.name}</span>
                   <Badge variant="outline" className="ml-2 rounded-full">
-                    {contact.product.name}
+                    {contact.status}
                   </Badge>
                 </div>
               </SelectItem>
@@ -299,7 +299,7 @@ export function CallForm({ call, contacts, onSubmit, onCancel, isLoading, select
       )}
 
       {/* Dynamic Feedback Fields - Only show when status is completed */}
-      {contact && status === "completed" && contact.product.feedback_fields.length > 0 && (
+      {contact && status === "completed" && contact.feedback_fields.length > 0 && (
         <Card className="rounded-xl">
           <CardHeader>
             <CardTitle className="text-lg">Feedback for {contact.product.name}</CardTitle>

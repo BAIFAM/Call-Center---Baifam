@@ -77,7 +77,7 @@ export function AddFieldDialog({ isOpen, onClose, onAddField, initialFieldValues
       confirmText="Add Field"
       confirmDisabled={!isFormValid}
     >
-      <div className="space-y-4 h-full !w-full !max-w-xl max-h-[40svh] overflow-y-auto my-6 mx-4">
+      <div className="space-y-4 h-full !w-full !max-w-xl max-h-[40svh] overflow-y-auto my-6 px-4">
         <div>
           <Label htmlFor="title" className="text-sm font-medium">
             Title
@@ -133,7 +133,7 @@ export function AddFieldDialog({ isOpen, onClose, onAddField, initialFieldValues
                   placeholder="Add option"
                   value={currentOption}
                   onChange={(e) => setCurrentOption(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && addOption()}
+                  onKeyDown={(e) => e.key === "Enter" && addOption()}
                   className="flex-1 rounded-xl"
                 />
                 <Button type="button" onClick={addOption} variant="outline" size="sm" className="rounded-xl">

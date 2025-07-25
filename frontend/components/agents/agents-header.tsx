@@ -1,5 +1,5 @@
 "use client"
-import type { IAgent } from "@/app/types/api.types"
+import type { IAgent, ICallGroup } from "@/app/types/api.types"
 import { Button } from "@/components/ui/button"
 import { Icon } from "@iconify/react"
 import { useEffect, useState } from "react"
@@ -20,10 +20,11 @@ interface AgentsHeaderProps {
   totalAgents: number
   agents: IAgent[],
   selectedAgent: IAgent | null,
+  institutionId: number,
+  // callGroups:ICallGroup[]
   onAssignOrReassign: () => void
   onFilteredAgentsChange: (agents: IAgent[]) => void
   onAgentCreated: () => void
-  institutionId: number
 }
 
 export function AgentsHeader({
@@ -34,6 +35,7 @@ export function AgentsHeader({
   onFilteredAgentsChange,
   onAgentCreated,
   institutionId,
+  // callGroups
 }: AgentsHeaderProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [companyFilter, setCompanyFilter] = useState("all")
@@ -41,44 +43,44 @@ export function AgentsHeader({
   const [isCreateAgentDialogOpen, setIsCreateAgentDialogOpen] = useState(false)
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false)
 
-  const canAssign = selectedAgent && !selectedAgent.call_group
-  const canReassign = selectedAgent && selectedAgent.call_group
+  const canAssign = !!selectedAgent 
 
   useEffect(() => {
     let filtered = agents
     if (searchTerm) {
       filtered = filtered.filter(
         (agent) =>
-          agent.user.fullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          agent.user.email.toLowerCase().includes(searchTerm.toLowerCase())
+          agent.user.user.fullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          agent.user.user.email.toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
-    if (companyFilter !== "all") {
-      filtered = filtered.filter((agent) => agent.call_group?.name === companyFilter)
-    }
+    // if (companyFilter !== "all") {
+    //   filtered = filtered.filter((agent) => agent.call_group?.name === companyFilter)
+    // }
     onFilteredAgentsChange(filtered)
   }, [searchTerm, companyFilter, statusFilter, agents, onFilteredAgentsChange])
 
-  const uniqueCallGroupNames = Array.from(new Set(agents.map((agent) => (agent.call_group && agent.call_group.name))))
+
+
 
   return (
     <div className="flex items-center justify-between bg-transparent rounded-xl p-4">
       <h1 className="text-2xl font-bold text-gray-900 pr-4">Agents ({totalAgents})</h1>
       <div className="flex items-center justify-center gap-4 px-6">
         <div className="flex items-center space-x-4">
-          <Select value={companyFilter} onValueChange={setCompanyFilter}>
+          {/* <Select value={companyFilter} onValueChange={setCompanyFilter}>
             <SelectTrigger className="w-40 rounded-xl">
               <SelectValue placeholder="All Call Groups" />
             </SelectTrigger>
             <SelectContent className="rounded-xl">
               <SelectItem value="all">All Call Groups</SelectItem>
-              {uniqueCallGroupNames.map((name) => (
-                <SelectItem key={name} value={name as string}>
-                  {name}
+              {callGroups.map((group, idx) => (
+                <SelectItem key={idx} value={group.uuid}>
+                  {group.name}
                 </SelectItem>
               ))}
             </SelectContent>
-          </Select>
+          </Select> */}
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-32 rounded-xl">
               <SelectValue placeholder="All Status" />
@@ -111,13 +113,6 @@ export function AgentsHeader({
             className="rounded-xl"
           >
             Assign
-          </Button>
-          <Button
-            disabled={!canReassign}
-            onClick={() => setIsAssignDialogOpen(true)}
-            className="rounded-xl"
-          >
-            Re-assign
           </Button>
         </div>
         <Dialog open={isCreateAgentDialogOpen} onOpenChange={setIsCreateAgentDialogOpen}>

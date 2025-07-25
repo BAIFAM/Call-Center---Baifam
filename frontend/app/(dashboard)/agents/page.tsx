@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from "react"
 import { useSelector } from "react-redux"
 import { AgentsHeader } from "@/components/agents/agents-header"
 import { AgentsList } from "@/components/agents/agents-list"
-import { agentsAPI } from "@/lib/api-helpers" // Assuming agentsAPI is in api-helpers
+import { agentsAPI } from "@/lib/api-helpers" 
 import { selectSelectedInstitution } from "@/store/auth/selectors"
 import { IAgent } from "@/app/types/api.types"
 import { toast } from "sonner"

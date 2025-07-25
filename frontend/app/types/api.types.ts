@@ -283,15 +283,19 @@ export interface ICallFormData {
 
 export type IContactStatus = "new" | "verified" | "called" | "archived" | "flagged";
 
+
+
 export interface IContact {
   uuid: string;
-  product: ICallCenterProduct
   name: string;
   phone_number: string;
   country: string;
   country_code: string;
-  status: IContactStatus;
-  call_group?: string | null
+  status: IContactStatus,
+  institution:IUserInstitution,
+  call_groups:string[],
+  call_count:number,
+  remarks:string|null
 }
 
 export interface IContactFormData {
@@ -314,13 +318,35 @@ export interface ICallGroupUserFormData {
   status?: "active" | "disabled";
 }
 
+
+
+export interface IAgentFormData {
+  user: number;
+  device_id: string;
+  extension: string;
+  is_active: boolean;
+}
+
 export interface IAgent {
+  id: number;
   uuid: string;
-  user: IUser;
-  call_group?: ICallGroup;
+  user: IUserProfile;
+  device_id: string;
+  extension: string;
+  is_active:boolean
+}
+
+export interface ICallGroupAgent {
+  uuid:string,
+  call_group:ICallGroup,
+  agent:IAgent,
   status: "active" | "disabled"
-  created_at?: string;
-  updated_at?: string;
+}
+
+export interface ICallGroupAgentFormData {
+  call_group:string,
+  agent:string,
+  status: "active" | "disabled"
 }
 
 export interface IClientCompany {
@@ -347,6 +373,9 @@ export interface IClientCompanyFormData {
   api_key: string
 }
 
+// export interface IContactProduct {
+
+// }
 
 export interface ICallCenterProduct {
   uuid: string;
@@ -367,14 +396,14 @@ export interface IFeedbackFieldFormData {
   is_required: boolean;
 }
 
+
 export interface ICallGroup {
   uuid: string;
   name: string;
-  description: string;
+  contacts:string[]
   created_by: number | null;
   institution: IUserInstitution;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
 }
 
 export type ICallGroupContactStatus = "attended_to" | "not_attended" | "follow_up"|"new"|"assigned"|"exported"|"ready_to_export"

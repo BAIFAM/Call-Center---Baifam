@@ -17,19 +17,15 @@ from .views import (
     ContactProductListCreateView,
     ContactTemplateDownloadView,
     ContactsByCallGroupContactListCreateView,
-    UserCallGroupsListView,
-    ContactCallsListView)
+    ContactCallsListView,
+    AgentCallsListView,
+    AgentCallGroupsListView)
 
 urlpatterns = [
     path(
         "groups/<int:institution_id>/",
         CallGroupListCreateView.as_view(),
         name="callgroup-list-create",
-    ),
-    path(
-        "groups/my-groups/<int:institution_id>/",
-        UserCallGroupsListView.as_view(),
-        name="user-call-groups-list",
     ),
     path(
         "groups/detail/<uuid:uuid>/",
@@ -84,6 +80,8 @@ urlpatterns = [
     ),
     path("detail/<uuid:uuid>/", CallDetailAPIView.as_view(), name="call-detail"),
     path("contact-calls/<uuid:contact_uuid>/", ContactCallsListView.as_view(), name="contact-calls"),
+    path("agent-calls/<uuid:agent_uuid>/", AgentCallsListView.as_view(), name="agent-calls"),
+    path("agent-groups/<uuid:agent_uuid>/", AgentCallGroupsListView.as_view(), name="agent-groups"),
     path('institutions/<int:institution_id>/contact-products/', ContactProductListCreateView.as_view(), name='contact-product-list-create'),
     path('contact-products/<uuid:uuid>/', ContactProductDetailView.as_view(), name='contact-product-detail'),
     path('institutions/<int:institution_id>/agents/', AgentListCreateView.as_view(), name='agent-list-create'),

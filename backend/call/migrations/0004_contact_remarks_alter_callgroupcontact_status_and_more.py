@@ -25,11 +25,6 @@ class Migration(migrations.Migration):
             field=models.CharField(choices=[('attended_to', 'Attended to'), ('not_attended', 'Not attended'), ('follow_up', 'Follow up'), ('new', 'New'), ('exported', 'Exported'), ('asigned', 'Assigned'), ('ready_to_export', 'Ready to export')], default='new', max_length=20),
         ),
         migrations.AlterField(
-            model_name='callgroupuser',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='call_groups', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AlterField(
             model_name='contact',
             name='status',
             field=models.CharField(choices=[('new', 'New'), ('assigned', 'Assigned'), ('attended_to', 'Attended To'), ('archived', 'Archived'), ('flagged', 'Flagged'), ('ready_to_export', 'Ready To Export'), ('exported', 'Exported')], default='new', max_length=20),

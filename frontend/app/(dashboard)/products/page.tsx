@@ -12,6 +12,7 @@ import { ICallCenterProduct } from "@/app/types/api.types";
 import Link from "next/link";
 import { useSelector } from "react-redux";
 import { selectSelectedInstitution } from "@/store/auth/selectors";
+import { DeleteConfirmationDialog } from "@/components/common/delete-confirmation-dialog";
 
 // Mock data
 // const mockProducts: Product[] = [
@@ -50,6 +51,9 @@ export default function ProductsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [products, setProducts] = useState<ICallCenterProduct[]>([]);
   const selectedInstitution = useSelector(selectSelectedInstitution);
+  const [productToDelete, setProductToDelete] = useState<ICallCenterProduct | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     handleFetchProducts();
@@ -64,6 +68,22 @@ export default function ProductsPage() {
       setProducts(fetchedProducts);
     } catch (error) {
       console.error("Error fetching products:", error);
+    }
+  };
+
+  const handleDeleteProduct = async () => {
+    if (!productToDelete) return;
+    setIsDeleting(true);
+    try {
+      await institutionAPI.deleteProduct({ productUuid: productToDelete.uuid });
+      setIsDeleteDialogOpen(false);
+      setProductToDelete(null);
+      await handleFetchProducts();
+    } catch (error) {
+      // Optionally show error toast
+      console.error("Error deleting product:", error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -157,6 +177,10 @@ export default function ProductsPage() {
                         variant="ghost"
                         size="sm"
                         className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                        onClick={() => {
+                          setProductToDelete(product);
+                          setIsDeleteDialogOpen(true);
+                        }}
                       >
                         <Icon icon="hugeicons:delete-02" className="w-4 h-4" />
                       </Button>
@@ -197,6 +221,17 @@ export default function ProductsPage() {
         </div>
       </div> */}
       {/* </div> */}
+      <DeleteConfirmationDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => {
+          setIsDeleteDialogOpen(false);
+          setProductToDelete(null);
+        }}
+        onConfirm={handleDeleteProduct}
+        title={productToDelete ? `Delete Product: ${productToDelete.name}` : "Delete Product"}
+        description="Are you sure you want to delete this product? This action cannot be undone."
+        isDeleting={isDeleting}
+      />
     </div>
   );
 }

@@ -24,9 +24,9 @@ export function AgentsList({ agents, selectedAgent, onSelectAgent }: AgentsListP
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
               {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Number</th> */}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Contacts
+                Extension
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Calls</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Device Id</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
@@ -40,20 +40,17 @@ export function AgentsList({ agents, selectedAgent, onSelectAgent }: AgentsListP
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">
-                    {agent.user.fullname}
+                    {agent.user.user.fullname}  
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{agent.user.email}</div>
-                </td>
-                {/* <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{agent.user.phone_number}</div>
-                </td> */}
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{Math.floor(Math.random() * 50)}</div> {/* Placeholder */}
+                  <div className="text-sm text-gray-900">{agent.user.user.email}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{Math.floor(Math.random() * 100)}</div> {/* Placeholder */}
+                  <div className="text-sm text-gray-900">{agent.extension}</div> {/* Placeholder */}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">{agent.device_id}</div> {/* Placeholder */}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div className="flex items-center space-x-2">
@@ -62,12 +59,7 @@ export function AgentsList({ agents, selectedAgent, onSelectAgent }: AgentsListP
                         <Icon icon="hugeicons:view" className="w-4 h-4" />
                       </Link>
                     </Button>
-                    <Button variant="ghost" size="sm" className="p-2 rounded-lg">
-                      <Icon icon="hugeicons:call" className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="p-2 rounded-lg">
-                      <Icon icon="hugeicons:message-01" className="w-4 h-4" />
-                    </Button>
+                    
                   </div>
                 </td>
               </tr>

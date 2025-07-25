@@ -16,6 +16,8 @@ import {
   IClientCompany,
   IClientCompanyFormData,
   ICallGroupContactFormData,
+  ICallGroupAgentFormData,
+  IAgentFormData,
 } from "@/app/types/api.types";
 import apiRequest from "./apiRequest";
 import { CustomField } from "@/app/types/types.utils";
@@ -36,7 +38,7 @@ export const callsAPI = {
       const response = await apiRequest.get(`call/detail/${callUuid}/`);
       return response.data as ICall;
     } catch (error) {
-      console.error("Error fetching call details:", error);
+      //console.error("Error fetching call details:", error);
       throw error;
     }
   },
@@ -46,7 +48,7 @@ export const callsAPI = {
       const response = await apiRequest.get(`call/institution/${institutionId}/`);
       return response.data as ICall[];
     } catch (error) {
-      console.error("Error fetching calls by institution:", error);
+      //console.error("Error fetching calls by institution:", error);
       throw error;
     }
   },
@@ -64,7 +66,7 @@ export const callsAPI = {
       const response = await apiRequest.post(`call/products/${productId}/contacts/`, callData);
       return response.data as IContact;
     } catch (error) {
-      console.error("Error creating contact for product:", error);
+      //console.error("Error creating contact for product:", error);
       throw error;
     }
   },
@@ -108,7 +110,7 @@ export const callsAPI = {
       const response = await apiRequest.post(`call/institution/${institutionId}/`, formData);
       return response.data as ICall;
     } catch (error) {
-      console.error("Error creating call:", error);
+      //console.error("Error creating call:", error);
       throw error;
     }
   },
@@ -145,7 +147,7 @@ export const callsAPI = {
       const response = await apiRequest.patch(`call/detail/${callUuid}/`, formData);
       return response.data;
     } catch (error) {
-      console.error("Error updating call:", error);
+      //console.error("Error updating call:", error);
       throw error;
     }
   },
@@ -155,10 +157,20 @@ export const callsAPI = {
       const response = await apiRequest.delete(`call/detail/${callUuid}/`);
       return response.data;
     } catch (error) {
-      console.error("Error deleting call:", error);
+      //console.error("Error deleting call:", error);
       throw error;
     }
   },
+
+  assignAgentToCallGroup: async ({ institutionId, data }: { institutionId: number, data: ICallGroupAgentFormData }) => {
+    try {
+      const response = await apiRequest.post(`call/group-users/${institutionId}/`, data);
+      return response.data;
+    } catch (error) {
+      //console.error("Error assigning agent to call group:", error);
+      throw error;
+    }
+  }
 };
 
 export const contactsAPI = {
@@ -167,7 +179,7 @@ export const contactsAPI = {
       const response = await apiRequest.get(`call/contacts/detail/${contactUuid}/`);
       return response.data as IContact;
     } catch (error) {
-      console.error("Error fetching contact details:", error);
+      //console.error("Error fetching contact details:", error);
       throw error;
     }
   },
@@ -183,7 +195,7 @@ export const contactsAPI = {
       const response = await apiRequest.patch(`call/contacts/detail/${contactUuid}/`, contactData);
       return response.data as IContact;
     } catch (error) {
-      console.error("Error updating contact:", error);
+      //console.error("Error updating contact:", error);
       throw error;
     }
   },
@@ -199,7 +211,7 @@ export const contactsAPI = {
       const response = await apiRequest.patch(`call/contacts/detail/${contactUuid}/`, { status });
       return response.data as IContact;
     } catch (error) {
-      console.error("Error updating contact status:", error);
+      //console.error("Error updating contact status:", error);
       throw error;
     }
   },
@@ -208,7 +220,7 @@ export const contactsAPI = {
     try {
       await apiRequest.delete(`call/contacts/detail/${contactUuid}/`);
     } catch (error) {
-      console.error("Error deleting contact:", error);
+      //console.error("Error deleting contact:", error);
       throw error;
     }
   },
@@ -218,7 +230,7 @@ export const contactsAPI = {
       const response = await apiRequest.get(`call/contacts/institution/${institutionId}/`);
       return response.data as IContact[];
     } catch (error) {
-      console.error("Error fetching contacts by institution:", error);
+      //console.error("Error fetching contacts by institution:", error);
       throw error;
     }
   },
@@ -237,7 +249,7 @@ export const contactsAPI = {
       );
       return response.data as IContact;
     } catch (error) {
-      console.error("Error creating contact for institution:", error);
+      //console.error("Error creating contact for institution:", error);
       throw error;
     }
   },
@@ -258,7 +270,7 @@ export const contactsAPI = {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("Download error response:", errorText);
+        //console.error("Download error response:", errorText);
         throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
 
@@ -271,7 +283,7 @@ export const contactsAPI = {
           !contentType.includes("application/octet-stream"))
       ) {
         const responseText = await response.text();
-        console.error("Unexpected response type:", contentType, responseText);
+        //console.error("Unexpected response type:", contentType, responseText);
         throw new Error("Server did not return an Excel file. Please check the API endpoint.");
       }
 
@@ -302,7 +314,7 @@ export const contactsAPI = {
 
       return { success: true, filename };
     } catch (error) {
-      console.error("Error downloading contact template:", error);
+      //console.error("Error downloading contact template:", error);
       throw error;
     }
   },
@@ -358,7 +370,7 @@ export const contactsAPI = {
         errors?: string[];
       };
     } catch (error) {
-      console.error("Error bulk uploading contacts:", error);
+      //console.error("Error bulk uploading contacts:", error);
       throw error;
     }
   },
@@ -387,6 +399,14 @@ export const contactsAPI = {
     } catch (error) {
       throw error
     }
+  },
+  getAgentCalls: async ({ agentUuid }: { agentUuid: string }) => {
+    try {
+      const response = await apiRequest.get(`call/agent-calls/${agentUuid}/`)
+      return response.data as ICall[]
+    } catch (error) {
+      throw error
+    }
   }
 };
 
@@ -396,7 +416,7 @@ export const institutionAPI = {
       const response = await apiRequest.get(`institution/products/${institutionId}/`);
       return response.data as ICallCenterProduct[];
     } catch (error) {
-      console.error("Error fetching call center products by institution:", error);
+      //console.error("Error fetching call center products by institution:", error);
       throw error;
     }
   },
@@ -425,7 +445,7 @@ export const institutionAPI = {
       const response = await apiRequest.post(`institution/products/${institutionId}/`, payload);
       return response.data;
     } catch (error) {
-      console.error("Error creating product:", error);
+      //console.error("Error creating product:", error);
       throw error;
     }
   },
@@ -435,7 +455,7 @@ export const institutionAPI = {
       const response = await apiRequest.get(`institution/profile/${institutionId}/`);
       return (response.data as IPaginatedResponse<IUserProfile>).results;
     } catch (error) {
-      console.error("Error fetching product details:", error);
+      //console.error("Error fetching product details:", error);
       throw error;
     }
   },
@@ -445,7 +465,22 @@ export const institutionAPI = {
       const response = await apiRequest.get(`institution/products/detail/${productUuid}/`);
       return response.data as ICallCenterProduct;
     } catch (error) {
-      console.error("Error fetching product details:", error);
+      //console.error("Error fetching product details:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Deletes a product by its UUID.
+   * Always show a confirmation dialog in the UI before calling this helper.
+   * @param productUuid - The UUID of the product to delete.
+   * @returns Promise<void>
+   */
+  deleteProduct: async ({ productUuid }: { productUuid: string }) => {
+    try {
+      await apiRequest.delete(`institution/products/detail/${productUuid}/`);
+    } catch (error) {
+      //console.error("Error deleting product:", error);
       throw error;
     }
   },
@@ -479,7 +514,7 @@ export const institutionAPI = {
       );
       return response.data as ICallCenterProduct;
     } catch (error) {
-      console.error("Error updating product:", error);
+      //console.error("Error updating product:", error);
       throw error;
     }
   },
@@ -489,10 +524,10 @@ export const institutionAPI = {
 export const agentsAPI = {
   getByInstitution: async ({ institutionId }: { institutionId: number }) => {
     try {
-      const response = await apiRequest.get(`/call/group-users/${institutionId}/`);
+      const response = await apiRequest.get(`/call/institutions/${institutionId}/agents/`);
       return response.data as IAgent[];
     } catch (error) {
-      console.error("Error fetching CallGroupUsers:", error);
+      //console.error("Error fetching CallGroupUsers:", error);
       throw error;
     }
   },
@@ -502,42 +537,39 @@ export const agentsAPI = {
     userData,
   }: {
     institutionId: number;
-    userData: Partial<ICallGroupUserFormData>;
+    userData: IAgentFormData;
   }) => {
     try {
-      const response = await apiRequest.post(`/call/group-users/${institutionId}/`, userData);
+      const response = await apiRequest.post(`/call/institutions/${institutionId}/agents/`, userData);
       return response.data as IAgent;
     } catch (error) {
-      console.error("Error creating CallGroupUser:", error);
       throw error;
     }
   },
 
   getAgentDetails: async ({ agentUuid }: { agentUuid: string }) => {
     try {
-      const response = await apiRequest.get(`/call/group-users/detail/${agentUuid}/`);
+      const response = await apiRequest.get(`/call/agents/${agentUuid}/`);
       return response.data as IAgent;
     } catch (error) {
-      console.error("Error fetching CallGroupUser details:", error);
       throw error;
     }
   },
 
-  updateAgent: async ({ uuid, updates }: { uuid: string; updates: Partial<ICallGroupUserFormData> }) => {
+  updateAgent: async ({ uuid, updates }: { uuid: string; updates: Partial<IAgentFormData> }) => {
     try {
-      const response = await apiRequest.patch(`/call/group-users/detail/${uuid}/`, updates);
+      const response = await apiRequest.patch(`/call/agents/${uuid}/`, updates);
       return response.data as IAgent;
     } catch (error) {
-      console.error("Error updating CallGroupUser:", error);
       throw error;
     }
   },
 
   deleteAgent: async ({ uuid }: { uuid: string }) => {
     try {
-      await apiRequest.delete(`/call/group-users/detail/${uuid}/`);
+      await apiRequest.delete(`/call/agents/${uuid}/`);
     } catch (error) {
-      console.error("Error deleting CallGroupUser:", error);
+      //console.error("Error deleting CallGroupUser:", error);
       throw error;
     }
   },
@@ -549,18 +581,17 @@ export const callGroupAPI = {
       const response = await apiRequest.get(`/call/groups/${institutionId}/`);
       return response.data as ICallGroup[];
     } catch (error) {
-      console.error("Error fetching CallGroups:", error);
+      //console.error("Error fetching CallGroups:", error);
       throw error;
     }
   },
 
-  getByCurrentUser: async ({ institutionId }: { institutionId: number }) => {
+  getAgentCallGroups: async ({ agentUuid }: { agentUuid: string }) => {
     try {
-      const response = await apiRequest.get(`/call/groups/my-groups/${institutionId}`);
-      return response.data as ICallGroup[];
+      const response = await apiRequest.get(`/call/agent-groups/${agentUuid}/`)
+      return response.data as ICallGroup[]
     } catch (error) {
-      console.error("Error fetching CallGroups for current user:", error);
-      throw error;
+      throw error
     }
   },
 
@@ -575,7 +606,7 @@ export const callGroupAPI = {
       const response = await apiRequest.post(`/call/groups/${institutionId}/`, groupData);
       return response.data as ICallGroup;
     } catch (error) {
-      console.error("Error creating CallGroup:", error);
+      //console.error("Error creating CallGroup:", error);
       throw error;
     }
   },
@@ -585,7 +616,7 @@ export const callGroupAPI = {
       const response = await apiRequest.get(`/call/groups/detail/${uuid}/`);
       return response.data as ICallGroup;
     } catch (error) {
-      console.error("Error fetching CallGroup details:", error);
+      //console.error("Error fetching CallGroup details:", error);
       throw error;
     }
   },
@@ -595,7 +626,7 @@ export const callGroupAPI = {
       const response = await apiRequest.patch(`/call/groups/detail/${uuid}/`, updates);
       return response.data as ICallGroup;
     } catch (error) {
-      console.error("Error updating CallGroup:", error);
+      //console.error("Error updating CallGroup:", error);
       throw error;
     }
   },
@@ -604,7 +635,7 @@ export const callGroupAPI = {
     try {
       await apiRequest.delete(`/call/groups/detail/${uuid}/`);
     } catch (error) {
-      console.error("Error deleting CallGroup:", error);
+      //console.error("Error deleting CallGroup:", error);
       throw error;
     }
   },
@@ -614,7 +645,7 @@ export const callGroupAPI = {
       const response = await apiRequest.get(`/call/groups/contacts/${callGroupUuid}/`);
       return response.data as ICallGroupContact[];
     } catch (error) {
-      console.error("Error fetching CallGroup details:", error);
+      //console.error("Error fetching CallGroup details:", error);
       throw error;
     }
   }
@@ -626,7 +657,7 @@ export const userAPI = {
       const response = await apiRequest.post("/user/", userData);
       return response.data as IUser;
     } catch (error) {
-      console.error("Error registering user:", error);
+      //console.error("Error registering user:", error);
       throw error;
     }
   },
@@ -636,7 +667,7 @@ export const userAPI = {
       const response = await apiRequest.get(`/profile/user/${userId}/`);
       return response.data as IUserProfile;
     } catch (error) {
-      console.error("Error fetching user profile:", error);
+      //console.error("Error fetching user profile:", error);
       throw error;
     }
   },
@@ -646,7 +677,7 @@ export const userAPI = {
       const response = await apiRequest.get(`/user/${userId}/`);
       return response.data as IUser;
     } catch (error) {
-      console.error("Error fetching user details:", error);
+      //console.error("Error fetching user details:", error);
       throw error;
     }
   },
@@ -656,7 +687,7 @@ export const userAPI = {
       const response = await apiRequest.patch(`/user/${userId}/`, updates);
       return response.data as IUser;
     } catch (error) {
-      console.error("Error updating user:", error);
+      //console.error("Error updating user:", error);
       throw error;
     }
   },
@@ -665,7 +696,7 @@ export const userAPI = {
     try {
       await apiRequest.delete(`/user/${userId}/`);
     } catch (error) {
-      console.error("Error deleting user:", error);
+      //console.error("Error deleting user:", error);
       throw error;
     }
   },
@@ -686,7 +717,7 @@ export const clientCompaniesAPI = {
       const response = await apiRequest.get(`institution/client-companies/${institutionId}/`)
       return response.data as IClientCompany[]
     } catch (error) {
-      console.error("Error fetching client companies:", error)
+      //console.error("Error fetching client companies:", error)
       throw error
     }
   },
@@ -696,7 +727,7 @@ export const clientCompaniesAPI = {
       const response = await apiRequest.get(`institution/client-companies/detail/${uuid}/`)
       return response.data as IClientCompany
     } catch (error) {
-      console.error("Error fetching client company:", error)
+      //console.error("Error fetching client company:", error)
       throw error
     }
   },
@@ -706,7 +737,7 @@ export const clientCompaniesAPI = {
       const response = await apiRequest.post(`institution/client-companies/${institutionId}/`, companyData)
       return response.data as IClientCompany
     } catch (error) {
-      console.error("Error creating client company:", error)
+      //console.error("Error creating client company:", error)
       throw error
     }
   },
@@ -716,7 +747,7 @@ export const clientCompaniesAPI = {
       const response = await apiRequest.patch(`institution/client-companies/detail/${uuid}/`, companyData)
       return response.data as IClientCompany
     } catch (error) {
-      console.error("Error updating client company:", error)
+      //console.error("Error updating client company:", error)
       throw error
     }
   },
@@ -726,7 +757,7 @@ export const clientCompaniesAPI = {
       await apiRequest.delete(`institution/client-companies/detail/${uuid}/`)
       return true
     } catch (error) {
-      console.error("Error deleting client company:", error)
+      //console.error("Error deleting client company:", error)
       throw error
     }
   },

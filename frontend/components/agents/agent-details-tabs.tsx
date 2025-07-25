@@ -1,23 +1,39 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Icon } from "@iconify/react"
-import { AgentCallHistory, AssignedContact } from "@/app/types/types.utils"
+import type { ICall, ICallGroup } from "@/app/types/api.types"
+import Link from "next/link"
 
 
 interface AgentDetailsTabsProps {
-  activeTab: "call-history" | "assigned-contacts"
-  onTabChange: (tab: "call-history" | "assigned-contacts") => void
-  callHistory: AgentCallHistory[]
-  assignedContacts: AssignedContact[]
-}
+  activeTab: "call-history" | "call-groups"
+  onTabChange: (tab: "call-history" | "call-groups") => void
+  callHistory: ICall[],
+  callGroups: ICallGroup[]
+  loadingCallHistory: boolean
+  loadingCallGroups: boolean
+    }
 
-export function AgentDetailsTabs({ activeTab, onTabChange, callHistory, assignedContacts }: AgentDetailsTabsProps) {
+const Shimmer = ({ rows = 5 }: { rows?: number }) => (
+  <div className="space-y-2">
+    {[...Array(rows)].map((_, i) => (
+      <div
+        key={i}
+        className="animate-pulse h-6 bg-gray-200 rounded w-full"
+      />
+    ))}
+  </div>
+)
+
+export function AgentDetailsTabs({ activeTab, onTabChange, callHistory, callGroups, loadingCallHistory, loadingCallGroups }: AgentDetailsTabsProps) {
+  
   const [searchTerm, setSearchTerm] = useState("")
+  const [filteredCallGroups, setFilteredCallGroups] = useState<ICallGroup[]>(callGroups)
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -33,6 +49,10 @@ export function AgentDetailsTabs({ activeTab, onTabChange, callHistory, assigned
         return "bg-gray-100 text-gray-800"
     }
   }
+
+  useEffect(() => {
+    setFilteredCallGroups(callGroups.filter((group) => group.name.toLowerCase().includes(searchTerm.toLowerCase())))
+  }, [searchTerm, callGroups])
 
   return (
     <div className="bg-white rounded-xl border border-gray-200">
@@ -50,14 +70,14 @@ export function AgentDetailsTabs({ activeTab, onTabChange, callHistory, assigned
             Call History
           </button>
           <button
-            onClick={() => onTabChange("assigned-contacts")}
+            onClick={() => onTabChange("call-groups")}
             className={`py-4 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === "assigned-contacts"
+              activeTab === "call-groups"
                 ? "border-gray-900 text-gray-900"
                 : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
-            Assigned Contacts
+            Call Groups
           </button>
         </div>
       </div>
@@ -65,9 +85,116 @@ export function AgentDetailsTabs({ activeTab, onTabChange, callHistory, assigned
       {/* Tab Content */}
       <div className="p-6">
         {activeTab === "call-history" && (
-          <div className="space-y-4">
-            {/* Search and Filters */}
-            <div className="flex items-center justify-between">
+          loadingCallHistory ? (
+            <div className="py-6"><Shimmer rows={7} /></div>
+          ) : (
+            <div className="space-y-4">
+              {/* Search and Filters */}
+              <div className="flex items-center justify-between">
+                <div className="relative">
+                  <Icon
+                    icon="hugeicons:search-01"
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4"
+                  />
+                  <Input
+                    placeholder="Search"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 w-64 rounded-xl"
+                  />
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <Select defaultValue="all-status">
+                    <SelectTrigger className="w-32 rounded-xl">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      <SelectItem value="all-status">All Status</SelectItem>
+                      <SelectItem value="complete">Complete</SelectItem>
+                      <SelectItem value="missed">Missed</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select defaultValue="all-directions">
+                    <SelectTrigger className="w-40 rounded-xl">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      <SelectItem value="all-directions">All Directions</SelectItem>
+                      <SelectItem value="outgoing">Outgoing</SelectItem>
+                      <SelectItem value="incoming">Incoming</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Call History Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Date
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Clients
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Direction
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Duration
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {callHistory.map((record, idx) => (
+                      <tr key={idx} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.made_on}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.contact.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{"N/A"}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{"N/A"}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <Badge className={`rounded-full ${getStatusColor(record.status)}`}>{record.status}</Badge>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex items-center space-x-2">
+                            <Button variant="ghost" size="sm" className="p-2 rounded-lg">
+                              <Icon icon="hugeicons:view" className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm" className="p-2 rounded-lg">
+                              <Icon icon="hugeicons:call" className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm" className="p-2 rounded-lg text-red-600 hover:text-red-700">
+                              <Icon icon="hugeicons:delete-02" className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )
+        )}
+
+        {activeTab === "call-groups" && (
+          loadingCallGroups ? (
+            <div className="py-6"><Shimmer rows={5} /></div>
+          ) : (
+            <> 
+            {/* Search */}
+            
+            
+            <div className="flex items-center justify-between mb-4">
               <div className="relative">
                 <Icon
                   icon="hugeicons:search-01"
@@ -79,185 +206,47 @@ export function AgentDetailsTabs({ activeTab, onTabChange, callHistory, assigned
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 w-64 rounded-xl"
                 />
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <Select defaultValue="all-status">
-                  <SelectTrigger className="w-32 rounded-xl">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    <SelectItem value="all-status">All Status</SelectItem>
-                    <SelectItem value="complete">Complete</SelectItem>
-                    <SelectItem value="missed">Missed</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select defaultValue="all-directions">
-                  <SelectTrigger className="w-40 rounded-xl">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    <SelectItem value="all-directions">All Directions</SelectItem>
-                    <SelectItem value="outgoing">Outgoing</SelectItem>
-                    <SelectItem value="incoming">Incoming</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              </div>  
             </div>
-
-            {/* Call History Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Clients
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Direction
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Duration
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {callHistory.map((record) => (
-                    <tr key={record.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.date}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.client}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.direction}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.duration}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <Badge className={`rounded-full ${getStatusColor(record.status)}`}>{record.status}</Badge>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center space-x-2">
-                          <Button variant="ghost" size="sm" className="p-2 rounded-lg">
-                            <Icon icon="hugeicons:view" className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" className="p-2 rounded-lg">
-                            <Icon icon="hugeicons:call" className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" className="p-2 rounded-lg text-red-600 hover:text-red-700">
-                            <Icon icon="hugeicons:delete-02" className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </td>
+            <div className="space-y-4">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Description
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "assigned-contacts" && (
-          <div className="space-y-4">
-            {/* Search and Filters */}
-            <div className="flex items-center justify-between">
-              <div className="relative">
-                <Icon
-                  icon="hugeicons:search-01"
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4"
-                />
-                <Input
-                  placeholder="Search"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-64 rounded-xl"
-                />
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <Select defaultValue="all-status">
-                  <SelectTrigger className="w-32 rounded-xl">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    <SelectItem value="all-status">All Status</SelectItem>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
+                  </thead>  
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredCallGroups.map((group, idx) => (
+                      <tr key={idx} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{group.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 truncate">{"N/A"}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex items-center space-x-2">
+                            <Link href={`/call-groups/${group.uuid}`}>
+                            <Button variant="ghost" size="sm" className="p-2 rounded-lg">
+                              <Icon icon="hugeicons:view" className="w-4 h-4" />
+                            </Button> 
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>  
               </div>
             </div>
-
-            {/* Assigned Contacts Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      <input type="checkbox" className="rounded" />
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Phone Number
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Product
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Call
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {assignedContacts.map((contact) => (
-                    <tr key={contact.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <input type="checkbox" className="rounded" />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{contact.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{contact.phone}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{contact.product}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{contact.calls}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <Badge className={`rounded-full ${getStatusColor(contact.status)}`}>{contact.status}</Badge>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center space-x-2">
-                          <Button variant="ghost" size="sm" className="p-2 rounded-lg">
-                            <Icon icon="hugeicons:view" className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" className="p-2 rounded-lg">
-                            <Icon icon="hugeicons:call" className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" className="p-2 rounded-lg">
-                            <Icon icon="hugeicons:edit-02" className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" className="p-2 rounded-lg text-red-600 hover:text-red-700">
-                            <Icon icon="hugeicons:delete-02" className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+            </>
+          )
         )}
-
         {/* Pagination */}
         {/* <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
           <p className="text-sm text-gray-500">Showing 1-7 of 70</p>

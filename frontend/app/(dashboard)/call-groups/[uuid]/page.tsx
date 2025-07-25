@@ -7,6 +7,7 @@ import {CallGroupContactsTabs} from "@/components/call-groups/call-groups-contac
 import {ICallGroup, ICallGroupContact, IContact} from "@/app/types/api.types";
 import {callGroupAPI} from "@/lib/api-helpers";
 import {useParams} from "next/navigation";
+import { toast } from "sonner";
 
 export default function CallGroupDetailsPage() {
   const params = useParams();
@@ -28,7 +29,7 @@ export default function CallGroupDetailsPage() {
       setCallGroup(group);
       setContacts(groupContacts);
     } catch (error) {
-      console.error("Error fetching call group details:", error);
+      toast.error("Error fetching call group details:");
     } finally {
       setLoading(false);
     }

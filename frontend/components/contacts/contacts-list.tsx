@@ -18,7 +18,7 @@ interface ContactsListProps {
 }
 
 export function ContactsList({ contacts, selectedContactIds, onSelectionChange, onEditContact, onDeleteContact }: ContactsListProps) {
-
+  console.log("\n\n Received contacts : ", contacts)
   const router = useRouter();
 
   const handleSelectAll = (checked: boolean) => {
@@ -67,7 +67,7 @@ export function ContactsList({ contacts, selectedContactIds, onSelectionChange, 
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Agent</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Product
+                Country
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -99,7 +99,7 @@ export function ContactsList({ contacts, selectedContactIds, onSelectionChange, 
                   <div className="text-sm text-gray-900">{"N/A"}</div>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{contact.product.name}</div>
+                  <div className="text-sm text-gray-900">{contact.country}</div>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
                   <Badge className={`rounded-full ${getContactStatusColor(contact.status)}`}>{contact.status}</Badge>
