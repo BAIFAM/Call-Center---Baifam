@@ -2,7 +2,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiTypes
 from django.shortcuts import get_object_or_404
 
 from users.models import Profile
@@ -631,7 +631,7 @@ class CallListCreateAPIView(APIView):
     )
     def get(self, request, institution_id):
         calls = Call.objects.filter(contact__product__institution__id=institution_id)
-        serializer = CallSerializer(calls, many=True)
+        serializer = CallSerializer(calls, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(
@@ -640,38 +640,54 @@ class CallListCreateAPIView(APIView):
         responses={201: CallSerializer}
     )
     def post(self, request, institution_id):
-        
         contact_uuid = request.data.get('contact')
         if not contact_uuid:
-            return Response({"detail": "Contact UUID is required."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        contact = get_object_or_404(Contact, uuid=contact_uuid)
-        # Ensure contact's product belongs to the specified institution
-        if contact.product.institution.id != institution_id:
             return Response(
-                {'detail': 'Contact does not belong to this institution.'},
+                {"detail": "ContactProduct UUID is required."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
+        # Retrieve ContactProduct instance
+        contact_product = get_object_or_404(ContactProduct, uuid=contact_uuid)
+        # Ensure contact_product's product belongs to the specified institution
+        if contact_product.product.institution.id != institution_id:
+            return Response(
+                {'detail': 'ContactProduct does not belong to this institution.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         # Create a mutable copy of the data
         data = request.data.copy()
-        
+
         # Add all files from request.FILES to data
         for field_name, file in request.FILES.items():
             data[field_name] = file
-        
+
         print("\n\n\n Creating call with data : ", data)
         # Pass request context to serializer for dynamic file field creation
         serializer = CallSerializer(data=data, context={'request': request})
         if serializer.is_valid():
-            call = serializer.save(made_by=request.user)
-            
+            # Validate made_by (optional, depending on your requirements)
+            try:
+                callgroup_agent = request.user.callgroupagent
+                if callgroup_agent.institution.id != institution_id:
+                    return Response(
+                        {'detail': 'User does not belong to this institution.'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            except AttributeError:
+                return Response(
+                    {'detail': 'User is not a valid CallgroupAgent.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            call = serializer.save(made_by=callgroup_agent)
             call.refresh_from_db()
-            
+
             # Create a new serializer instance with the refreshed call for the response
             response_serializer = CallSerializer(call, context={'request': request})
             response_data = response_serializer.data
-            
+
             return Response(response_data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
