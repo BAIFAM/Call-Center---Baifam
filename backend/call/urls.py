@@ -85,8 +85,8 @@ urlpatterns = [
     path("detail/<uuid:uuid>/", CallDetailAPIView.as_view(), name="call-detail"),
     path("contact-calls/<uuid:contact_uuid>/", ContactCallsListView.as_view(), name="contact-calls"),
     path('institutions/<int:institution_id>/contact-products/', ContactProductListCreateView.as_view(), name='contact-product-list-create'),
-    path('contact-products/<int:id>/', ContactProductDetailView.as_view(), name='contact-product-detail'),
+    path('contact-products/<uuid:uuid>/', ContactProductDetailView.as_view(), name='contact-product-detail'),
     path('institutions/<int:institution_id>/agents/', AgentListCreateView.as_view(), name='agent-list-create'),
-    path('agents/<int:id>/', AgentDetailView.as_view(), name='agent-detail'),
+    path('agents/<uuid:uuid>/', AgentDetailView.as_view(), name='agent-detail'),
 ]
 
