@@ -4,15 +4,18 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 from django.shortcuts import get_object_or_404
-from .models import CallGroup, CallGroupContact, CallGroupUser, Contact, Call
+
+from users.models import Profile
+from .models import Agent, CallGroup, CallGroupContact, CallGroupAgent, Contact, Call, ContactProduct
 from institution.models import Institution, Product
-from .serializers import CallGroupContactSerializer, CallGroupSerializer, CallGroupUserSerializer, CallSerializer, ContactSerializer
+from .serializers import AgentSerializer, BulkContactSerializer, CallGroupContactSerializer, CallGroupSerializer, CallGroupAgentSerializer, CallSerializer, ContactProductSerializer, ContactSerializer
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 import pandas as pd
 from django.http import HttpResponse
 import io
 import uuid as uuid_module
 import logging
+from openpyxl.styles import Font, PatternFill, Alignment
 
 logger = logging.getLogger(__name__)
 @extend_schema(tags=["CallGroup"])
@@ -84,26 +87,26 @@ class CallGroupDetailView(APIView):
         group.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
-@extend_schema(tags=["CallGroupUser"])
-class CallGroupUserListCreateView(APIView):
+@extend_schema(tags=["CallGroupAgent"])
+class CallGroupAgentListCreateView(APIView):
 
     @extend_schema(
         summary="List users assigned to call groups of a specific institution",
         parameters=[
             OpenApiParameter(name="institution_id", required=True, type=int, location=OpenApiParameter.PATH),
         ],
-        responses={200: CallGroupUserSerializer(many=True)}
+        responses={200: CallGroupAgentSerializer(many=True)}
     )
     def get(self, request, institution_id):
         institution = get_object_or_404(Institution, id=institution_id)
-        users = CallGroupUser.objects.filter(call_group__institution=institution)
-        serializer = CallGroupUserSerializer(users, many=True)
+        users = CallGroupAgent.objects.filter(call_group__institution=institution)
+        serializer = CallGroupAgentSerializer(users, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(
         summary="Assign a user to a call group (within specified institution)",
-        request=CallGroupUserSerializer,
-        responses={201: CallGroupUserSerializer}
+        request=CallGroupAgentSerializer,
+        responses={201: CallGroupAgentSerializer}
     )
     def post(self, request, institution_id):
         institution = get_object_or_404(Institution, id=institution_id)
@@ -112,43 +115,43 @@ class CallGroupUserListCreateView(APIView):
         call_group_uuid = data.get('call_group')
         call_group = get_object_or_404(CallGroup, uuid=call_group_uuid, institution=institution)
 
-        serializer = CallGroupUserSerializer(data=data)
+        serializer = CallGroupAgentSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@extend_schema(tags=["CallGroupUser"])
-class CallGroupUserDetailView(APIView):
+@extend_schema(tags=["CallGroupAgent"])
+class CallGroupAgentDetailView(APIView):
 
     def get_object(self, uuid):
-        return get_object_or_404(CallGroupUser, uuid=uuid)
+        return get_object_or_404(CallGroupAgent, uuid=uuid)
 
     @extend_schema(
-        summary="Retrieve a CallGroupUser by UUID",
-        responses={200: CallGroupUserSerializer}
+        summary="Retrieve a CallGroupAgent by UUID",
+        responses={200: CallGroupAgentSerializer}
     )
     def get(self, request, uuid):
         item = self.get_object(uuid)
-        serializer = CallGroupUserSerializer(item)
+        serializer = CallGroupAgentSerializer(item)
         return Response(serializer.data)
 
     @extend_schema(
-        summary="Partially update a CallGroupUser by UUID",
-        request=CallGroupUserSerializer,
-        responses={200: CallGroupUserSerializer}
+        summary="Partially update a CallGroupAgent by UUID",
+        request=CallGroupAgentSerializer,
+        responses={200: CallGroupAgentSerializer}
     )
     def patch(self, request, uuid):
         item = self.get_object(uuid)
-        serializer = CallGroupUserSerializer(item, data=request.data, partial=True)
+        serializer = CallGroupAgentSerializer(item, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
-        summary="Delete a CallGroupUser by UUID",
+        summary="Delete a CallGroupAgent by UUID",
         responses={204: OpenApiResponse(description="Deleted successfully")}
     )
     def delete(self, request, uuid):
@@ -172,9 +175,9 @@ class UserCallGroupsListView(APIView):
 
 @extend_schema(tags=["Contact"])
 class ContactListCreateView(APIView):
-    # Keep existing GET and POST methods unchanged
+
     @extend_schema(
-        summary="List contacts for products under a specific institution",
+        summary="List Contacts for a specific institution",
         parameters=[
             OpenApiParameter(name="institution_id", required=True, type=int, location=OpenApiParameter.PATH),
         ],
@@ -182,23 +185,21 @@ class ContactListCreateView(APIView):
     )
     def get(self, request, institution_id):
         institution = get_object_or_404(Institution, id=institution_id)
-        contacts = Contact.objects.filter(product__institution=institution)
+        contacts = Contact.objects.filter(institution=institution).prefetch_related('contact_products__product__institution')
         serializer = ContactSerializer(contacts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(
-        summary="Create a new contact for a product under an institution",
+        summary="Create a Contact (within specified institution)",
         request=ContactSerializer,
         responses={201: ContactSerializer}
     )
     def post(self, request, institution_id):
         institution = get_object_or_404(Institution, id=institution_id)
         data = request.data.copy()
+        data['institution'] = institution.id
 
-        product_uuid = data.get("product")
-        product = get_object_or_404(Product, uuid=product_uuid, institution=institution)
-
-        serializer = ContactSerializer(data=data)
+        serializer = ContactSerializer(data=data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -218,50 +219,46 @@ class ContactTemplateDownloadView(APIView):
         product = get_object_or_404(Product, uuid=product_uuid)
         
         try:
-            print("\n\nTemplate generation started ...")
-            # Create template with empty rows and wider columns
+            # Create template with empty rows
             template_data = {
-                'name': [''] * 10,  # 10 empty rows
+                'name': [''] * 10,
                 'phone_number': [''] * 10,
                 'country': [''] * 10,
                 'country_code': [''] * 10,
+                'status': [''] * 10,
+                'remarks': [''] * 10,
             }
             
             # Create Excel file in memory
             output = io.BytesIO()
-            print("\n\nCreating excel file in memory ...")
             
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
                 # Main template sheet
                 df = pd.DataFrame(template_data)
                 df.to_excel(writer, sheet_name='Contacts', index=False)
                 
-                # Get the workbook and worksheet objects
+                # Get workbook and worksheet
                 workbook = writer.book
                 worksheet = writer.sheets['Contacts']
                 
-                # Set column widths (make them bigger)
+                # Set column widths
                 column_widths = {
                     'A': 25,  # name
                     'B': 20,  # phone_number
                     'C': 15,  # country
                     'D': 15,  # country_code
-                    'E': 12,  # status
+                    'E': 15,  # status
+                    'F': 30,  # remarks
                 }
-
                 
                 for col, width in column_widths.items():
                     worksheet.column_dimensions[col].width = width
-                
-                # Add some formatting to headers
-                from openpyxl.styles import Font, PatternFill, Alignment
                 
                 # Header styling
                 header_font = Font(bold=True, color="FFFFFF")
                 header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
                 center_alignment = Alignment(horizontal="center", vertical="center")
                 
-                # Apply styling to header row
                 for col in range(1, len(df.columns) + 1):
                     cell = worksheet.cell(row=1, column=col)
                     cell.font = header_font
@@ -270,31 +267,31 @@ class ContactTemplateDownloadView(APIView):
                 
                 # Instructions sheet
                 instructions_df = pd.DataFrame({
-                    'Field': ['name', 'phone_number', 'country', 'country_code', 'status'],
+                    'Field': ['name', 'phone_number', 'country', 'country_code', 'status', 'remarks'],
                     'Description': [
-                        'Full name of the contact (required)',
-                        'Phone number with country code (required)',
+                        'Full name of the contact',
+                        'Phone number with country code',
                         'Country name (optional)',
                         'Country calling code (optional)',
-                        'Contact status (optional)'
+                        'Contact status (optional, default: new)',
+                        'Additional remarks (optional)'
                     ],
-                    'Required': ['Yes', 'Yes', 'No', 'No', 'No'],
+                    'Required': ['Yes', 'Yes', 'No', 'No', 'No', 'No'],
                     'Examples': [
-                        'John Doe, Jane Smith',
-                        '+1234567890, +256701234567',
-                        'Uganda, USA, UK',
-                        '+256, +1, +44',
-                        'Active, Inactive'
+                        'John Doe',
+                        '+256701234567',
+                        'Uganda',
+                        '+256',
+                        'new, assigned, attended_to, archived, flagged, ready_to_export, exported',
+                        'Met at conference'
                     ]
                 })
                 instructions_df.to_excel(writer, sheet_name='Instructions', index=False)
                 
-                # Style instructions sheet
                 instructions_sheet = writer.sheets['Instructions']
                 for col in ['A', 'B', 'C', 'D']:
-                    instructions_sheet.column_dimensions[col].width = 25
+                    instructions_sheet.column_dimensions[col].width = 30
                 
-                # Apply header styling to instructions
                 for col in range(1, len(instructions_df.columns) + 1):
                     cell = instructions_sheet.cell(row=1, column=col)
                     cell.font = header_font
@@ -304,15 +301,15 @@ class ContactTemplateDownloadView(APIView):
                 # Product Info sheet
                 product_info_df = pd.DataFrame({
                     'Product Information': [
-                        'Selected Product:',
-                        'Product Name:',
-                        'Institution:',
-                        'Upload Instructions:',
+                        'Selected Product',
+                        'Product Name',
+                        'Institution',
+                        'Upload Instructions',
                         '',
-                        '1. Fill in the contact details in the "Contacts" sheet',
+                        '1. Fill in the Contacts sheet',
                         '2. Save the file',
                         '3. Upload using the bulk upload feature',
-                        '4. All contacts will be automatically assigned to the selected product'
+                        '4. Contacts will be linked to the selected product'
                     ],
                     'Details': [
                         '',
@@ -328,12 +325,10 @@ class ContactTemplateDownloadView(APIView):
                 })
                 product_info_df.to_excel(writer, sheet_name='Product_Info', index=False)
                 
-                # Style product info sheet
                 product_info_sheet = writer.sheets['Product_Info']
                 product_info_sheet.column_dimensions['A'].width = 30
                 product_info_sheet.column_dimensions['B'].width = 30
                 
-                # Apply header styling to product info
                 for col in range(1, len(product_info_df.columns) + 1):
                     cell = product_info_sheet.cell(row=1, column=col)
                     cell.font = header_font
@@ -344,14 +339,14 @@ class ContactTemplateDownloadView(APIView):
             
             # Create response
             response = HttpResponse(
-                output.read(),
-                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                content=output.read()
             )
-            response['Content-Disposition'] = f'attachment; filename="contacts_template_{product.name.replace(" ", "_")}.xlsx"'
+            response['Content-Disposition'] = f'attachment; filename="contacts_template_{product.name.replace(' ', '_')}.xlsx"'
             return response
             
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': f'Failed to generate template: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @extend_schema(tags=["Contact"])
@@ -370,7 +365,7 @@ class ContactBulkUploadView(APIView):
                     'file': {
                         'type': 'string',
                         'format': 'binary',
-                        'description': 'CSV or Excel file with contact data'
+                        'description': 'Excel or CSV file with contact data'
                     }
                 }
             }
@@ -385,7 +380,7 @@ class ContactBulkUploadView(APIView):
         
         if 'file' not in request.FILES:
             return Response(
-                {'error': 'No file provided'}, 
+                {'error': 'No file provided'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
@@ -394,15 +389,14 @@ class ContactBulkUploadView(APIView):
         # Validate file type
         if not file.name.endswith(('.xlsx', '.xls', '.csv')):
             return Response(
-                {'error': 'Invalid file type. Please upload a CSV or Excel file (.csv, .xlsx, .xls)'}, 
+                {'error': 'Invalid file type. Please upload a CSV or Excel file (.csv, .xlsx, .xls)'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
         try:
-            # Read file based on extension
+            # Read file
             if file.name.endswith('.csv'):
                 df = pd.read_csv(file)
-                # Remove comment lines
                 df = df[~df.iloc[:, 0].astype(str).str.startswith('#')]
             else:
                 df = pd.read_excel(file, sheet_name='Contacts')
@@ -415,44 +409,43 @@ class ContactBulkUploadView(APIView):
             missing_columns = [col for col in required_columns if col not in df.columns]
             if missing_columns:
                 return Response(
-                    {'error': f'Missing required columns: {", ".join(missing_columns)}'}, 
+                    {'error': f'Missing required columns: {", ".join(missing_columns)}'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Process each row
             created_contacts = []
             errors = []
             
             for index, row in df.iterrows():
                 try:
-                    # Skip if name is empty
+                    # Skip empty rows
                     if pd.isna(row['name']) or str(row['name']).strip() == '':
                         continue
                     
-                    # Skip if phone_number is empty
                     if pd.isna(row['phone_number']) or str(row['phone_number']).strip() == '':
                         errors.append(f'Row {index + 2}: Phone number is required')
                         continue
                     
-                    # Prepare contact data (product is pre-selected)
+                    # Prepare contact data
                     contact_data = {
                         'name': str(row['name']).strip(),
                         'phone_number': str(row['phone_number']).strip(),
-                        'product': product.pk,  # Use the pre-selected product
                         'country': str(row.get('country', '')).strip() if pd.notna(row.get('country')) else '',
                         'country_code': str(row.get('country_code', '')).strip() if pd.notna(row.get('country_code')) else '',
+                        'status': str(row.get('status', 'new')).strip() if pd.notna(row.get('status')) else 'new',
+                        'remarks': str(row.get('remarks', '')).strip() if pd.notna(row.get('remarks')) else '',
+                        'product': str(product.uuid)
                     }
                     
-                    
-                    # Create contact using serializer
-                    serializer = ContactSerializer(data=contact_data)
+                    # Create contact using BulkContactSerializer
+                    serializer = BulkContactSerializer(data=contact_data, context={'request': request})
                     if serializer.is_valid():
                         contact = serializer.save()
                         created_contacts.append({
                             'uuid': str(contact.uuid),
                             'name': contact.name,
                             'phone_number': contact.phone_number,
-                            'product_name': contact.product.name
+                            'product_name': product.name
                         })
                     else:
                         errors.append(f'Row {index + 2}: {serializer.errors}')
@@ -460,11 +453,11 @@ class ContactBulkUploadView(APIView):
                 except Exception as e:
                     errors.append(f'Row {index + 2}: {str(e)}')
             
-            # Prepare response
             response_data = {
                 'created_count': len(created_contacts),
                 'error_count': len(errors),
                 'product_name': product.name,
+                'institution': product.institution.institution_name,
                 'created_contacts': created_contacts
             }
             
@@ -476,10 +469,9 @@ class ContactBulkUploadView(APIView):
             
         except Exception as e:
             return Response(
-                {'error': f'Error processing file: {str(e)}'}, 
+                {'error': f'Error processing file: {str(e)}'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
 
 
 @extend_schema(tags=["Contact"])
@@ -489,34 +481,37 @@ class ContactDetailView(APIView):
         return get_object_or_404(Contact, uuid=uuid)
 
     @extend_schema(
-        summary="Retrieve a contact by UUID",
+        summary="Retrieve a Contact by UUID",
+        parameters=[
+            OpenApiParameter(name="uuid", required=True, type=str, location=OpenApiParameter.PATH),
+        ],
         responses={200: ContactSerializer}
     )
     def get(self, request, uuid):
-        contact = self.get_object(uuid)
-        serializer = ContactSerializer(contact)
+        item = self.get_object(uuid)
+        serializer = ContactSerializer(item)
         return Response(serializer.data)
 
     @extend_schema(
-        summary="Partially update a contact by UUID",
+        summary="Partially update a Contact by UUID",
         request=ContactSerializer,
         responses={200: ContactSerializer}
     )
     def patch(self, request, uuid):
-        contact = self.get_object(uuid)
-        serializer = ContactSerializer(contact, data=request.data, partial=True)
+        item = self.get_object(uuid)
+        serializer = ContactSerializer(item, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
-        summary="Delete a contact by UUID",
+        summary="Delete a Contact by UUID",
         responses={204: OpenApiResponse(description="Deleted successfully")}
     )
     def delete(self, request, uuid):
-        contact = self.get_object(uuid)
-        contact.delete()
+        item = self.get_object(uuid)
+        item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -718,4 +713,154 @@ class CallDetailAPIView(APIView):
         call = self.get_object(uuid)
         call.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
+
+@extend_schema(tags=["ContactProduct"])
+class ContactProductListCreateView(APIView):
+
+    @extend_schema(
+        summary="List ContactProduct associations for a specific institution",
+        parameters=[
+            OpenApiParameter(name="institution_id", required=True, type=int, location=OpenApiParameter.PATH),
+        ],
+        responses={200: ContactProductSerializer(many=True)}
+    )
+    def get(self, request, institution_id):
+        institution = get_object_or_404(Institution, id=institution_id)
+        contact_products = ContactProduct.objects.filter(product__institution=institution).select_related('contact', 'product__institution', 'created_by')
+        serializer = ContactProductSerializer(contact_products, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="Create a ContactProduct association (within specified institution)",
+        request=ContactProductSerializer,
+        responses={201: ContactProductSerializer}
+    )
+    def post(self, request, institution_id):
+        institution = get_object_or_404(Institution, id=institution_id)
+        data = request.data.copy()
+
+        contact_id = data.get('contact')
+        product_id = data.get('product')
+        # Use uuid for both Contact and Product
+        contact = get_object_or_404(Contact, uuid=contact_id)
+        product = get_object_or_404(Product, uuid=product_id, institution=institution)
+
+        serializer = ContactProductSerializer(data=data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@extend_schema(tags=["ContactProduct"])
+class ContactProductDetailView(APIView):
+
+    def get_object(self, id):
+        return get_object_or_404(ContactProduct, id=id)
+
+    @extend_schema(
+        summary="Retrieve a ContactProduct by ID",
+        parameters=[
+            OpenApiParameter(name="id", required=True, type=int, location=OpenApiParameter.PATH),
+        ],
+        responses={200: ContactProductSerializer}
+    )
+    def get(self, request, id):
+        item = self.get_object(id)
+        serializer = ContactProductSerializer(item)
+        return Response(serializer.data)
+
+    @extend_schema(
+        summary="Partially update a ContactProduct by ID",
+        request=ContactProductSerializer,
+        responses={200: ContactProductSerializer}
+    )
+    def patch(self, request, id):
+        item = self.get_object(id)
+        serializer = ContactProductSerializer(item, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        summary="Delete a ContactProduct by ID",
+        responses={204: OpenApiResponse(description="Deleted successfully")}
+    )
+    def delete(self, request, id):
+        item = self.get_object(id)
+        item.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+@extend_schema(tags=["Agent"])
+class AgentListCreateView(APIView):
+
+    @extend_schema(
+        summary="List Agents for a specific institution",
+        parameters=[
+            OpenApiParameter(name="institution_id", required=True, type=int, location=OpenApiParameter.PATH),
+        ],
+        responses={200: AgentSerializer(many=True)}
+    )
+    def get(self, request, institution_id):
+        institution = get_object_or_404(Institution, id=institution_id)
+        agents = Agent.objects.filter(user__institution=institution).select_related('user__user', 'user__institution')
+        serializer = AgentSerializer(agents, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="Create an Agent (within specified institution)",
+        request=AgentSerializer,
+        responses={201: AgentSerializer}
+    )
+    def post(self, request, institution_id):
+        institution = get_object_or_404(Institution, id=institution_id)
+        data = request.data.copy()
+
+        user_id = data.get('user')
+        user = get_object_or_404(Profile, id=user_id, institution=institution)
+
+        serializer = AgentSerializer(data=data, context={'request': request, 'view': {'kwargs': {'institution_id': institution_id}}})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@extend_schema(tags=["Agent"])
+class AgentDetailView(APIView):
+
+    def get_object(self, id):
+        return get_object_or_404(Agent, id=id)
+
+    @extend_schema(
+        summary="Retrieve an Agent by ID",
+        parameters=[
+            OpenApiParameter(name="id", required=True, type=int, location=OpenApiParameter.PATH),
+        ],
+        responses={200: AgentSerializer}
+    )
+    def get(self, request, id):
+        item = self.get_object(id)
+        serializer = AgentSerializer(item)
+        return Response(serializer.data)
+
+    @extend_schema(
+        summary="Partially update an Agent by ID",
+        request=AgentSerializer,
+        responses={200: AgentSerializer}
+    )
+    def patch(self, request, id):
+        item = self.get_object(id)
+        serializer = AgentSerializer(item, data=request.data, partial=True, context={'request': request, 'view': {'kwargs': {'institution_id': item.user.institution_id}}})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        summary="Delete an Agent by ID",
+        responses={204: OpenApiResponse(description="Deleted successfully")}
+    )
+    def delete(self, request, id):
+        item = self.get_object(id)
+        item.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)    

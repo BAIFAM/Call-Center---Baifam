@@ -3,6 +3,9 @@ from users.models import CustomUser
 from users.serializers import CustomUserSerializer
 from .models import ClientCompany, ClientCompanyProduct, Institution, Branch, Product, UserBranch, InstitutionDocument
 import os
+import re
+from rest_framework import serializers
+from .models import Product, Institution
 
 class InstitutionDocumentSerializer(serializers.ModelSerializer):
 
@@ -182,6 +185,7 @@ class UserBranchSerializer(serializers.ModelSerializer):
     
 class ClientCompanySerializer(serializers.ModelSerializer):
     institution = serializers.PrimaryKeyRelatedField(queryset=Institution.objects.all())
+    products = serializers.SerializerMethodField()  
 
     class Meta:
         model = ClientCompany
@@ -192,10 +196,15 @@ class ClientCompanySerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
         rep['institution'] = InstitutionSerializer(instance.institution).data
         return rep
+
+    def get_products(self, instance):
+        """
+        Get all products associated with the client company via ClientCompanyProduct.
+        """
+        client_company_products = instance.products.all()  
+        return ClientCompanyProductSerializer(client_company_products, many=True).data
     
-import re
-from rest_framework import serializers
-from .models import Product, Institution
+
 
 class ProductSerializer(serializers.ModelSerializer):
     institution = serializers.PrimaryKeyRelatedField(queryset=Institution.objects.all())
