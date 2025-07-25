@@ -754,28 +754,28 @@ class ContactProductListCreateView(APIView):
 @extend_schema(tags=["ContactProduct"])
 class ContactProductDetailView(APIView):
 
-    def get_object(self, id):
-        return get_object_or_404(ContactProduct, id=id)
+    def get_object(self, uuid):
+        return get_object_or_404(ContactProduct, uuid=uuid)
 
     @extend_schema(
-        summary="Retrieve a ContactProduct by ID",
+        summary="Retrieve a ContactProduct by UUID",
         parameters=[
-            OpenApiParameter(name="id", required=True, type=int, location=OpenApiParameter.PATH),
+            OpenApiParameter(name="uuid", required=True, type=OpenApiTypes.UUID, location=OpenApiParameter.PATH),
         ],
         responses={200: ContactProductSerializer}
     )
-    def get(self, request, id):
-        item = self.get_object(id)
+    def get(self, request, uuid):
+        item = self.get_object(uuid)
         serializer = ContactProductSerializer(item)
         return Response(serializer.data)
 
     @extend_schema(
-        summary="Partially update a ContactProduct by ID",
+        summary="Partially update a ContactProduct by UUID",
         request=ContactProductSerializer,
         responses={200: ContactProductSerializer}
     )
-    def patch(self, request, id):
-        item = self.get_object(id)
+    def patch(self, request, uuid):
+        item = self.get_object(uuid)
         serializer = ContactProductSerializer(item, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
@@ -783,11 +783,11 @@ class ContactProductDetailView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
-        summary="Delete a ContactProduct by ID",
+        summary="Delete a ContactProduct by UUID",
         responses={204: OpenApiResponse(description="Deleted successfully")}
     )
-    def delete(self, request, id):
-        item = self.get_object(id)
+    def delete(self, request, uuid):
+        item = self.get_object(uuid)
         item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -828,28 +828,28 @@ class AgentListCreateView(APIView):
 @extend_schema(tags=["Agent"])
 class AgentDetailView(APIView):
 
-    def get_object(self, id):
-        return get_object_or_404(Agent, id=id)
+    def get_object(self, uuid):
+        return get_object_or_404(Agent, uuid=uuid)
 
     @extend_schema(
-        summary="Retrieve an Agent by ID",
+        summary="Retrieve an Agent by UUID",
         parameters=[
-            OpenApiParameter(name="id", required=True, type=int, location=OpenApiParameter.PATH),
+            OpenApiParameter(name="uuid", required=True, type=OpenApiTypes.UUID, location=OpenApiParameter.PATH),
         ],
         responses={200: AgentSerializer}
     )
-    def get(self, request, id):
-        item = self.get_object(id)
+    def get(self, request, uuid):
+        item = self.get_object(uuid)
         serializer = AgentSerializer(item)
         return Response(serializer.data)
 
     @extend_schema(
-        summary="Partially update an Agent by ID",
+        summary="Partially update an Agent by UUID",
         request=AgentSerializer,
         responses={200: AgentSerializer}
     )
-    def patch(self, request, id):
-        item = self.get_object(id)
+    def patch(self, request, uuid):
+        item = self.get_object(uuid)
         serializer = AgentSerializer(item, data=request.data, partial=True, context={'request': request, 'view': {'kwargs': {'institution_id': item.user.institution_id}}})
         if serializer.is_valid():
             serializer.save()
@@ -857,10 +857,10 @@ class AgentDetailView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
-        summary="Delete an Agent by ID",
+        summary="Delete an Agent by UUID",
         responses={204: OpenApiResponse(description="Deleted successfully")}
     )
-    def delete(self, request, id):
-        item = self.get_object(id)
+    def delete(self, request, uuid):
+        item = self.get_object(uuid)
         item.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)    
+        return Response(status=status.HTTP_204_NO_CONTENT)   
